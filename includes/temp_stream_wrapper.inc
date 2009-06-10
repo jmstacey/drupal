@@ -24,9 +24,9 @@ class drupal_private_stream_wrapper extends drupal_public_stream_wrapper {
    *
    * Return the HTML URI of a private file.
    */
-  function html_uri($url) {
+  function html_uri($uri) {
     $basepath = variable_get($this->path_key, $this->path_default);
     
-    return url('system/files/' . parse_url($url, PHP_URL_PATH), array('absolute' => TRUE));
+    return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
 }

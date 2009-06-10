@@ -25,18 +25,18 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
    *
    * Interpolate the url path, adding the public files path.
    */
-  function interpolate_uri($url) {
+  function interpolate_uri($uri) {
     $basepath = variable_get($this->path_key, $this->path_default);
 
     // just in case stream_public_path is s3://, ftp://, etc. Don't call PHP's
     // realpath().
     if (parse_url($basepath, PHP_URL_SCHEME)) {
-      $path = $basepath . parse_url($url, PHP_URL_PATH);;
+      $path = $basepath . parse_url($uri, PHP_URL_PATH);;
     }
     else {
       // interpolate relative paths for basepath, and strip relative paths from
       // url path.
-      $path = realpath($basepath) . str_replace('/..','', parse_url($url, PHP_URL_PATH));
+      $path = realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
     }
     
     return $path;
@@ -47,9 +47,9 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
    *
    * Return the HTML URI of a public file.
    */
-  function html_uri($url) {
+  function html_uri($uri) {
     $basepath = variable_get($this->path_key, $this->path_default);
-    $path     = parse_url($url, PHP_URL_PATH);
+    $path     = parse_url($uri, PHP_URL_PATH);
     
     return $GLOBALS['base_url'] . '/' . $basepath . '/' . str_replace('\\', '/', $path);
   }
@@ -59,8 +59,8 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
    *
    * Return the mime type of a file.
    */
-  function mime($url) {
-    return file_get_mimetype(basename($url));
+  function mime($uri) {
+    return file_get_mimetype(basename($uri));
   }
   
 }
