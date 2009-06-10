@@ -16,7 +16,7 @@
 /**
  * Drupal stream wrapper manager class
  */ 
-class drupal_stream_wrapper_manager {
+class drupal_stream_wrapper_registry {
   
   private $wrappers = array(); // stream wrapper registry
 
@@ -32,7 +32,7 @@ class drupal_stream_wrapper_manager {
   public static function singleton() {
     static $instance = NULL;
     if (is_null($instance)) {
-      $instance = new drupal_stream_wrapper_manager();
+      $instance = new drupal_stream_wrapper_registry();
     }
     return $instance;
   }
@@ -82,7 +82,7 @@ class drupal_stream_wrapper_manager {
    * @return mixed
    *   Return string if a scheme has a registered handler, or FALSE.
    */
-  function classname($scheme) {
+  function class_name($scheme) {
     if (empty(self::$this->wrappers[$scheme])) {
       return FALSE;
     }
