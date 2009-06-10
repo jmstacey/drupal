@@ -573,6 +573,18 @@ class UserPictureTestCase extends DrupalWebTestCase {
   /**
    * Do the test:
    *  GD Toolkit is installed
+   *  Picture has invalid dimension
+   *
+   * results: The image should be uploaded because ImageGDToolkit resizes the picture
+   */
+  function testWithGDinvalidDimensionWithStreamWrapper() {
+    $this->useStreamWrapper();
+    $this->testWithGDinvalidDimension();
+  }
+
+  /**
+   * Do the test:
+   *  GD Toolkit is installed
    *  Picture has invalid size
    *
    * results: The image should be uploaded because ImageGDToolkit resizes the picture
@@ -609,7 +621,19 @@ class UserPictureTestCase extends DrupalWebTestCase {
 
   /**
    * Do the test:
-   *  GD Toolkit is not installed
+   *  GD Toolkit is installed
+   *  Picture has invalid size
+   *
+   * results: The image should be uploaded because ImageGDToolkit resizes the picture
+   */
+  function testWithGDinvalidSizeWithStreamWrapper() {
+    $this->useStreamWrapper();
+    $this->testWithGDinvalidSize();
+  }
+
+  /**
+   * Do the test:
+   *  GD Toolkit is installed
    *  Picture has invalid size
    *
    * results: The image shouldn't be uploaded
@@ -697,15 +721,27 @@ class UserPictureTestCase extends DrupalWebTestCase {
 
       // Check if image is displayed in user's profile page.
       $this->drupalGet('user');
-      $this->assertRaw($pic_path, t("Image is displayed in user's profile page"));
+      $this->assertRaw(basename($pic_path), t("Image is displayed in user's profile page"));
 
       // Check if file is located in proper directory.
       $this->assertTrue(is_file($pic_path), t('File is located in proper directory'));
     }
   }
 
+
+  /**
+   * Do the test:
+   *  Picture is valid (proper size and dimension)
+   *
+   * results: The image should be uploaded
+   */
+  function testPictureIsValidWithStreamWrapper() {
+    $this->useStreamWrapper();
+    $this->testPictureIsValid();
+  }
+
   function saveUserPicture($image) {
-    $edit = array('files[picture_upload]' => realpath($image->filepath));
+    $edit = array('files[picture_upload]' => $image->filepath);
     $this->drupalPost('user/' . $this->user->uid . '/edit', $edit, t('Save'));
 
     $img_info = image_get_info($image->filepath);

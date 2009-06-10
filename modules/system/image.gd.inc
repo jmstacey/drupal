@@ -259,8 +259,10 @@ function image_gd_save(stdClass $image, $destination) {
   if (!function_exists($function)) {
     return FALSE;
   }
+  // These functions do not support stream wrappers.
+  $output_file = file_get_wrapper($destination) ? tempnam(drupal_realpath(file_directory_temp()), 'image') : $destination;
   if ($extension == 'jpeg') {
-    return $function($image->resource, $destination, variable_get('image_jpeg_quality', 75));
+    $result = $function($image->resource, $output_file, variable_get('image_jpeg_quality', 75));
   }
   else {
     // Always save PNG images with full transparency.
@@ -268,8 +270,13 @@ function image_gd_save(stdClass $image, $destination) {
       imagealphablending($image->resource, FALSE);
       imagesavealpha($image->resource, TRUE);
     }
-    return $function($image->resource, $destination);
+    $result = $function($image->resource, $output_file);
   }
+
+  if ($result && $destination != $output_file) {
+    $result = file_unmanaged_move($output_file, $destination, FILE_EXISTS_REPLACE);
+  }
+  return $result;
 }
 
 /**

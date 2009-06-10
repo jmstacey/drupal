@@ -86,12 +86,21 @@ class UploadTestCase extends DrupalWebTestCase {
       $this->assertRaw(t('Page %title has been updated.', array('%title' => $node->title)), 'File deleted successfully.');
 
       $this->assertNoText($new_name, $new_name . ' not found on node.');
-      $this->drupalGet($base_url . '/' . file_directory_path() . '/' . $upload->description, array('external' => TRUE));
+      $this->drupalGet(file_create_url($upload->description), array('external' => TRUE));
       $this->assertResponse(array(404), 'Uploaded ' . $upload->description . ' is not accessible.');
     }
     else {
       $this->fail('File upload record not found in database.');
     }
+  }
+
+  /**
+   * Create node; upload files to node; and edit, and delete uploads, when
+   * file_directory_path contains a stream wrapper prefix.
+   */
+  function testNodeUploadWithStreamWrappers() {
+    $this->useStreamWrapper();
+    $this->testNodeUpload();
   }
 
   /**

@@ -242,15 +242,20 @@ function file_check_path(&$path) {
  *   path of the source.
  */
 function file_check_location($source, $directory = '') {
-  $check = realpath($source);
+  $check = drupal_realpath($source);
   if ($check) {
     $source = $check;
   }
   else {
+    // drupal_realpath() does not always resolve '/..'
+    $basename = basename($source);
+    if ($basename == '..') {
+      return FALSE;
+    }
     // This file does not yet exist.
-    $source = realpath(dirname($source)) . '/' . basename($source);
+    $source = drupal_realpath(dirname($source)) . '/' . $basename;
   }
-  $directory = realpath($directory);
+  $directory = drupal_realpath($directory);
   if ($directory && strpos($source, $directory) !== 0) {
     return FALSE;
   }
@@ -445,7 +450,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * @see file_copy()
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
-  $source = realpath($source);
+  $source = drupal_realpath($source);
   if (!file_exists($source)) {
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $source)), 'error');
     return FALSE;
@@ -473,7 +478,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // Make sure source and destination filenames are not the same, makes no
   // sense to copy it if they are. In fact copying the file will most likely
   // result in a 0 byte file. Which is bad. Real bad.
-  if ($source == realpath($destination)) {
+  if ($source == drupal_realpath($destination)) {
     drupal_set_message(t('The specified file %file was not copied because it would overwrite itself.', array('%file' => $source)), 'error');
     return FALSE;
   }
@@ -1450,6 +1455,10 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 /**
  * Determine the default temporary directory.
  *
+ * This may be used for storing temporary files within a single request. If a
+ * temporary file is to be used in multiple requests, it should be saved in
+ * file_directory_path with its status set to FILE_STATUS_TEMPORARY.
+ *
  * @return
  *   A string containing a temp directory.
  */
@@ -1579,6 +1588,11 @@ function file_get_mimetype($filename, $mapping = NULL) {
  *   TRUE for success, FALSE in the event of an error.
  */
 function drupal_chmod($path, $mode = NULL) {
+  // chmod() is not supported by stream wrappers.
+  if (file_get_wrapper($path)) {
+    return FALSE;
+  }
+  
   if (!isset($mode)) {
     if (is_dir($path)) {
       $mode = variable_get('file_chmod_directory', 0775);
@@ -1594,6 +1608,74 @@ function drupal_chmod($path, $mode = NULL) {
 
   watchdog('file', 'The file permissions could not be set on %path.', array('%path' => $path), WATCHDOG_ERROR);
   return FALSE;
+}
+
+/**
+* Get the stream wrapper prefix of a path.
+ *
+ * @param $path
+ *   A string containing a path to a file or directory.
+ * @return
+ *   The wrapper prefix, e.g. "foo" for the path "foo://bar.txt", or FALSE if
+ *   $path is a regular filesystem path.
+ */
+function file_get_wrapper($path) {
+  // A wrapper prefix is at least two characters so that it can be distinguished
+  // from a Windows drive letter, "C:/temp".
+  preg_match('@^(?<wrapper>[a-z0-9.+-]{2,})://@i', $path, $matches);
+  return $matches ? $matches['wrapper'] : FALSE;
+}
+
+/**
+ * Get canonicalized absolute path of a file or directory.
+ *
+ * Consecutive directory separator characters ("/" or "\") are stripped. If path
+ * is a directory, the trailing directory separator is stripped.
+ *
+ * For regular files:
+ * - Symbolic links are expanded.
+ * - "/./" and "/../" segments are resolved.
+ * For paths with protocol/wrapper prefix (e.g. "mywrapper://foo/bar.txt"):
+ * - Paths containing "/../" are blocked (FALSE is returned).
+ * - Paths are assumed to be case-sensitive (no case normalization is done).
+ * - On Windows, "\" is normalized to "/".
+ *
+ * @code
+ *   // Returns "/foo/bar/boo", or FALSE if the file does not exist:
+ *   drupal_realpath('/foo//bar/./baz/..\\boo');
+ *
+ *   // Returns FALSE due to "/../":
+ *   drupal_realpath('mywrapper://foo/bar/../baz');
+ * @endcode
+ *
+ * @param $path
+ *   A string containing a path to a file or directory.
+ * @return
+ *   A string containing the absolute path to the file/directory, or FALSE if
+ *   the file/directory does not exist.
+ */
+function drupal_realpath($path) {
+  // Does $path include an explicit protocol/wrapper prefix "foo://" (not a
+  // Windows drive letter "C:/temp")?
+  if (preg_match('@^([a-z0-9.+-]{2,})://(.*)@i', $path, $matches)) {
+    $wrappedPath = $matches[2];
+    // Replace platform-specific directory separator with "/".
+    if (DIRECTORY_SEPARATOR != '/') {
+      $wrappedPath = strtr($wrappedPath, DIRECTORY_SEPARATOR, '/');
+    }
+    // Replace "//" with "/", except when "//" is preceded by a colon (this
+    // indicates a nested stream wrapper prefix, e.g. "foo://bar://".
+    $wrappedPath = preg_replace('@(?<!:)/+@', '/', $wrappedPath);
+    // Look for ".." separated by "/" or string boundary
+    if (preg_match('@(?<=^|/)\.\.(?=/|$)@', $wrappedPath)) {
+      return FALSE;
+    }
+    $path = $matches[1] . '://' . $wrappedPath;
+    return file_exists($path) ? rtrim($path, '/') : FALSE;
+  }
+  else {
+    return realpath($path);
+  }
 }
 
 /**
