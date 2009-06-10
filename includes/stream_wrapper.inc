@@ -36,7 +36,7 @@ interface stream_wrapper_interface {
 }
 
 /**
- * Drupal stream wrapper extention.
+ * Drupal stream wrapper extension.
  *
  * Extend the stream_wrapper_interface with methods expected by 
  * Drupal stream wrapper classes.
