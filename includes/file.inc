@@ -1611,19 +1611,45 @@ function drupal_chmod($path, $mode = NULL) {
 }
 
 /**
-* Get the stream wrapper prefix of a path.
+ * Get the scheme of a URI (stream).
+ *
+ * A stream is referenced as scheme://target. The scheme determines
+ * the stream wrapper class that should be used by consulting the
+ * stream wrapper registry. A stream wrapper prefix is at least two
+ * characters in length so that it can be distinguished from a
+ * Windows drive letter.
  *
  * @param $path
- *   A string containing a path to a file or directory.
- * @return
- *   The wrapper prefix, e.g. "foo" for the path "foo://bar.txt", or FALSE if
- *   $path is a regular filesystem path.
+ *   A stream, referenced as scheme://target
+ * @return mixed
+ *   A string containing the name of the scheme, or FALSE on none.
+ *   For example, the path public://example.txt would return public.
  */
-function file_get_wrapper($path) {
-  // A wrapper prefix is at least two characters so that it can be distinguished
-  // from a Windows drive letter, "C:/temp".
+function stream_scheme($path) {
   preg_match('@^(?<wrapper>[a-z0-9.+-]{2,})://@i', $path, $matches);
+  /*
+    TODO: We shou
+  */
   return $matches ? $matches['wrapper'] : FALSE;
+}
+
+/**
+ * Get the absolute path of a URI (stream).
+ *
+ * PHP's realpath() does not properly support streams. This function
+ * provides the missing functionality and makes retrieving the absolute
+ * path of a stream wrapped URI easier. For example, public://example.txt 
+ * could have an absolute path of /foo/sites/all/default/files/example.txt.
+ *
+ * @param string $path
+ *   A string containing a path to a stream (file, directory, etc.)
+ * @return mixed
+ *   A string containing the absolute path to the resource, or FALSE 
+ *   if the resource does not exist.
+ */
+function stream_realpath($path) {
+  $scheme = stream_scheme($path);
+  @todo 
 }
 
 /**
