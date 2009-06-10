@@ -23,7 +23,7 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
   /**
    * Override interpolate_uri().
    *
-   * Interpolate the url path, adding the public files path.
+   * Interpolate the URI path, adding the public files path.
    */
   function interpolate_uri($uri) {
     $basepath = variable_get($this->path_key, $this->path_default);
