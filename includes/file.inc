@@ -6,6 +6,15 @@
  * API for handling file uploads and server file management.
  */
 
+/*
+  TODO: Decide where to put this. common.inc?
+*/
+require_once DRUPAL_ROOT . '/includes/stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
+require_once DRUPAL_ROOT . '/includes/public_stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/private_stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/temp_stream_wrapper.inc';
+
 /**
  * @defgroup file File interface
  * @{
