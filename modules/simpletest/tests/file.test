@@ -41,6 +41,33 @@ function file_test_file_scan_callback($filepath, $reset = FALSE) {
 }
 
 /**
+ * Helper class for testing the stream wrapper registry.
+ *
+ * Dummy stream wrapper implementation (dummy://).
+ */
+class drupal_dummy_stream_wrapper extends drupal_stream_wrapper {
+
+  /**
+   * Override interpolate_uri().
+   *
+   * Return a dummy path for testing.
+   */
+  function interpolate_uri($uri) {
+    return '/dummy/example.txt';
+  }
+
+  /**
+   * Override html_uri().
+   *
+   * Return the HTML URI of a public file.
+   */
+  function html_uri($uri) {
+    return '/dummy/example.txt';
+  }
+ 
+}
+
+/**
  * Base class for file tests that adds some additional file specific
  * assertions and helper functions.
  */
@@ -2030,4 +2057,100 @@ class FileMimeTypeTest extends DrupalWebTestCase {
       $this->assertIdentical($output, $expected, t('Mimetype for %input is %output (expected: %expected).', array('%input' => $input, '%output' => $output, '%expected' => $expected)));
     }
   }
+}
+
+/**
+ * Tests stream wrapper registry.
+ */
+class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
+  
+  public static function getInfo() {
+    return array(
+      'name' => t('Stream Wrapper Registry'),
+      'description' => t('Tests stream wrapper registry.'),
+      'group' => t('File'),
+    );
+  }
+
+  /**
+   * Test stream wrapper registry.
+   */  
+  function testStreamWrapperRegistry() {
+    $scheme    = 'dummy';
+    $filename  = 'example.txt';
+    $class     = 'drupal_dummy_stream_wrapper';
+    $uri = $scheme .'://'. $filename;
+    
+    // Register a dummy wrapper
+    $registry = drupal_stream_wrapper_registry::singleton();
+    $registry->register($scheme, $class);
+    $this->assertTrue(stream_wrapper($uri), 'Dummy stream wrapper registered');
+    
+    // $this->assertEqual($this->scheme, stream_scheme($this->uri),  'stream_scheme() with valid stream wrapped URI.');
+    // $this->assertFalse(stream_scheme('/foo/bar'),                 'stream_scheme() with faulty URI.');
+    //$this->assertEqual('/dummy/example.txt', stream_wrapper($dummy_uri)->interpolate_uri($dummy_uri), 'Stream wrapper URI interpolation.');
+    
+    // Unregister dummy wrapper
+    $registry->unregister($scheme);
+    $this->assertFalse(stream_wrapper($uri), 'Dummy stream wrapper unregistered.');
+  }
+  
+  /**
+   * Confirm core stream wrappers are available.
+   */
+   function testCoreStreamWrapperAvailability() {
+     
+     $filename = 'example.txt';
+     $this->assertTrue(stream_wrapper('public://'. $filename),  'Public stream wrapper registered and available.');
+     $this->assertTrue(stream_wrapper('private://'. $filename), 'Private stream wrapper registered and available.');
+     $this->assertTrue(stream_wrapper('temp://'. $filename),    'Temp stream wrapper registered and available.'); 
+   }
+}
+
+/**
+ * Tests stream wrapper registry.
+ */
+class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
+  
+  public static function getInfo() {
+    return array(
+      'name' => t('Stream Wrapper Registry'),
+      'description' => t('Tests stream wrapper registry.'),
+      'group' => t('File'),
+    );
+  }
+
+  /**
+   * Test stream wrapper registry.
+   */  
+  function testStreamWrapperRegistry() {
+    $scheme    = 'dummy';
+    $filename  = 'example.txt';
+    $class     = 'drupal_dummy_stream_wrapper';
+    $uri = $scheme .'://'. $filename;
+    
+    // Register a dummy wrapper
+    $registry = drupal_stream_wrapper_registry::singleton();
+    $registry->register($scheme, $class);
+    $this->assertTrue(stream_wrapper($uri), 'Dummy stream wrapper registered');
+    
+    // $this->assertEqual($this->scheme, stream_scheme($this->uri),  'stream_scheme() with valid stream wrapped URI.');
+    // $this->assertFalse(stream_scheme('/foo/bar'),                 'stream_scheme() with faulty URI.');
+    //$this->assertEqual('/dummy/example.txt', stream_wrapper($dummy_uri)->interpolate_uri($dummy_uri), 'Stream wrapper URI interpolation.');
+    
+    // Unregister dummy wrapper
+    $registry->unregister($scheme);
+    $this->assertFalse(stream_wrapper($uri), 'Dummy stream wrapper unregistered.');
+  }
+  
+  /**
+   * Confirm core stream wrappers are available.
+   */
+   function testCoreStreamWrapperAvailability() {
+     
+     $filename = 'example.txt';
+     $this->assertTrue(stream_wrapper('public://'. $filename),  'Public stream wrapper registered and available.');
+     $this->assertTrue(stream_wrapper('private://'. $filename), 'Private stream wrapper registered and available.');
+     $this->assertTrue(stream_wrapper('temp://'. $filename),    'Temp stream wrapper registered and available.'); 
+   }
 }

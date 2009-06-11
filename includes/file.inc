@@ -1641,7 +1641,7 @@ function drupal_chmod($uri, $mode = NULL) {
  */
 function stream_scheme($uri) {
   $data = explode('://', $uri, 2);
-  return $data ? $data[0] : FALSE;
+  return count($data) == 2 ? $data[0] : FALSE;
 }
 
 /**
@@ -1684,7 +1684,7 @@ function stream_wrapper($uri) {
  */
 function drupal_realpath($uri) {  
   return stream_wrapper($uri)->interpolate_uri($uri);
-}  
+}
 
 /**
  * @} End of "defgroup file".
