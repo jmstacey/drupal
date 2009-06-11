@@ -14,7 +14,7 @@
  *
  * Extends drupal_public_stream_wrapper.
  */
-class drupal_private_stream_wrapper extends drupal_public_stream_wrapper {
+class drupal_temp_stream_wrapper extends drupal_public_stream_wrapper {
   
   private $path_key     = 'file_directory_temp';
   private $path_default = 'sites/default/files/tmp';
