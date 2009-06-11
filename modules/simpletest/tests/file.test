@@ -101,11 +101,6 @@ class FileTestCase extends DrupalWebTestCase {
    *   Optional message.
    */
   function assertFilePermissions($filepath, $expected_mode, $message = NULL) {
-    // File permissions are not supported by stream wrappers
-    if (file_get_wrapper($filepath)) {
-      return;
-    }
-
     // Clear out PHP's file stat cache to be sure we see the current value.
     clearstatcache();
 
@@ -345,9 +340,13 @@ class FileValidatorTest extends DrupalWebTestCase {
   function setUp() {
     parent::setUp();
 
-    $this->image = current($this->drupalGetTestFiles('image'));
+    $this->image = new stdClass();
+    $this->image->filepath = 'misc/druplicon.png';
+    $this->image->filename = basename($this->image->filepath);
 
-    $this->non_image = current($this->drupalGetTestFiles('text'));
+    $this->non_image = new stdClass();
+    $this->non_image->filepath = 'misc/jquery.js';
+    $this->non_image->filename = basename($this->non_image->filepath);
   }
 
   /**
@@ -391,18 +390,18 @@ class FileValidatorTest extends DrupalWebTestCase {
     // Minimum size.
     $errors = file_validate_image_resolution($this->image);
     $this->assertEqual(count($errors), 0, t('No errors for an image when there is no minimum or maximum resolution.'), 'File');
-    $errors = file_validate_image_resolution($this->image, 0, '400x1');
+    $errors = file_validate_image_resolution($this->image, 0, '200x1');
     $this->assertEqual(count($errors), 1, t("Got an error for an image that wasn't wide enough."), 'File');
-    $errors = file_validate_image_resolution($this->image, 0, '1x400');
+    $errors = file_validate_image_resolution($this->image, 0, '1x200');
     $this->assertEqual(count($errors), 1, t("Got an error for an image that wasn't tall enough."), 'File');
-    $errors = file_validate_image_resolution($this->image, 0, '400x400');
+    $errors = file_validate_image_resolution($this->image, 0, '200x200');
     $this->assertEqual(count($errors), 1, t('Small images report an error.'), 'File');
 
     // Maximum size.
     if (image_get_toolkit()) {
       // Copy the image so that the original doesn't get resized.
       $temp_dir = file_directory_temp();
-      copy('misc/druplicon.png', $temp_dir . '/druplicon.png');
+      copy(realpath('misc/druplicon.png'), realpath($temp_dir) . '/druplicon.png');
       $this->image->filepath = $temp_dir . '/druplicon.png';
 
       $errors = file_validate_image_resolution($this->image, '10x5');
@@ -412,7 +411,7 @@ class FileValidatorTest extends DrupalWebTestCase {
       $this->assertTrue($info['width'] <= 10, t('Image scaled to correct width.'), 'File');
       $this->assertTrue($info['height'] <= 5, t('Image scaled to correct height.'), 'File');
 
-      unlink($temp_dir . '/druplicon.png');
+      unlink(realpath($temp_dir . '/druplicon.png'));
     }
     else {
       // TODO: should check that the error is returned if no toolkit is available.
@@ -482,24 +481,7 @@ class FileValidatorTest extends DrupalWebTestCase {
   }
 }
 
-/**
- * This will run tests against the file validation functions (file_validate_*)
- * using stream wrappers.
- */
-class FileValidatorStreamWrapperTest extends FileValidatorTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('File validator tests - with stream wrappers'),
-      'description' => t('Tests the functions used to validate uploaded files.'),
-      'group' => t('File'),
-    );
-  }
 
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
-  }
-}
 
 /**
  *  Tests the file_unmanaged_save_data() function.
@@ -523,33 +505,15 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     $filepath = file_unmanaged_save_data($contents);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
     $this->assertEqual(file_directory_path(), dirname($filepath), t("File was placed in Drupal's files directory."));
-    $this->assertEqual($contents, file_get_contents($filepath), t('Contents of the file are correct.'));
+    $this->assertEqual($contents, file_get_contents(realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
     $filepath = file_unmanaged_save_data($contents, 'asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
     $this->assertEqual(file_directory_path(), dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
-    $this->assertEqual($contents, file_get_contents($filepath), t('Contents of the file are correct.'));
+    $this->assertEqual($contents, file_get_contents(realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));
-  }
-}
-
-/**
- *  Tests the file_unmanaged_save_data() function.
- */
-class FileUnmanagedSaveDataStreamWrapperTest extends FileUnmanagedSaveDataTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('Unmanaged file save data - with stream wrappers'),
-      'description' => t('Tests the unmanaged file save data function.'),
-      'group' => t('File'),
-    );
-  }
-
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
   }
 }
 
@@ -588,7 +552,7 @@ class FileSaveUploadTest extends FileHookTestCase {
     // Upload with replace to gurantee there's something there.
     $edit = array(
       'file_test_replace' => FILE_EXISTS_REPLACE,
-      'files[file_test_upload]' => $this->image->filepath,
+      'files[file_test_upload]' => realpath($this->image->filepath)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -615,7 +579,7 @@ class FileSaveUploadTest extends FileHookTestCase {
     // Upload a second file.
     $max_fid_before = db_query('SELECT MAX(fid) AS fid FROM {files}')->fetchField();
     $image2 = current($this->drupalGetTestFiles('image'));
-    $edit = array('files[file_test_upload]' => $image2->filepath);
+    $edit = array('files[file_test_upload]' => realpath($image2->filepath));
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
     $this->assertRaw(t('You WIN!'));
@@ -692,25 +656,6 @@ class FileSaveUploadTest extends FileHookTestCase {
 }
 
 /**
- * Test the file_save_upload() function when file_directory_path contains a
- * stream wrapper prefix.
- */
-class FileSaveUploadStreamWrapperTest extends FileSaveUploadTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('File uploading - with stream wrappers'),
-      'description' => t('Tests the file uploading functions.'),
-      'group' => t('File'),
-    );
-  }
-
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
-  }
-}
-
-/**
  * Directory related tests.
  */
 class FileDirectoryTest extends FileTestCase {
@@ -744,23 +689,20 @@ class FileDirectoryTest extends FileTestCase {
     // Make sure directory actually exists.
     $this->assertTrue(is_dir($directory), t('Directory actually exists.'), 'File');
 
-    // chmod() is not supported by stream wrappers.
-    if (!file_get_wrapper($directory)) {
-      // Make directory read only.
-      @chmod($directory, 0444);
-      $form_element = $this->randomName();
-      $this->assertFalse(file_check_directory($directory, 0, $form_element), t('Error reported for a non-writeable directory.'), 'File');
+    // Make directory read only.
+    @chmod($directory, 0444);
+    $form_element = $this->randomName();
+    $this->assertFalse(file_check_directory($directory, 0, $form_element), t('Error reported for a non-writeable directory.'), 'File');
 
-      // Check if form error was set.
-      $errors = form_get_errors();
-      $this->assertEqual($errors[$form_element], t('The directory %directory is not writable', array('%directory' => $directory)), t('Properly generated an error for the passed form element.'), 'File');
+    // Check if form error was set.
+    $errors = form_get_errors();
+    $this->assertEqual($errors[$form_element], t('The directory %directory is not writable', array('%directory' => $directory)), t('Properly generated an error for the passed form element.'), 'File');
 
-      // Test directory permission modification.
-      $this->assertTrue(file_check_directory($directory, FILE_MODIFY_PERMISSIONS), t('No error reported when making directory writeable.'), 'File');
+    // Test directory permission modification.
+    $this->assertTrue(file_check_directory($directory, FILE_MODIFY_PERMISSIONS), t('No error reported when making directory writeable.'), 'File');
 
-      // Test directory permission modification actually set correct permissions.
-      $this->assertDirectoryPermissions($directory, variable_get('file_chmod_directory', 0775));
-    }
+    // Test directory permission modification actually set correct permissions.
+    $this->assertDirectoryPermissions($directory, variable_get('file_chmod_directory', 0775));
 
     // Remove .htaccess file to then test that it gets re-created.
     @unlink(file_directory_path() . '/.htaccess');
@@ -819,34 +761,8 @@ class FileDirectoryTest extends FileTestCase {
 
     $result = file_check_location($source, $directory);
     $this->assertTrue($result, t('Existing file passes validation, returning the source when checked for location in directory.'), 'File');
-
-    $this->useStreamWrapper();
-    mkdir(file_directory_path() . '/foo');
-    $this->createFile(file_directory_path() . '/abc.txt');
-    $this->createFile(file_directory_path() . '/foo/def.txt');
-    $this->assertTrue(is_dir(file_directory_path() . '/foo'), t('Directory was created successfully.'), 'File');
-
-    $source = file_directory_path() . '/foo/xyz.txt';
-    $directory = file_directory_path() . '/foo';
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Non-existent file validates when checked for location in existing directory.'), 'File');
-
-    $source = file_directory_path() . '/xyz.txt';
-    $directory = file_directory_path() . '/fake';
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Non-existent file validates when checked for location in non-existing directory.'), 'File');
-
-    $source = file_directory_path() . '/foo/../abc.txt';
-    $directory = file_directory_path() . '/foo';
-    $this->assertTrue(is_file($source), t('File exists outside the directory path.'), 'File');
-    $result = file_check_location($source, $directory);
-    $this->assertFalse($result, t('Existing file fails validation when it exists outside the directory path, using a /../ exploit.'), 'File');
-
-    $source = file_directory_path() . '/foo/def.txt';
-    $directory = file_directory_path() . '/foo';
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Existing file passes validation when checked for location in directory path, and filepath contains a subfolder of the checked path.'), 'File');
   }
+
 
   /**
    * This will take a directory and path, and find a valid filepath that is not
@@ -856,16 +772,15 @@ class FileDirectoryTest extends FileTestCase {
     // First we test against an imaginary file that does not exist in a
     // directory.
     $basename = 'xyz.txt';
-    $directory = file_directory_path();
+    $directory = 'misc';
     $original = $directory . '/' . $basename;
     $path = file_create_filename($basename, $directory);
     $this->assertEqual($path, $original, t('New filepath %new equals %original.', array('%new' => $path, '%original' => $original)), 'File');
 
     // Then we test against a file that already exists within that directory.
-    $basename = 'abc.txt';
+    $basename = 'druplicon.png';
     $original = $directory . '/' . $basename;
-    $expected = $directory . '/abc_0.txt';
-    $this->createFile($original);
+    $expected = $directory . '/druplicon_0.png';
     $path = file_create_filename($basename, $directory);
     $this->assertEqual($path, $expected, t('Creating a new filepath from %original equals %new.', array('%new' => $path, '%original' => $original)), 'File');
 
@@ -886,7 +801,7 @@ class FileDirectoryTest extends FileTestCase {
    */
   function testFileDestination() {
     // First test for non-existent file.
-    $destination = file_directory_path() . '/xyz.txt';
+    $destination = 'misc/xyz.txt';
     $path = file_destination($destination, FILE_EXISTS_REPLACE);
     $this->assertEqual($path, $destination, t('Non-existing filepath destination is correct with FILE_EXISTS_REPLACE.'), 'File');
     $path = file_destination($destination, FILE_EXISTS_RENAME);
@@ -894,8 +809,7 @@ class FileDirectoryTest extends FileTestCase {
     $path = file_destination($destination, FILE_EXISTS_ERROR);
     $this->assertEqual($path, $destination, t('Non-existing filepath destination is correct with FILE_EXISTS_ERROR.'), 'File');
 
-    $destination = file_directory_path() . '/abc.txt';
-    $this->createFile($destination);
+    $destination = 'misc/druplicon.png';
     $path = file_destination($destination, FILE_EXISTS_REPLACE);
     $this->assertEqual($path, $destination, t('Existing filepath destination remains the same with FILE_EXISTS_REPLACE.'), 'File');
     $path = file_destination($destination, FILE_EXISTS_RENAME);
@@ -905,23 +819,6 @@ class FileDirectoryTest extends FileTestCase {
   }
 }
 
-/**
- * Directory related tests with stream wrapper prefixes.
- */
-class FileDirectoryStreamWrapperTest extends FileDirectoryTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('File paths and directories - with stream wrappers'),
-      'description' => t('Tests operations dealing with directories.'),
-      'group' => t('File'),
-    );
-  }
-
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
-  }
-}
 
 /**
  * Tests the file_scan_directory() function.
@@ -987,16 +884,12 @@ class FileScanDirectoryTest extends FileTestCase {
    * Check that the no-mask parameter is honored.
    */
   function testOptionNoMask() {
-    $path = file_directory_path();
-    $this->createFile($path . '/abc.txt');
-    $this->createFile($path . '/def.txt');
+    // Grab a listing of all the JavaSscript files.
+    $all_files = file_scan_directory($this->path, '/^javascript-/');
+    $this->assertEqual(2, count($all_files), t('Found two, expected javascript files.'));
 
-    // Grab a listing of all .txt files.
-    $all_files = file_scan_directory($path, '/\.txt$/');
-    $this->assertEqual(2, count($all_files), t('Found two, expected txt files.'));
-
-    // Now use the nomast parameter to filter out abc.txt.
-    $filtered_files = file_scan_directory($path, '/\.txt$/', array('nomask' => '/^abc/'));
+    // Now use the nomast parameter to filter out the .script file.
+    $filtered_files = file_scan_directory($this->path, '/^javascript-/', array('nomask' => '/.script$/'));
     $this->assertEqual(1, count($filtered_files), t('Filtered correctly.'));
   }
 
@@ -1100,23 +993,6 @@ class FileUnmanagedDeleteTest extends FileTestCase {
   }
 }
 
-/**
- * Deletion related tests using stream wrappers.
- */
-class FileUnmanagedDeleteStreamWrapperTest extends FileUnmanagedDeleteTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('Unmanaged file delete - with stream wrappers'),
-      'description' => t('Tests the unmanaged file delete function.'),
-      'group' => t('File'),
-    );
-  }
-
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
-  }
-}
 
 /**
  * Deletion related tests.
@@ -1351,24 +1227,6 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $this->assertTrue(file_exists($file->filepath), t('Original file exists after copying onto itself.'));
     $this->assertTrue(file_exists($new_filepath), t('Copied file exists after copying onto itself.'));
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
-  }
-}
-
-/**
- * Unmanaged copy related tests using stream wrappers.
- */
-class FileUnmanagedCopyStreamWrapperTest extends FileUnmanagedCopyTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('Unmanaged file copying -with stream wrappers'),
-      'description' => t('Tests the unmanaged file copy function.'),
-      'group' => t('File'),
-    );
-  }
-
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
   }
 }
 
@@ -1751,12 +1609,11 @@ class FileLoadTest extends FileHookTestCase {
    */
   function testSingleValues() {
     // Create a new file object from scratch so we know the values.
-    $temp_file = current($this->drupalGetTestFiles('text'));
     $file = array(
       'uid' => 1,
-      'filename' => $temp_file->filename,
-      'filepath' => $temp_file->filepath,
-      'filemime' => 'text/plain',
+      'filename' => 'druplicon.png',
+      'filepath' => 'misc/druplicon.png',
+      'filemime' => 'image/png',
       'timestamp' => 1,
       'status' => FILE_STATUS_PERMANENT,
     );
@@ -1778,12 +1635,11 @@ class FileLoadTest extends FileHookTestCase {
    */
   function testMultiple() {
     // Create a new file object.
-    $temp_file = current($this->drupalGetTestFiles('text'));
     $file = array(
       'uid' => 1,
-      'filename' => $temp_file->filename,
-      'filepath' => $temp_file->filepath,
-      'filemime' => 'text/plain',
+      'filename' => 'druplicon.png',
+      'filepath' => 'misc/druplicon.png',
+      'filemime' => 'image/png',
       'timestamp' => 1,
       'status' => FILE_STATUS_PERMANENT,
     );
@@ -1821,17 +1677,13 @@ class FileSaveTest extends FileHookTestCase {
     );
   }
 
-  /**
-   * Save a file to the database.
-   */
-   function testFileSave() {
-    $temp_file = current($this->drupalGetTestFiles('text'));
-     // Create a new file object.
+  function testFileSave() {
+    // Create a new file object.
     $file = array(
       'uid' => 1,
-      'filename' => $temp_file->filename,
-      'filepath' => $temp_file->filepath,
-      'filemime' => 'text/plain',
+      'filename' => 'druplicon.png',
+      'filepath' => 'misc/druplicon.png',
+      'filemime' => 'image/png',
       'timestamp' => 1,
       'status' => FILE_STATUS_PERMANENT,
     );
@@ -1868,23 +1720,6 @@ class FileSaveTest extends FileHookTestCase {
   }
 }
 
-/**
- * Tests the file_save() function using stream wrappers.
- */
-class FileSaveStreamWrapperTest extends FileSaveTest {
-  public static function getInfo() {
-    return array(
-      'name' => t('File saving - with stream wrappers'),
-      'description' => t('Tests the file_save() function.'),
-      'group' => t('File'),
-    );
-  }
-
-  function setUp() {
-    parent::setUp();
-    $this->useStreamWrapper();
-  }
-}
 
 /**
  * Tests the file_validate() function..
@@ -2160,107 +1995,6 @@ class FileNameMungingTest extends FileTestCase {
     // @TODO uncomment when this tests passes reliably, see
     // http://drupal.org/node/368502
     // $this->assertIdentical($unmunged_name, $this->name, t('The unmunged (%unmunged) filename matches the original (%original)', array('%unmunged' => $unmunged_name, '%original' => $this->name)));
-  }
-}
-
-/**
- * Test the file_get_wrapper() function.
- */
-class FileGetWrapperUnitTest extends DrupalWebTestCase {
-  public static function getInfo() {
-    return array(
-      'name' => t('Stream wrapper support'),
-      'description' => t('Tests the file_get_wrapper() function.'),
-      'group' => t('File'),
-    );
-  }
-
-  /**
-   * Test the file_get_wrapper() function.
-   */
-  function testFileGetWrapper() {
-    // Array containing path => expected_wrapper pairs.
-    $paths = array(
-      'C:\\' => FALSE,
-      'C:/' => FALSE,
-      'C:\Windows' => FALSE,
-      'C:/Windows' => FALSE,
-      '/tmp' => FALSE,
-      '' => FALSE,
-      '.' => FALSE,
-      '..' => FALSE,
-      'foo:' => FALSE,
-      'foo:/' => FALSE,
-      'foo://' => 'foo',
-      'foo://bar' => 'foo',
-      'f-o-o://bar' => 'f-o-o',
-    );
-    foreach ($paths as $path => $expected_wrapper) {
-      $this->assertIdentical(file_get_wrapper($path), $expected_wrapper, t('Found expected wrapper prefix on %file.', array('%file' => $path)));
-    }
-  }
-}
-
-/**
- * Test the drupal_realpath() function.
- */
-class DrupalRealpathUnitTest extends DrupalWebTestCase {
-  public static function getInfo() {
-    return array(
-      'name' => t('Realpath resolving'),
-      'description' => t('Tests the drupal_realpath() function.'),
-      'group' => t('File'),
-    );
-  }
-
-  /**
-   * Test the drupal_realpath() function.
-   */
-  function testDrupalRealpath() {
-    $this->assertEqual(drupal_realpath('includes/./bootstrap.inc'), DRUPAL_ROOT . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'bootstrap.inc', t('"." segment was resolved.'));
-    $this->assertEqual(drupal_realpath('includes/database/../bootstrap.inc'), DRUPAL_ROOT . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'bootstrap.inc', t('".." segment was resolved.'));
-    $this->assertEqual(drupal_realpath('includes/database/'), DRUPAL_ROOT . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'database', t('Trailing slash in directory was removed.'));
-    $this->assertEqual(drupal_realpath('includes///database//database.inc'), DRUPAL_ROOT . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'database.inc', t('Duplicate slashes in path were removed.'));
-  }
-}
-
-/**
- * Test the drupal_realpath() function with stream wrappers.
- */
-class DrupalRealpathStreamWrapperUnitTest extends DrupalWebTestCase {
-  public static function getInfo() {
-    return array(
-      'name' => t('Realpath resolving - with stream wrappers'),
-      'description' => t('Tests the drupal_realpath() function.'),
-      'group' => t('File'),
-    );
-  }
-
-  /**
-   * Test the drupal_realpath() function.
-   */
-  function testDrupalRealpath() {
-    $original_file_directory_path = file_directory_path();
-    $this->useStreamWrapper();
-
-    // These tests exploit that "simpletest://" is a dummy wrapper that maps to
-    // the filesystem, i.e. the same file is accessible with and without the
-    // stream wrapper prefix.
-    $original_file_directory_realpath = drupal_realpath($original_file_directory_path);
-    $this->assertTrue($original_file_directory_realpath, t('%path exists.', array('%path' => $original_file_directory_realpath)));
-    mkdir($original_file_directory_realpath . '/foo/bar', 0775, TRUE);
-
-    $this->assertTrue(is_dir($original_file_directory_realpath . '/foo/bar'), t('Directory was created successfully.'));
-    $this->assertTrue(is_dir('simpletest://' . $original_file_directory_path . '/foo/bar'), t('Directory was accessible through dummy stream wrapper.'));
-    $this->assertEqual(drupal_realpath('simpletest://' . $original_file_directory_path . '/foo/bar/'), 'simpletest://' . $original_file_directory_path . '/foo/bar', t('Trailingslash in directory was removed.'));
-
-    file_put_contents($original_file_directory_path . '/foo/baz', 'Lorem ipsum.');
-    $this->assertTrue(is_file($original_file_directory_realpath . '/foo/baz'), t('File was created successfully.'));
-    $this->assertTrue(is_file('simpletest://' . $original_file_directory_path . '/foo/baz'), t('File was found through dummy stream wrapper.'));
-    $this->assertEqual(drupal_realpath('simpletest://' . $original_file_directory_path . '///foo//baz'), 'simpletest://' . $original_file_directory_path . '/foo/baz', t('Duplicate slashes were removed.'));
-
-    // "/../" segments are not supported with stream wrappers.
-    $this->assertFalse(drupal_realpath('simpletest://' . $original_file_directory_path . '/foo/bar/../1'), t('".." segments are rejected.'));
   }
 }
 

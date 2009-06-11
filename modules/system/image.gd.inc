@@ -235,7 +235,7 @@ function image_gd_desaturate(stdClass $image) {
  */
 function image_gd_load(stdClass $image) {
   $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
-  $function = 'imagecreatefrom'. $extension;
+  $function = 'imagecreatefrom' . $extension;
   return (function_exists($function) && $image->resource = $function($image->source));
 }
 
@@ -246,6 +246,8 @@ function image_gd_load(stdClass $image) {
  *   An image object.
  * @param $destination
  *   A string file path where the image should be saved.
+ * @param $extension
+ *   A string containing one of the following extensions: gif, jpg, jpeg, png.
  * @return
  *   TRUE or FALSE, based on success.
  *
@@ -253,12 +255,10 @@ function image_gd_load(stdClass $image) {
  */
 function image_gd_save(stdClass $image, $destination) {
   $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
-  $function  = 'image'. $extension;
- 
+  $function = 'image' . $extension;
   if (!function_exists($function)) {
     return FALSE;
   }
-  
   if ($extension == 'jpeg') {
     return $function($image->resource, $destination, variable_get('image_jpeg_quality', 75));
   }

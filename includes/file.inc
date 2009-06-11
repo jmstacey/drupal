@@ -6,15 +6,6 @@
  * API for handling file uploads and server file management.
  */
 
-/*
-  TODO: Decide where to put this. common.inc?
-*/
-require_once DRUPAL_ROOT . '/includes/stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
-require_once DRUPAL_ROOT . '/includes/public_stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/private_stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/temp_stream_wrapper.inc';
-
 /**
  * @defgroup file File interface
  * @{
@@ -251,20 +242,15 @@ function file_check_path(&$path) {
  *   path of the source.
  */
 function file_check_location($source, $directory = '') {
-  $check = stream_realpath($source);
+  $check = realpath($source);
   if ($check) {
     $source = $check;
   }
   else {
-    // stream_realpath() does not always resolve '/..'
-    $basename = basename($source);
-    if ($basename == '..') {
-      return FALSE;
-    }
     // This file does not yet exist.
-    $source = stream_realpath(dirname($source)) . '/' . $basename;
+    $source = realpath(dirname($source)) . '/' . basename($source);
   }
-  $directory = stream_realpath($directory);
+  $directory = realpath($directory);
   if ($directory && strpos($source, $directory) !== 0) {
     return FALSE;
   }
@@ -459,7 +445,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * @see file_copy()
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
-  $source = stream_realpath($source);
+  $source = realpath($source);
   if (!file_exists($source)) {
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $source)), 'error');
     return FALSE;
@@ -487,7 +473,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // Make sure source and destination filenames are not the same, makes no
   // sense to copy it if they are. In fact copying the file will most likely
   // result in a 0 byte file. Which is bad. Real bad.
-  if ($source == stream_realpath($destination)) {
+  if ($source == realpath($destination)) {
     drupal_set_message(t('The specified file %file was not copied because it would overwrite itself.', array('%file' => $source)), 'error');
     return FALSE;
   }
@@ -1464,10 +1450,6 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 /**
  * Determine the default temporary directory.
  *
- * This may be used for storing temporary files within a single request. If a
- * temporary file is to be used in multiple requests, it should be saved in
- * file_directory_path with its status set to FILE_STATUS_TEMPORARY.
- *
  * @return
  *   A string containing a temp directory.
  */
@@ -1579,7 +1561,7 @@ function file_get_mimetype($filename, $mapping = NULL) {
 }
 
 /**
- * Set the permissions on a URI (stream).
+ * Set the permissions on a file or directory.
  *
  * This function will use the 'file_chmod_directory' and 'file_chmod_file'
  * variables for the default modes for directories and uploaded/generated files.
@@ -1587,10 +1569,6 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * files with a user account without the webserver group (e.g. via FTP) can read
  * these files, and give group write permissions so webserver group members
  * (e.g. a vhost account) can alter files uploaded and owned by the webserver.
- *
- * PHP's chmod does not support stream wrappers so we use our wrapper implementation
- * which interfaces with chmod() by default. Contrib wrappers can override this
- * bahavior in their implementations as needed.
  *
  * @param $path
  *   String containing the path to a file or directory.
@@ -1600,12 +1578,9 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * @return
  *   TRUE for success, FALSE in the event of an error.
  */
-function drupal_chmod($uri, $mode = NULL) {
-  
-  $wrapper = stream_wrapper($uri);
-  
+function drupal_chmod($path, $mode = NULL) {
   if (!isset($mode)) {
-    if (is_dir($uri)) {
+    if (is_dir($path)) {
       $mode = variable_get('file_chmod_directory', 0775);
     }
     else {
@@ -1613,68 +1588,12 @@ function drupal_chmod($uri, $mode = NULL) {
     }
   }
 
-  if (@$wrapper->stream_chmod($uri, $mode)) {
+  if (@chmod($path, $mode)) {
     return TRUE;
   }
 
-  watchdog('file', 'The file permissions could not be set on %uri.', array('%uri' => $uri), WATCHDOG_ERROR);
+  watchdog('file', 'The file permissions could not be set on %path.', array('%path' => $path), WATCHDOG_ERROR);
   return FALSE;
-}
-
-/**
- * Get the scheme of a URI (stream).
- *
- * A stream is referenced as scheme://target. A stream wrapper 
- * prefix is at least two characters in length so that it can 
- * be distinguished from a Windows drive letter.
- *
- * @param $path
- *   A stream, referenced as scheme://target
- * @return mixed
- *   A string containing the name of the scheme, or FALSE if none.
- *   For example, the path public://example.txt would return public.
- */
-function stream_scheme($path) {
-  preg_match('@^(?<wrapper>[a-z0-9.+-]{2,})://@i', $path, $matches);
-  return $matches ? $matches['wrapper'][0] : FALSE;
-}
-
-/**
- * Get reference to stream wrapper class responsible for given URI (stream).
- *
- * The scheme determines the stream wrapper class that should be 
- * used by consulting the stream wrapper registry.
- *
- * @param $uri
- *   A stream, referenced as scheme://target
- * @return reference
- *   A reference to the wrapper class responsible for handling the given URI.
- *   For example, the public_stream_wrapper class is responsible for a URI of
- *   public://example.txt.
- */
-function stream_wrapper($uri) {
-  $scheme   = stream_scheme($uri);
-  $registry = drupal_stream_wrapper_registry::singleton();
-  
-  return $registry->class_name($uri);
-}
-
-/**
- * Get the absolute path of a URI (stream).
- *
- * PHP's realpath() does not properly support streams. This function
- * provides the missing functionality and makes retrieving the absolute
- * path of a stream wrapped URI easier. For example, public://example.txt 
- * could have an absolute path of /foo/sites/all/default/files/example.txt.
- *
- * @param string $uri
- *   A string containing a path to a stream (file, directory, etc.)
- * @return mixed
- *   A string containing the absolute path to the resource, or FALSE 
- *   if the resource does not exist.
- */
-function stream_realpath($uri) {
-  return stream_wrapper($uri)->interpolate_uri($uri);
 }
 
 /**

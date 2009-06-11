@@ -1407,7 +1407,7 @@ function system_file_system_settings() {
     '#title' => t('Temporary directory'),
     '#default_value' => file_directory_temp(),
     '#maxlength' => 255,
-    '#description' => t('A file system path where temporary files may be stored.'),
+    '#description' => t('A file system path where uploaded files will be stored during previews.'),
     '#after_build' => array('system_check_directory'),
   );
 

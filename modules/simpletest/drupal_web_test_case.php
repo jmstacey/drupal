@@ -755,11 +755,6 @@ class DrupalWebTestCase extends DrupalTestCase {
     if (in_array($type, array('binary', 'html', 'image', 'javascript', 'php', 'sql', 'text'))) {
       // Use original file directory instead of one created during setUp().
       $path = $this->originalFileDirectory . '/simpletest';
-      // When useStreamWrapper() has been called, also return test files with
-      // a wrapper prefix.
-      if (file_get_wrapper(file_directory_path()) == 'simpletest') {
-        $path = 'simpletest://' . $path;
-      }
       $files = file_scan_directory($path, '/' . $type . '\-.*/');
 
       // If size is set then remove any files that are not of that size.
@@ -984,7 +979,6 @@ class DrupalWebTestCase extends DrupalTestCase {
     $this->originalPrefix = $db_prefix;
     $this->originalFileDirectory = file_directory_path();
     $clean_url_original = variable_get('clean_url', 0);
-    $file_downloads_original = variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC);
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
     $db_prefix = Database::getConnection()->prefixTables('{simpletest' . mt_rand(1000, 1000000) . '}');
@@ -1025,7 +1019,6 @@ class DrupalWebTestCase extends DrupalTestCase {
     variable_set('install_profile', 'default');
     variable_set('install_task', 'profile-finished');
     variable_set('clean_url', $clean_url_original);
-    variable_set('file_downloads', $file_downloads_original);
     variable_set('site_mail', 'simpletest@example.com');
     // Set up English language.
     unset($GLOBALS['conf']['language_default']);
@@ -1042,22 +1035,6 @@ class DrupalWebTestCase extends DrupalTestCase {
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
     set_time_limit($this->timeLimit);
-  }
-
-  /**
-   * Register "simpletest://" stream wrapper and set file_directory_path to a
-   * path with this wrapper prefix, and set file_downloads to
-   * FILE_DOWNLOADS_PRIVATE.
-   */
-  function useStreamWrapper($register = TRUE) {
-    if (!in_array('simpletest', stream_get_wrappers())) {
-      stream_wrapper_register('simpletest', 'DummyStreamWrapper');
-    }
-    variable_set('file_directory_path', 'simpletest://' . file_directory_path());
-    variable_set('file_downloads', FILE_DOWNLOADS_PRIVATE);
-    // Clear the node cache to get rid of cached references to files in the
-    // old file_directory_path.
-    node_load_multiple(array(), array(), TRUE);
   }
 
   /**
@@ -1366,7 +1343,6 @@ class DrupalWebTestCase extends DrupalTestCase {
         $edit = $edit_save;
         $post = array();
         $upload = array();
-        $temp_dir = FALSE;
         $submit_matches = $this->handleForm($post, $edit, $upload, $submit, $form);
         $action = isset($form['action']) ? $this->getAbsoluteUrl($form['action']) : $this->getUrl();
 
@@ -1378,24 +1354,9 @@ class DrupalWebTestCase extends DrupalTestCase {
             // is broken. This is a less than elegant workaround. Alternatives
             // are being explored at #253506.
             foreach ($upload as $key => $file) {
-              // cURL does not support stream wrappers
-              if (file_get_wrapper($file)) {
-                $temp_dir = file_directory_temp() . '/simpletest_drupal_web_test_case';
-                if (!is_dir($temp_dir)) {
-                  mkdir($temp_dir);
-                }
-                $upload_file = $temp_dir . '/' . basename($file);
-                copy($file, $upload_file);
-                if (!is_file($upload_file)) {
-                  $this->fail(t('Failed to create temporary file @file', array('@file' => $upload_file)));
-                  return;
-                }
-              }
-              else {
-                $upload_file = realpath($file);
-              }
-              if ($upload_file && is_file($upload_file)) {
-                $post[$key] = '@' . $upload_file;
+              $file = realpath($file);
+              if ($file && is_file($file)) {
+                $post[$key] = '@' . $file;
               }
             }
           }
