@@ -526,10 +526,6 @@ function conf_init() {
     ini_set('session.cookie_domain', $cookie_domain);
   }
   session_name('SESS' . md5($session_name));
-  if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
-    require_once DRUPAL_ROOT . '/includes/dummy_stream_wrapper.inc';
-    stream_wrapper_register('simpletest', 'DummyStreamWrapper');
-  }
 }
 
 /**
