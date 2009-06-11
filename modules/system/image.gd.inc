@@ -235,7 +235,7 @@ function image_gd_desaturate(stdClass $image) {
  */
 function image_gd_load(stdClass $image) {
   $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
-  $function = 'imagecreatefrom' . $extension;
+  $function = 'imagecreatefrom'. $extension;
   return (function_exists($function) && $image->resource = $function($image->source));
 }
 
@@ -246,8 +246,6 @@ function image_gd_load(stdClass $image) {
  *   An image object.
  * @param $destination
  *   A string file path where the image should be saved.
- * @param $extension
- *   A string containing one of the following extensions: gif, jpg, jpeg, png.
  * @return
  *   TRUE or FALSE, based on success.
  *
@@ -255,14 +253,14 @@ function image_gd_load(stdClass $image) {
  */
 function image_gd_save(stdClass $image, $destination) {
   $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
-  $function = 'image' . $extension;
+  $function  = 'image'. $extension;
+ 
   if (!function_exists($function)) {
     return FALSE;
   }
-  // These functions do not support stream wrappers.
-  $output_file = file_get_wrapper($destination) ? tempnam(drupal_realpath(file_directory_temp()), 'image') : $destination;
+  
   if ($extension == 'jpeg') {
-    $result = $function($image->resource, $output_file, variable_get('image_jpeg_quality', 75));
+    return $function($image->resource, $destination, variable_get('image_jpeg_quality', 75));
   }
   else {
     // Always save PNG images with full transparency.
@@ -270,13 +268,8 @@ function image_gd_save(stdClass $image, $destination) {
       imagealphablending($image->resource, FALSE);
       imagesavealpha($image->resource, TRUE);
     }
-    $result = $function($image->resource, $output_file);
+    return $function($image->resource, $destination);
   }
-
-  if ($result && $destination != $output_file) {
-    $result = file_unmanaged_move($output_file, $destination, FILE_EXISTS_REPLACE);
-  }
-  return $result;
 }
 
 /**
