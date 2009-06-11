@@ -6,6 +6,23 @@
  * API for handling file uploads and server file management.
  */
 
+// Stream wrapper interface and base class implementation
+require_once DRUPAL_ROOT . '/includes/stream_wrapper.inc';
+
+// Stream wrapper registry
+require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
+
+// Core stream wrapper implementations
+require_once DRUPAL_ROOT . '/includes/public_stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/private_stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/temp_stream_wrapper.inc';
+
+// Register core wrappers
+$manager = drupal_stream_wrapper_registry::singleton();
+$manager->register('public',  'drupal_public_stream_wrapper');
+$manager->register('private', 'drupal_private_stream_wrapper');
+$manager->register('temp',    'drupal_temp_stream_wrapper');
+
 /**
  * @defgroup file File interface
  * @{
@@ -1561,7 +1578,7 @@ function file_get_mimetype($filename, $mapping = NULL) {
 }
 
 /**
- * Set the permissions on a file or directory.
+ * Set the permissions on a URI (stream).
  *
  * This function will use the 'file_chmod_directory' and 'file_chmod_file'
  * variables for the default modes for directories and uploaded/generated files.
@@ -1570,31 +1587,104 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * these files, and give group write permissions so webserver group members
  * (e.g. a vhost account) can alter files uploaded and owned by the webserver.
  *
- * @param $path
+ * PHP's chmod does not support stream wrappers so we use our wrapper implementation
+ * which interfaces with chmod() by default. Contrib wrappers can override this
+ * bahavior in their implementations as needed.
+ *
+ * @param $uri
  *   String containing the path to a file or directory.
  * @param $mode
  *   Integer value for the permissions. Consult PHP chmod() documentation for
  *   more information.
  * @return
- *   TRUE for success, FALSE in the event of an error.
+ *   TRUE for success, FALSE in the event of an error. Errors are logged by watchdog.
  */
-function drupal_chmod($path, $mode = NULL) {
+function drupal_chmod($uri, $mode = NULL) {
+  
   if (!isset($mode)) {
-    if (is_dir($path)) {
+    if (is_dir($uri)) {
       $mode = variable_get('file_chmod_directory', 0775);
     }
     else {
       $mode = variable_get('file_chmod_file', 0664);
     }
   }
-
-  if (@chmod($path, $mode)) {
-    return TRUE;
+  
+  // If this URI is a stream, pass it off to the appropriate stream wrapper.
+  // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
+  // for unmanaged files outside of the stream wrapper interface.
+  if (stream_scheme($uri)) {
+    if (stream_wrapper($uri)->stream_chmod($uri, $mode)) {
+      return TRUE;
+    }
+  }
+  else {
+    if (@chmod($uri, $mode)) {
+      return TRUE;
+    }
   }
 
-  watchdog('file', 'The file permissions could not be set on %path.', array('%path' => $path), WATCHDOG_ERROR);
+  watchdog('file', 'The file permissions could not be set on %uri.', array('%uri' => $uri), WATCHDOG_ERROR);
   return FALSE;
 }
+
+/**
+ * Get the scheme of a URI (stream).
+ *
+ * A stream is referenced as scheme://target.
+ *
+ * @param $uri
+ *   A stream, referenced as scheme://target
+ * @return mixed
+ *   A string containing the name of the scheme, or FALSE if none.
+ *   For example, the URI public://example.txt would return public.
+ */
+function stream_scheme($uri) {
+  $data = explode('://', $uri, 2);
+  return $data ? $data[0] : FALSE;
+}
+
+/**
+ * Get reference to stream wrapper class responsible for given URI (stream).
+ *
+ * The scheme determines the stream wrapper class that should be 
+ * used by consulting the stream wrapper registry.
+ *
+ * @param $uri
+ *   A stream, referenced as scheme://target
+ * @return mixed
+ *   Returns a new stream wrapper object appropriate for the given URI.
+ *   For example, a URI of public://example.txt would return a new
+ *   private stream wrapper object (drupal_private_stream_wrapper).
+ *   FALSE is returned if no registered handler could be found.
+ */
+function stream_wrapper($uri) {
+  $registry = drupal_stream_wrapper_registry::singleton();
+  $class    = $registry->class_name(stream_scheme($uri));
+  
+  if (class_exists($class))
+    return new $class;
+  else
+    return FALSE;
+}
+
+/**
+ * Get the absolute path of a URI (stream).
+ *
+ * PHP's realpath() does not properly support streams. This function
+ * provides the missing functionality and makes retrieving the absolute
+ * path of a stream wrapped URI easier. For example, public://example.txt 
+ * could have an absolute path of /foo/sites/all/default/files/example.txt.
+ *
+ * @param string $uri
+ *   A string containing a path to a stream (file, directory, etc.)
+ * @return mixed
+ *   A string containing the absolute path to the resource, or FALSE 
+ *   if the resource does not exist.
+ */
+function drupal_realpath($uri) {  
+  return stream_wrapper($uri)->interpolate_uri($uri);
+}  
 
 /**
  * @} End of "defgroup file".
