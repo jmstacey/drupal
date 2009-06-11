@@ -1604,7 +1604,7 @@ function drupal_chmod($uri, $mode = NULL) {
     }
   }
 
-  if (@$wrapper::stream_chmod($uri, $mode)) {
+  if (@$wrapper->stream_chmod($uri, $mode)) {
     return TRUE;
   }
 
@@ -1647,7 +1647,7 @@ function stream_wrapper($uri) {
   $scheme   = stream_scheme($uri);
   $registry = drupal_stream_wrapper_registry::singleton();
   
-  return $registry::class_name($uri);
+  return $registry->class_name($uri);
 }
 
 /**
@@ -1665,7 +1665,7 @@ function stream_wrapper($uri) {
  *   if the resource does not exist.
  */
 function stream_realpath($uri) {
-  return stream_wrapper($uri)::interpolate_uri($uri);
+  return stream_wrapper($uri)->interpolate_uri($uri);
 }
 
 /**
