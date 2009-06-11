@@ -82,7 +82,7 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    * @return bool
    *   Returns TRUE on success or FALSE on failure.
    */
-  public function stream_chmod($uri, $mode);
+  function stream_chmod($uri, $mode);
   
 }
 
