@@ -24,15 +24,15 @@ interface stream_wrapper_interface {
   public function stream_flush();
   public function stream_tell();
   public function stream_stat();
-  public function unlink($uri) ;
+  public function unlink($uri);
   public function rename($from_uri, $to_uri);
   public function mkdir($uri, $mode, $options);
   public function rmdir($uri, $options);
   public function url_stat($uri, $flags);
   public function dir_opendir($uri, $options);
-  public function dir_readdir()  ;
+  public function dir_readdir();
   public function dir_rewinddir();
-  public function dir_closedir() ;
+  public function dir_closedir();
 }
 
 /**
@@ -42,6 +42,15 @@ interface stream_wrapper_interface {
  * Drupal stream wrapper classes.
  */
 interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
+  
+  /**
+   * Return an absolute stream resource URL.
+   *
+   * @param $uri
+   *   Stream wrapper resource url.
+   * @return string
+   */
+  function interpolate_uri($uri);
 
   /**
    * Return the html accessible URL for a resource.
@@ -60,15 +69,21 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    * @return string
    */
   function mime($uri);
-
+  
   /**
-   * Return an absolute stream resource URL.
+   * Change permissions of stream.
    *
-   * @param $uri
-   *   Stream wrapper resource url.
-   * @return string
+   * PHP lacks this functionality and it is not part of the official
+   * stream wrapper interface. This is a custom implementation for
+   * Drupal.
+   *
+   * @param string $uri
+   * @param mixed $mode
+   * @return bool
+   *   Returns TRUE on success or FALSE on failure.
    */
-  function interpolate_uri($uri);
+  public function stream_chmod($uri, $mode);
+  
 }
 
 /**
@@ -95,6 +110,10 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
 
   function mime($uri) {
     return 'application/octet-stream';
+  }
+  
+  function stream_chmod($uri, $mode) {
+    return @chmod($uri, $mode);
   }
 
   /**

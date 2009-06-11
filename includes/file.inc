@@ -1570,7 +1570,7 @@ function file_get_mimetype($filename, $mapping = NULL) {
 }
 
 /**
- * Set the permissions on a file or directory.
+ * Set the permissions on a URI (stream).
  *
  * This function will use the 'file_chmod_directory' and 'file_chmod_file'
  * variables for the default modes for directories and uploaded/generated files.
@@ -1578,6 +1578,10 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * files with a user account without the webserver group (e.g. via FTP) can read
  * these files, and give group write permissions so webserver group members
  * (e.g. a vhost account) can alter files uploaded and owned by the webserver.
+ *
+ * PHP's chmod does not support stream wrappers so we use our wrapper implementation
+ * which interfaces with chmod() by default. Contrib wrappers can override this
+ * bahavior in their implementations as needed.
  *
  * @param $path
  *   String containing the path to a file or directory.
@@ -1587,14 +1591,12 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * @return
  *   TRUE for success, FALSE in the event of an error.
  */
-function drupal_chmod($path, $mode = NULL) {
-  // chmod() is not supported by stream wrappers.
-  if (stream_scheme($path)) {
-    return FALSE;
-  }
+function drupal_chmod($uri, $mode = NULL) {
+  
+  $wrapper = stream_wrapper($uri);
   
   if (!isset($mode)) {
-    if (is_dir($path)) {
+    if (is_dir($uri)) {
       $mode = variable_get('file_chmod_directory', 0775);
     }
     else {
@@ -1602,22 +1604,20 @@ function drupal_chmod($path, $mode = NULL) {
     }
   }
 
-  if (@chmod($path, $mode)) {
+  if (@$wrapper::stream_chmod($uri, $mode)) {
     return TRUE;
   }
 
-  watchdog('file', 'The file permissions could not be set on %path.', array('%path' => $path), WATCHDOG_ERROR);
+  watchdog('file', 'The file permissions could not be set on %uri.', array('%uri' => $uri), WATCHDOG_ERROR);
   return FALSE;
 }
 
 /**
  * Get the scheme of a URI (stream).
  *
- * A stream is referenced as scheme://target. The scheme determines
- * the stream wrapper class that should be used by consulting the
- * stream wrapper registry. A stream wrapper prefix is at least two
- * characters in length so that it can be distinguished from a
- * Windows drive letter.
+ * A stream is referenced as scheme://target. A stream wrapper 
+ * prefix is at least two characters in length so that it can 
+ * be distinguished from a Windows drive letter.
  *
  * @param $path
  *   A stream, referenced as scheme://target
@@ -1631,6 +1631,26 @@ function stream_scheme($path) {
 }
 
 /**
+ * Get reference to stream wrapper class responsible for given URI (stream).
+ *
+ * The scheme determines the stream wrapper class that should be 
+ * used by consulting the stream wrapper registry.
+ *
+ * @param $uri
+ *   A stream, referenced as scheme://target
+ * @return reference
+ *   A reference to the wrapper class responsible for handling the given URI.
+ *   For example, the public_stream_wrapper class is responsible for a URI of
+ *   public://example.txt.
+ */
+function stream_wrapper($uri) {
+  $scheme   = stream_scheme($uri);
+  $registry = drupal_stream_wrapper_registry::singleton();
+  
+  return $registry::class_name($uri);
+}
+
+/**
  * Get the absolute path of a URI (stream).
  *
  * PHP's realpath() does not properly support streams. This function
@@ -1638,19 +1658,14 @@ function stream_scheme($path) {
  * path of a stream wrapped URI easier. For example, public://example.txt 
  * could have an absolute path of /foo/sites/all/default/files/example.txt.
  *
- * @param string $path
+ * @param string $uri
  *   A string containing a path to a stream (file, directory, etc.)
  * @return mixed
  *   A string containing the absolute path to the resource, or FALSE 
  *   if the resource does not exist.
  */
-function stream_realpath($path) {
-  $scheme  = stream_scheme($path);
-  $manager = drupal_stream_wrapper_registry::singleton();
-  $wrapper = $manager->class_name($scheme);
-  // TODO Handle errors? Wrapper might not exist, or the URI is malformed.
-  
-  return $wrapper->interpolate_uri($path);
+function stream_realpath($uri) {
+  return stream_wrapper($uri)::interpolate_uri($uri);
 }
 
 /**
