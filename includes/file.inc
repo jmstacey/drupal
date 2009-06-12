@@ -1668,22 +1668,75 @@ function stream_wrapper($uri) {
     return FALSE;
 }
 
+// /**
+//  * Get the absolute path of a URI (stream).
+//  *
+//  * PHP's realpath() does not properly support streams. This function
+//  * provides the missing functionality and makes retrieving the absolute
+//  * path of a stream wrapped URI easier. For example, public://example.txt 
+//  * could have an absolute path of /foo/sites/all/default/files/example.txt.
+//  *
+//  * @param string $uri
+//  *   A string containing a path to a stream (file, directory, etc.)
+//  * @return mixed
+//  *   A string containing the absolute path to the resource, or FALSE 
+//  *   if the resource does not exist.
+//  */
+// function drupal_realpath($uri) {
+//   return stream_wrapper($uri)->interpolate_uri($uri);
+// }
+
+
 /**
- * Get the absolute path of a URI (stream).
+ * Get canonicalized absolute path of a file or directory.
  *
- * PHP's realpath() does not properly support streams. This function
- * provides the missing functionality and makes retrieving the absolute
- * path of a stream wrapped URI easier. For example, public://example.txt 
- * could have an absolute path of /foo/sites/all/default/files/example.txt.
+ * Consecutive directory separator characters ("/" or "\") are stripped. If path
+ * is a directory, the trailing directory separator is stripped.
  *
- * @param string $uri
- *   A string containing a path to a stream (file, directory, etc.)
- * @return mixed
- *   A string containing the absolute path to the resource, or FALSE 
- *   if the resource does not exist.
+ * For regular files:
+ * - Symbolic links are expanded.
+ * - "/./" and "/../" segments are resolved.
+ * For paths with protocol/wrapper prefix (e.g. "mywrapper://foo/bar.txt"):
+ * - Paths containing "/../" are blocked (FALSE is returned).
+ * - Paths are assumed to be case-sensitive (no case normalization is done).
+ * - On Windows, "\" is normalized to "/".
+ *
+ * @code
+ *   // Returns "/foo/bar/boo", or FALSE if the file does not exist:
+ *   drupal_realpath('/foo//bar/./baz/..\\boo');
+ *
+ *   // Returns FALSE due to "/../":
+ *   drupal_realpath('scheme://foo/bar/../baz');
+ * @endcode
+ *
+ * @param $path
+ *   A string containing a path to a file or directory.
+ * @return
+ *   A string containing the absolute path to the file/directory, or FALSE if
+ *   the file/directory does not exist.
  */
-function drupal_realpath($uri) {  
-  return stream_wrapper($uri)->interpolate_uri($uri);
+function drupal_realpath($path) {
+  // Does $path include an explicit protocol/wrapper prefix "foo://" (not a
+  // Windows drive letter "C:/temp")?
+  if (preg_match('@^([a-z0-9.+-]{2,})://(.*)@i', $path, $matches)) {
+    $wrappedPath = $matches[2];
+    // Replace platform-specific directory separator with "/".
+    if (DIRECTORY_SEPARATOR != '/') {
+      $wrappedPath = strtr($wrappedPath, DIRECTORY_SEPARATOR, '/');
+    }
+    // Replace "//" with "/", except when "//" is preceded by a colon (this
+    // indicates a nested stream wrapper prefix, e.g. "foo://bar://".
+    $wrappedPath = preg_replace('@(?<!:)/+@', '/', $wrappedPath);
+    // Look for ".." separated by "/" or string boundary
+    if (preg_match('@(?<=^|/)\.\.(?=/|$)@', $wrappedPath)) {
+      return FALSE;
+    }
+    $path = $matches[1] . '://' . $wrappedPath;
+    return file_exists($path) ? rtrim($path, '/') : FALSE;
+  }
+  else {
+    return realpath($path);
+  }
 }
 
 /**
