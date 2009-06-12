@@ -1592,6 +1592,8 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * which interfaces with chmod() by default. Contrib wrappers can override this
  * bahavior in their implementations as needed.
  *
+ * @see http://php.net/manual/en/function.chmod.php
+ *
  * @param $uri
  *   String containing the path to a file or directory.
  * @param $mode
@@ -1627,6 +1629,58 @@ function drupal_chmod($uri, $mode = NULL) {
 
   watchdog('file', 'The file permissions could not be set on %uri.', array('%uri' => $uri), WATCHDOG_ERROR);
   return FALSE;
+}
+
+/**
+ * Get canonicalized absolute path of a file or directory
+ *
+ * PHP's realpath() does not properly support streams, so this function 
+ * fills that gap. If a stream wrapped URI is provided, it will be passed
+ * to the registered wrapper for handling. If the URI does not contain a
+ * scheme or the wrapper implementation does not implement realpath, then
+ * FALSE will be returned.
+ *
+ * @see http://php.net/manual/en/function.realpath.php
+ *
+ * @param string $uri
+ *   A string containing a path to a stream (file, directory, etc.)
+ * @return mixed
+ *   A string containing the absolute pathname, or FALSE on failure.
+ */
+function drupal_realpath($uri) {
+  
+  // If this URI is a stream, pass it off to the appropriate stream wrapper.
+  // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
+  // for unmanaged files outside of the stream wrapper interface.
+  if (stream_scheme($uri))
+    return stream_wrapper($uri)->stream_realpath($uri);
+  else
+    return realpath($uri);
+}
+
+/**
+ * Create file with unique file name.
+ *
+ * Stream wrapper friendly PHP tempnam() replacement. Creates a file with a unique
+ * filename, with access permission set to 0600, in the predeclared temp directory.
+ * Drupal will perform garbage collection on these files during cron runs based on
+ * DRUPAL_MAXIMUM_TEMP_FILE_AGE.
+ *
+ * Note the absense of param $dir, unlike PHP's tempnam. $dir is determined by the
+ * temp stream wrapper. It first tries the temp directory specified in 
+ * admin/settings/file-system and if that directory does not exist it will fall back
+ * to a system default tmp directory.
+ *
+ * @see http://php.net/manual/en/function.tempnam.php
+ *
+ * @param string $prefix
+ *   The prefix of the generated temporary filename. Note: Windows uses only
+ *   the first three characters of prefix.
+ * @return mixed
+ *   Returns the new temporary filename, or FALSE on failure.
+ */
+function drupal_tempnam($prefix) {
+  return tempnam(stream_wrapper('temp://')->interpolate_uri($prefix));
 }
 
 /**
@@ -1667,32 +1721,6 @@ function stream_wrapper($uri) {
     return new $class;
   else
     return FALSE;
-}
-
-/**
- * Get canonicalized absolute path of a file or directory
- *
- * PHP's realpath() does not properly support streams, so this function 
- * fills that gap. If a stream wrapped URI is provided, it will be passed
- * to the registered wrapper for handling. If the URI does not contain a
- * scheme or the wrapper implementation does not implement realpath, then
- * FALSE will be returned.
- *
- *
- * @param string $uri
- *   A string containing a path to a stream (file, directory, etc.)
- * @return mixed
- *   A string containing the absolute pathname, or FALSE on failure.
- */
-function drupal_realpath($uri) {
-  
-  // If this URI is a stream, pass it off to the appropriate stream wrapper.
-  // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
-  // for unmanaged files outside of the stream wrapper interface.
-  if (stream_scheme($uri))
-    return stream_wrapper($uri)->stream_realpath($uri);
-  else
-    return realpath($uri);
 }
 
 /**
