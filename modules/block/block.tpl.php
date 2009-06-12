@@ -1,5 +1,5 @@
 <?php
-// $Id: block.tpl.php,v 1.3 2009-06-12 09:02:55 dries Exp $
+// $Id: block.tpl.php,v 1.2 2009-05-28 16:44:06 webchick Exp $
 
 /**
  * @file
@@ -7,7 +7,7 @@
  *
  * Available variables:
  * - $block->subject: Block title.
- * - $content: Block content.
+ * - $block->content: Block content.
  * - $block->module: Module that generated the block.
  * - $block->delta: An ID for the block, unique within each module.
  * - $block->region: The block region embedding the current block.
@@ -41,6 +41,6 @@
 <?php endif;?>
 
   <div class="content">
-    <?php print $content ?>
+    <?php print $block->content ?>
   </div>
 </div>
