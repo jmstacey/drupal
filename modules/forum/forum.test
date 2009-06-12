@@ -1,5 +1,5 @@
 <?php
-// $Id: forum.test,v 1.19 2009-05-24 17:39:32 dries Exp $
+// $Id: forum.test,v 1.21 2009-06-12 13:59:56 dries Exp $
 
 class ForumTestCase extends DrupalWebTestCase {
   protected $big_user;
@@ -126,6 +126,7 @@ class ForumTestCase extends DrupalWebTestCase {
     $edit = array(
       'name' => $title,
       'description' => $description,
+      'machine_name' => drupal_strtolower($this->randomName()),
       'help' => '',
     );
 
@@ -233,7 +234,7 @@ class ForumTestCase extends DrupalWebTestCase {
 
     $edit = array(
       'title' => $title,
-      'body' => $body,
+      'body[0][value]' => $body,
       'taxonomy[1]' => $tid
     );
 
@@ -322,7 +323,7 @@ class ForumTestCase extends DrupalWebTestCase {
       // Edit forum node (including moving it to another forum).
       $edit = array();
       $edit['title'] = 'node/' . $node->nid;
-      $edit['body'] = $this->randomName(256);
+      $edit['body[0][value]'] = $this->randomName(256);
       $edit['taxonomy[1]'] = $this->root_forum['tid']; // Assumes the topic is initially associated with $forum.
       $edit['shadow'] = TRUE;
       $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
