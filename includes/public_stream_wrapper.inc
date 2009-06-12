@@ -29,14 +29,14 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
     $basepath = variable_get($this->path_key, $this->path_default);
 
     // just in case stream_public_path is s3://, ftp://, etc. Don't call PHP's
-    // realpath().
+    // drupal_realpath().
     if (parse_url($basepath, PHP_URL_SCHEME)) {
       $path = $basepath . parse_url($uri, PHP_URL_PATH);;
     }
     else {
       // interpolate relative paths for basepath, and strip relative paths from
       // url path.
-      $path = realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
+      $path = drupal_realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
     }
     
     return $path;
@@ -62,5 +62,14 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
   function mime($uri) {
     return file_get_mimetype(basename($uri));
   }
+  
+  /**
+   * Override stream_realpath().
+   *
+   * Interpolates the given URI and then passes it to PHP's realpath.
+   */
+   function stream_realpath($uri) {
+     return realpath($this->interpolate_uri($uri));
+   }
   
 }
