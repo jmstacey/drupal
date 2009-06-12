@@ -31,7 +31,7 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
     // just in case stream_public_path is s3://, ftp://, etc. Don't call PHP's
     // drupal_realpath().
     if (parse_url($basepath, PHP_URL_SCHEME)) {
-      $path = $basepath . parse_url($uri, PHP_URL_PATH);;
+      $path = $basepath . parse_url($uri, PHP_URL_PATH);
     }
     else {
       // interpolate relative paths for basepath, and strip relative paths from

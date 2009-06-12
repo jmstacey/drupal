@@ -91,13 +91,12 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    * stream wrappers. We provide this as a default so that
    * individual wrappers may implement their own solutions.
    * The base class will always return FALSE.
-   * as a default to allow individual wrappers to implement an
-   * alternative.
    *
    * @param string $uri
    * @return mixed
-   *  
-   *   Returns TRUE on success or FALSE on failure.
+   *   A string with absolute pathname on success (implemented
+   *   by core wrappers), or FALSE on failure or the registered
+   *   wrapper does not provide an implementation.
    */
   function stream_realpath($uri);
   
