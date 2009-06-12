@@ -1680,7 +1680,11 @@ function drupal_realpath($uri) {
  *   Returns the new temporary filename, or FALSE on failure.
  */
 function drupal_tempnam($prefix) {
-  return tempnam(stream_wrapper('temp://')->interpolate_uri($prefix));
+  
+  /*
+    TODO This implementation will change once we get the rest of the API sorted.
+  */
+  return tempnam(stream_wrapper('temp://')->interpolate_uri(''), $prefix);
 }
 
 /**
