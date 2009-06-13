@@ -5,10 +5,10 @@
  * @file
  * Public (public://) stream wrapper class.
  *
- * Provides support for storing publicly accessible 
+ * Provides support for storing publicly accessible
  * files with the Drupal file interface.
  */
- 
+
 /**
  * Drupal public stream wrapper class.
  *
@@ -38,7 +38,7 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
       // url path.
       $path = drupal_realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
     }
-    
+
     return $path;
   }
 
@@ -50,7 +50,7 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
   function html_uri($uri) {
     $basepath = variable_get($this->path_key, $this->path_default);
     $path     = parse_url($uri, PHP_URL_PATH);
-    
+
     return $GLOBALS['base_url'] . '/' . $basepath . '/' . str_replace('\\', '/', $path);
   }
 
@@ -62,7 +62,7 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
   function mime($uri) {
     return file_get_mimetype(basename($uri));
   }
-  
+
   /**
    * Override stream_realpath().
    *
@@ -71,5 +71,5 @@ class drupal_public_stream_wrapper extends drupal_stream_wrapper {
    function stream_realpath($uri) {
      return realpath($this->interpolate_uri($uri));
    }
-  
+
 }

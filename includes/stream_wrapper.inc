@@ -7,7 +7,7 @@
  *
  * Provides a Drupal interface and base class to PHP stream wrappers.
  */
- 
+
 /**
  * Generic PHP stream wrapper interface.
  *
@@ -38,11 +38,11 @@ interface stream_wrapper_interface {
 /**
  * Drupal stream wrapper extension.
  *
- * Extend the stream_wrapper_interface with methods expected by 
+ * Extend the stream_wrapper_interface with methods expected by
  * Drupal stream wrapper classes.
  */
 interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
-  
+
   /**
    * Return an absolute stream resource URL.
    *
@@ -69,7 +69,7 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    * @return string
    */
   function mime($uri);
-  
+
   /**
    * Change permissions of stream.
    *
@@ -83,11 +83,11 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    *   Returns TRUE on success or FALSE on failure.
    */
   function stream_chmod($uri, $mode);
-  
+
   /**
    * Returns canonicalized absolute pathname.
    *
-   * Implementation placeholder. PHP's realpath does not support 
+   * Implementation placeholder. PHP's realpath does not support
    * stream wrappers. We provide this as a default so that
    * individual wrappers may implement their own solutions.
    * The base class will always return FALSE.
@@ -99,7 +99,7 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    *   wrapper does not provide an implementation.
    */
   function stream_realpath($uri);
-  
+
 }
 
 /**
@@ -113,7 +113,7 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
  * method to rewrite the URI before is it passed back to the calling function.
  */
 abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface {
-  
+
   private $handle = NULL;
 
   function interpolate_uri($uri) {
@@ -127,11 +127,11 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
   function mime($uri) {
     return 'application/octet-stream';
   }
-  
+
   function stream_chmod($uri, $mode) {
     return @chmod($uri, $mode);
   }
-  
+
   function stream_realpath($uri) {
     return FALSE;
   }
@@ -154,16 +154,16 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
    */
   public function stream_open($uri, $mode, $options, &$opened_url) {
     resource_debug("stream open: $uri");
-    
+
     $uri          = $this->interpolate_uri($uri);
     $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($uri, $mode) : @fopen($uri, $mode);
-    
+
     if ((bool)$this->handle && $options & STREAM_USE_PATH) {
       $opened_url = $uri;
     }
-    
+
     resource_debug("stream opened: $this->handle");
-    
+
     return (bool)$this->handle;
   }
 
@@ -180,7 +180,7 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
     if (in_array($operation, array(LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB))) {
       return flock($this->handle, $operation);
     }
-    
+
     return TRUE;
   }
 
@@ -196,7 +196,7 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
    */
   public function stream_read($count) {
     resource_debug("stream_read: $this->handle");
-    
+
     return fread($this->handle, $count);
   }
 
@@ -212,7 +212,7 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
    */
   public function stream_write($data) {
     resource_debug("stream_write: $this->handle");
-    
+
     return fwrite($this->handle, $data);
   }
 
@@ -291,7 +291,7 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
    */
   public function stream_close() {
     resource_debug("streamclose: $this->handle");
-    
+
     return fclose($this->handle);
   }
 
@@ -401,7 +401,7 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
    */
   public function dir_opendir($uri, $options) {
     $this->handle = opendir($this->interpolate_uri($uri));
-    
+
     return (bool)$this->handle;
   }
 

@@ -5,17 +5,17 @@
  * @file
  * Private (private://) stream wrapper class.
  *
- * Provides support for storing privately accessible 
+ * Provides support for storing privately accessible
  * files with the Drupal file interface.
  */
- 
+
 /**
  * Drupal private stream wrapper class.
  *
  * Extends drupal_public_stream_wrapper.
  */
 class drupal_private_stream_wrapper extends drupal_public_stream_wrapper {
-  
+
   private $path_key     = 'stream_private_path';
   private $path_default = 'sites/default/files-private';
 
@@ -26,7 +26,7 @@ class drupal_private_stream_wrapper extends drupal_public_stream_wrapper {
    */
   function html_uri($uri) {
     $basepath = variable_get($this->path_key, $this->path_default);
-    
+
     return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
 }

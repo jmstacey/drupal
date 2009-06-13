@@ -12,12 +12,12 @@
  *
  * A stream is referenced as: scheme://target
  */
- 
+
 /**
  * Drupal stream wrapper manager class
- */ 
+ */
 class drupal_stream_wrapper_registry {
-  
+
   private $wrappers = array(); // stream wrapper registry
 
   // private constructor to enforce singleton.
@@ -42,16 +42,16 @@ class drupal_stream_wrapper_registry {
    *
    * @see: http://php.net/manual/en/function.stream-wrapper-register.php
    *
-   * @param string $scheme 
+   * @param string $scheme
    *   URI scheme.
    * @param string $class
    *   Class name for the stream wrapper.
-   * @return bool 
+   * @return bool
    *   result of stream_wrapper_register()
    */
   function register($scheme, $class_name) {
     $this->wrappers[$scheme] = $class_name;
-    
+
     return stream_wrapper_register($scheme, $class_name);
   }
 
@@ -60,9 +60,9 @@ class drupal_stream_wrapper_registry {
    *
    * @see: http://php.net/manual/en/function.stream-wrapper-unregister.php
    *
-   * @param string $scheme 
+   * @param string $scheme
    *   URI scheme.
-   * @return bool 
+   * @return bool
    *   result of stream_wrapper_unregister()
    */
   function unregister($scheme) {
@@ -70,14 +70,14 @@ class drupal_stream_wrapper_registry {
       unset(self::$this->wrappers[$scheme]);
       return TRUE;
     }
-    
+
     return FALSE;
   }
 
   /**
    * Return the stream wrapper class name for a given scheme.
    *
-   * @param string $scheme 
+   * @param string $scheme
    *   Stream scheme.
    * @return mixed
    *   Return string if a scheme has a registered handler, or FALSE.
@@ -86,16 +86,16 @@ class drupal_stream_wrapper_registry {
     if (empty(self::$this->wrappers[$scheme])) {
       return FALSE;
     }
-    
+
     return self::$this->wrappers[$scheme];
   }
 
   /**
    * Return the stream class name for a given scheme.
    *
-   * @param string $scheme 
+   * @param string $scheme
    *   Stream scheme.
-   * @return mixed 
+   * @return mixed
    *   Return string if a scheme has a registered handler, or FALSE.
    */
   function scheme($class) {
