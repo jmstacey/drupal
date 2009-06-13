@@ -106,21 +106,34 @@ interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
 
 
 /**
- * Drupal stream wrapper base class.
+ * Drupal stream wrapper base class for local files.
  *
  * This class provides a complete stream wrapper implementation. It passes
  * incoming URI's through an interpolation method and then recursively calls
  * the invoking PHP filesystem function.
  *
- * DrupalStreamWrapperBase implementations need to override at least the interpolate_uri
- * method to rewrite the URI before is it passed back to the calling function.
+ * DrupalLocalStreamWrapper implementations need to override at least the
+ * interpolate_uri() method to rewrite the URI before is it passed back to the
+ * calling function.
  */
-abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
+abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface {
 
   private $handle = NULL;
 
+  /**
+   * Where are the files located?
+   *
+   * @return
+   *   String specifying the path
+   */
+  abstract static protected function directoryPath();
+
+  /**
+   * Interpolate the URI path, adding the base path from $this->directoryPath().
+   */
   function interpolate_uri($uri) {
-    return $uri;
+    $basepath = realpath($this->directoryPath());
+    return drupal_realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
   }
 
   function html_uri($uri) {
@@ -128,7 +141,7 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
   }
 
   function mime($uri) {
-    return 'application/octet-stream';
+    return file_get_mimetype(basename($uri));
   }
 
   function stream_chmod($uri, $mode) {
@@ -136,8 +149,9 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
   }
 
   function stream_realpath($uri) {
-    return FALSE;
+    return realpath($this->interpolate_uri($uri));
   }
+
 
   /**
    * Support for fopen(), file_get_contents(), file_put_contents() etc.
@@ -156,16 +170,12 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
    *   TRUE if file was opened successfully.
    */
   public function stream_open($uri, $mode, $options, &$opened_url) {
-    resource_debug("stream open: $uri");
-
-    $uri          = $this->interpolate_uri($uri);
+    $uri = $this->interpolate_uri($uri);
     $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($uri, $mode) : @fopen($uri, $mode);
 
     if ((bool)$this->handle && $options & STREAM_USE_PATH) {
       $opened_url = $uri;
     }
-
-    resource_debug("stream opened: $this->handle");
 
     return (bool)$this->handle;
   }
@@ -198,8 +208,6 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
    *   The string that was read, or FALSE in case of an error.
    */
   public function stream_read($count) {
-    resource_debug("stream_read: $this->handle");
-
     return fread($this->handle, $count);
   }
 
@@ -214,8 +222,6 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
    *   The number of bytes written.
    */
   public function stream_write($data) {
-    resource_debug("stream_write: $this->handle");
-
     return fwrite($this->handle, $data);
   }
 
@@ -293,8 +299,6 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
    *   TRUE if stream was successfully closed.
    */
   public function stream_close() {
-    resource_debug("streamclose: $this->handle");
-
     return fclose($this->handle);
   }
 
@@ -387,7 +391,12 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
    *   for a description of this array.
    */
   public function url_stat($uri, $flags) {
-    return ($flags & STREAM_URL_STAT_QUIET) ? @stat($this->interpolate_uri($uri)) : stat($this->interpolate_uri($uri));
+    if ($flags & STREAM_URL_STAT_QUIET) {
+      return @stat($this->interpolate_uri($uri));
+    }
+    else {
+      return stat($this->interpolate_uri($uri));
+    }
   }
 
   /**
@@ -451,35 +460,11 @@ abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
  *
  * Provides support for storing publicly accessible
  * files with the Drupal file interface.
- *
- * Extends DrupalStreamWrapperBase.
  */
-class DrupalPublicStreamWrapper extends DrupalStreamWrapperBase {
+class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
 
-  // A handle to the file opened by stream_open().
-  private $path_key     = 'stream_public_path';
-  private $path_default = 'sites/default/files';
-
-  /**
-   * Override interpolate_uri().
-   *
-   * Interpolate the URI path, adding the public files path.
-   */
-  function interpolate_uri($uri) {
-    $basepath = variable_get($this->path_key, $this->path_default);
-
-    // just in case stream_public_path is s3://, ftp://, etc. Don't call PHP's
-    // drupal_realpath().
-    if (parse_url($basepath, PHP_URL_SCHEME)) {
-      $path = $basepath . parse_url($uri, PHP_URL_PATH);
-    }
-    else {
-      // interpolate relative paths for basepath, and strip relative paths from
-      // url path.
-      $path = drupal_realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
-    }
-
-    return $path;
+  static protected function directoryPath() {
+    return variable_get('stream_public_path', 'sites/default/files');
   }
 
   /**
@@ -488,29 +473,11 @@ class DrupalPublicStreamWrapper extends DrupalStreamWrapperBase {
    * Return the HTML URI of a public file.
    */
   function html_uri($uri) {
-    $basepath = variable_get($this->path_key, $this->path_default);
+    $basepath = $this->directoryPath();
     $path     = parse_url($uri, PHP_URL_PATH);
 
     return $GLOBALS['base_url'] . '/' . $basepath . '/' . str_replace('\\', '/', $path);
   }
-
-  /**
-   * Override mime().
-   *
-   * Return the mime type of a file.
-   */
-  function mime($uri) {
-    return file_get_mimetype(basename($uri));
-  }
-
-  /**
-   * Override stream_realpath().
-   *
-   * Interpolates the given URI and then passes it to PHP's realpath.
-   */
-   function stream_realpath($uri) {
-     return realpath($this->interpolate_uri($uri));
-   }
 }
 
 
@@ -522,10 +489,11 @@ class DrupalPublicStreamWrapper extends DrupalStreamWrapperBase {
  *
  * Extends DrupalPublicStreamWrapper.
  */
-class DrupalPrivateStreamWrapper extends DrupalPublicStreamWrapper {
+class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
 
-  private $path_key     = 'stream_private_path';
-  private $path_default = 'sites/default/files-private';
+  static protected function directoryPath() {
+    return variable_get('stream_private_path', 'sites/default/files-private');
+  }
 
   /**
    * Override html_uri.
@@ -533,8 +501,6 @@ class DrupalPrivateStreamWrapper extends DrupalPublicStreamWrapper {
    * Return the HTML URI of a private file.
    */
   function html_uri($uri) {
-    $basepath = variable_get($this->path_key, $this->path_default);
-
     return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
 }
@@ -548,10 +514,11 @@ class DrupalPrivateStreamWrapper extends DrupalPublicStreamWrapper {
  *
  * Extends DrupalPublicStreamWrapper.
  */
-class DrupalTempStreamWrapper extends DrupalPublicStreamWrapper {
+class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
 
-  private $path_key     = 'file_directory_temp';
-  private $path_default = 'sites/default/files/tmp';
+  static protected function directoryPath() {
+    return variable_get('file_directory_temp', 'sites/default/files/tmp');
+  }
 
   /**
    * Override html_uri.
@@ -559,8 +526,6 @@ class DrupalTempStreamWrapper extends DrupalPublicStreamWrapper {
    * Return the HTML URI of a private file.
    */
   function html_uri($uri) {
-    $basepath = variable_get($this->path_key, $this->path_default);
-
     return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
 }

@@ -45,7 +45,11 @@ function file_test_file_scan_callback($filepath, $reset = FALSE) {
  *
  * Dummy stream wrapper implementation (dummy://).
  */
-class drupal_dummy_stream_wrapper extends DrupalStreamWrapperBase {
+class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
+  // TODO figure out what this should really return.
+  static protected function directoryPath() {
+    return variable_get('stream_public_path', 'sites/default/files');
+  }
 
   /**
    * Override interpolate_uri().
@@ -2078,7 +2082,7 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
   function testStreamWrapperRegistry() {
     $scheme    = 'dummy';
     $filename  = 'example.txt';
-    $class     = 'drupal_dummy_stream_wrapper';
+    $class     = 'DrupalDummyStreamWrapper';
     $uri = $scheme .'://'. $filename;
 
     DrupalStreamWrapperRegistry::register($scheme, $class);
