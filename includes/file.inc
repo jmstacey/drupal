@@ -7,21 +7,16 @@
  */
 
 // Stream wrapper interface and base class implementation
-require_once DRUPAL_ROOT . '/includes/stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
 
 // Stream wrapper registry
 require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
 
-// Core stream wrapper implementations
-require_once DRUPAL_ROOT . '/includes/public_stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/private_stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/temp_stream_wrapper.inc';
-
 // Register core wrappers
-$manager = drupal_stream_wrapper_registry::singleton();
-$manager->register('public',  'drupal_public_stream_wrapper');
-$manager->register('private', 'drupal_private_stream_wrapper');
-$manager->register('temp',    'drupal_temp_stream_wrapper');
+$manager = DrupalStreamWrapperRegistry::singleton();
+$manager->register('public',  'DrupalPublicStreamWrapper');
+$manager->register('private', 'DrupalPrivateStreamWrapper');
+$manager->register('temp',    'DrupalTempStreamWrapper');
 
 /**
  * @defgroup file File interface
@@ -1603,7 +1598,7 @@ function file_get_mimetype($filename, $mapping = NULL) {
  *   TRUE for success, FALSE in the event of an error. Errors are logged by watchdog.
  */
 function drupal_chmod($uri, $mode = NULL) {
-  
+
   if (!isset($mode)) {
     if (is_dir($uri)) {
       $mode = variable_get('file_chmod_directory', 0775);
@@ -1612,7 +1607,7 @@ function drupal_chmod($uri, $mode = NULL) {
       $mode = variable_get('file_chmod_file', 0664);
     }
   }
-  
+
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
@@ -1634,7 +1629,7 @@ function drupal_chmod($uri, $mode = NULL) {
 /**
  * Get canonicalized absolute path of a file or directory
  *
- * PHP's realpath() does not properly support streams, so this function 
+ * PHP's realpath() does not properly support streams, so this function
  * fills that gap. If a stream wrapped URI is provided, it will be passed
  * to the registered wrapper for handling. If the URI does not contain a
  * scheme or the wrapper implementation does not implement realpath, then
@@ -1648,7 +1643,7 @@ function drupal_chmod($uri, $mode = NULL) {
  *   A string containing the absolute pathname, or FALSE on failure.
  */
 function drupal_realpath($uri) {
-  
+
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
@@ -1667,7 +1662,7 @@ function drupal_realpath($uri) {
  * DRUPAL_MAXIMUM_TEMP_FILE_AGE.
  *
  * Note the absense of param $dir, unlike PHP's tempnam. $dir is determined by the
- * temp stream wrapper. It first tries the temp directory specified in 
+ * temp stream wrapper. It first tries the temp directory specified in
  * admin/settings/file-system and if that directory does not exist it will fall back
  * to a system default tmp directory.
  *
@@ -1680,7 +1675,7 @@ function drupal_realpath($uri) {
  *   Returns the new temporary filename, or FALSE on failure.
  */
 function drupal_tempnam($prefix) {
-  
+
   /*
     TODO This implementation will change once we get the rest of the API sorted.
   */
@@ -1706,7 +1701,7 @@ function stream_scheme($uri) {
 /**
  * Get reference to stream wrapper class responsible for given URI (stream).
  *
- * The scheme determines the stream wrapper class that should be 
+ * The scheme determines the stream wrapper class that should be
  * used by consulting the stream wrapper registry.
  *
  * @param $uri
@@ -1714,13 +1709,13 @@ function stream_scheme($uri) {
  * @return mixed
  *   Returns a new stream wrapper object appropriate for the given URI.
  *   For example, a URI of public://example.txt would return a new
- *   private stream wrapper object (drupal_private_stream_wrapper).
+ *   private stream wrapper object (DrupalPrivateStreamWrapper).
  *   FALSE is returned if no registered handler could be found.
  */
 function stream_wrapper($uri) {
-  $registry = drupal_stream_wrapper_registry::singleton();
+  $registry = DrupalStreamWrapperRegistry::singleton();
   $class    = $registry->class_name(stream_scheme($uri));
-  
+
   if (class_exists($class))
     return new $class;
   else

@@ -16,7 +16,7 @@
 /**
  * Drupal stream wrapper manager class
  */
-class drupal_stream_wrapper_registry {
+class DrupalStreamWrapperRegistry {
 
   private $wrappers = array(); // stream wrapper registry
 
@@ -34,7 +34,7 @@ class drupal_stream_wrapper_registry {
   public static function singleton() {
     static $instance = NULL;
     if (is_null($instance)) {
-      $instance = new drupal_stream_wrapper_registry();
+      $instance = new DrupalStreamWrapperRegistry();
     }
     return $instance;
   }

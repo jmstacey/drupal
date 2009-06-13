@@ -5,13 +5,15 @@
  * @file
  * Drupal stream wrapper interface.
  *
- * Provides a Drupal interface and base class to PHP stream wrappers.
+ * Provides a Drupal interface and classes to implement PHP stream wrappers for
+ * public, private and temporary files.
  */
+
 
 /**
  * Generic PHP stream wrapper interface.
  *
- * @see: http://php.net/manual/en/function.stream-wrapper-register.php
+ * @see: http://www.php.net/manual/en/class.streamwrapper.php
  */
 interface stream_wrapper_interface {
   public function stream_open($uri, $mode, $options, &$opened_url);
@@ -35,13 +37,14 @@ interface stream_wrapper_interface {
   public function dir_closedir();
 }
 
+
 /**
  * Drupal stream wrapper extension.
  *
  * Extend the stream_wrapper_interface with methods expected by
  * Drupal stream wrapper classes.
  */
-interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
+interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
 
   /**
    * Return an absolute stream resource URL.
@@ -99,8 +102,8 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
    *   wrapper does not provide an implementation.
    */
   function stream_realpath($uri);
-
 }
+
 
 /**
  * Drupal stream wrapper base class.
@@ -109,10 +112,10 @@ interface drupal_stream_wrapper_interface extends stream_wrapper_interface {
  * incoming URI's through an interpolation method and then recursively calls
  * the invoking PHP filesystem function.
  *
- * drupal_stream_wrapper implementations need to override at least the interpolate_uri
+ * DrupalStreamWrapperBase implementations need to override at least the interpolate_uri
  * method to rewrite the URI before is it passed back to the calling function.
  */
-abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface {
+abstract class DrupalStreamWrapperBase implements DrupalStreamWrapperInterface {
 
   private $handle = NULL;
 
@@ -439,5 +442,125 @@ abstract class drupal_stream_wrapper implements drupal_stream_wrapper_interface 
    */
   public function dir_closedir() {
     return closedir($this->handle);
+  }
+}
+
+
+/**
+ * Drupal public (public://) stream wrapper class.
+ *
+ * Provides support for storing publicly accessible
+ * files with the Drupal file interface.
+ *
+ * Extends DrupalStreamWrapperBase.
+ */
+class DrupalPublicStreamWrapper extends DrupalStreamWrapperBase {
+
+  // A handle to the file opened by stream_open().
+  private $path_key     = 'stream_public_path';
+  private $path_default = 'sites/default/files';
+
+  /**
+   * Override interpolate_uri().
+   *
+   * Interpolate the URI path, adding the public files path.
+   */
+  function interpolate_uri($uri) {
+    $basepath = variable_get($this->path_key, $this->path_default);
+
+    // just in case stream_public_path is s3://, ftp://, etc. Don't call PHP's
+    // drupal_realpath().
+    if (parse_url($basepath, PHP_URL_SCHEME)) {
+      $path = $basepath . parse_url($uri, PHP_URL_PATH);
+    }
+    else {
+      // interpolate relative paths for basepath, and strip relative paths from
+      // url path.
+      $path = drupal_realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
+    }
+
+    return $path;
+  }
+
+  /**
+   * Override html_uri().
+   *
+   * Return the HTML URI of a public file.
+   */
+  function html_uri($uri) {
+    $basepath = variable_get($this->path_key, $this->path_default);
+    $path     = parse_url($uri, PHP_URL_PATH);
+
+    return $GLOBALS['base_url'] . '/' . $basepath . '/' . str_replace('\\', '/', $path);
+  }
+
+  /**
+   * Override mime().
+   *
+   * Return the mime type of a file.
+   */
+  function mime($uri) {
+    return file_get_mimetype(basename($uri));
+  }
+
+  /**
+   * Override stream_realpath().
+   *
+   * Interpolates the given URI and then passes it to PHP's realpath.
+   */
+   function stream_realpath($uri) {
+     return realpath($this->interpolate_uri($uri));
+   }
+}
+
+
+/**
+ * Drupal private (private://) stream wrapper class.
+ *
+ * Provides support for storing privately accessible
+ * files with the Drupal file interface.
+ *
+ * Extends DrupalPublicStreamWrapper.
+ */
+class DrupalPrivateStreamWrapper extends DrupalPublicStreamWrapper {
+
+  private $path_key     = 'stream_private_path';
+  private $path_default = 'sites/default/files-private';
+
+  /**
+   * Override html_uri.
+   *
+   * Return the HTML URI of a private file.
+   */
+  function html_uri($uri) {
+    $basepath = variable_get($this->path_key, $this->path_default);
+
+    return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
+  }
+}
+
+
+/**
+ * Drupal temp (temp://) stream wrapper class.
+ *
+ * Provides support for storing temporarily accessible
+ * files with the Drupal file interface.
+ *
+ * Extends DrupalPublicStreamWrapper.
+ */
+class DrupalTempStreamWrapper extends DrupalPublicStreamWrapper {
+
+  private $path_key     = 'file_directory_temp';
+  private $path_default = 'sites/default/files/tmp';
+
+  /**
+   * Override html_uri.
+   *
+   * Return the HTML URI of a private file.
+   */
+  function html_uri($uri) {
+    $basepath = variable_get($this->path_key, $this->path_default);
+
+    return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
 }
