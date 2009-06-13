@@ -18,26 +18,13 @@
  */
 class DrupalStreamWrapperRegistry {
 
-  private $wrappers = array(); // stream wrapper registry
+  // stream wrapper registry
+  private static $wrappers = array();
 
   /**
    * Private constructor to enforce singleton.
    */
   private function __construct() { }
-
-  /**
-   * Load the singleton instance of the stream_wrapper_manager.
-   *
-   * @return object
-   *   A stream_wrapper_manager instance.
-   */
-  public static function singleton() {
-    static $instance = NULL;
-    if (is_null($instance)) {
-      $instance = new DrupalStreamWrapperRegistry();
-    }
-    return $instance;
-  }
 
   /**
    * Register a stream wrapper scheme.
@@ -51,8 +38,8 @@ class DrupalStreamWrapperRegistry {
    * @return bool
    *   result of stream_wrapper_register()
    */
-  function register($scheme, $class_name) {
-    $this->wrappers[$scheme] = $class_name;
+  public static function register($scheme, $class_name) {
+    self::$wrappers[$scheme] = $class_name;
 
     return stream_wrapper_register($scheme, $class_name);
   }
@@ -67,9 +54,9 @@ class DrupalStreamWrapperRegistry {
    * @return bool
    *   result of stream_wrapper_unregister()
    */
-  function unregister($scheme) {
+  public static function unregister($scheme) {
     if (stream_wrapper_unregister($scheme)) {
-      unset(self::$this->wrappers[$scheme]);
+      unset(self::$wrappers[$scheme]);
       return TRUE;
     }
 
@@ -84,12 +71,12 @@ class DrupalStreamWrapperRegistry {
    * @return mixed
    *   Return string if a scheme has a registered handler, or FALSE.
    */
-  function class_name($scheme) {
-    if (empty(self::$this->wrappers[$scheme])) {
+  public static function getClassName($scheme) {
+    if (empty(self::$wrappers[$scheme])) {
       return FALSE;
     }
 
-    return self::$this->wrappers[$scheme];
+    return self::$wrappers[$scheme];
   }
 
   /**
@@ -101,7 +88,7 @@ class DrupalStreamWrapperRegistry {
    *   Return string if a scheme has a registered handler, or FALSE.
    */
   function scheme($class) {
-    return array_search(self::$this->wrappers, $class);
+    return array_search(self::$wrappers, $class);
   }
 
   /**
@@ -110,6 +97,48 @@ class DrupalStreamWrapperRegistry {
    * @return array
    */
   function wrappers() {
-    return self::$this->wrappers;
+    return self::$wrappers;
   }
+
+  /**
+   * Get the scheme of a URI (stream).
+   *
+   * A stream is referenced as scheme://target.
+   *
+   * @param $uri
+   *   A stream, referenced as scheme://target
+   * @return mixed
+   *   A string containing the name of the scheme, or FALSE if none.
+   *   For example, the URI public://example.txt would return public.
+   */
+  public static function getStreamScheme($uri) {
+    $data = explode('://', $uri, 2);
+    return count($data) == 2 ? $data[0] : FALSE;
+  }
+
+  /**
+   * Get reference to stream wrapper class responsible for given URI (stream).
+   *
+   * The scheme determines the stream wrapper class that should be
+   * used by consulting the stream wrapper registry.
+   *
+   * @param $uri
+   *   A stream, referenced as scheme://target
+   * @return mixed
+   *   Returns a new stream wrapper object appropriate for the given URI.
+   *   For example, a URI of public://example.txt would return a new
+   *   private stream wrapper object (DrupalPrivateStreamWrapper).
+   *   FALSE is returned if no registered handler could be found.
+   */
+  public static function getInstance($uri) {
+
+    $class = self::getClassName(self::getStreamScheme($uri));
+    if (class_exists($class)) {
+      return new $class;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
 }

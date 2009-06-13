@@ -2081,18 +2081,16 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
     $class     = 'drupal_dummy_stream_wrapper';
     $uri = $scheme .'://'. $filename;
 
-    // Register a dummy wrapper
-    $registry = DrupalStreamWrapperRegistry::singleton();
-    $registry->register($scheme, $class);
-    $this->assertTrue(stream_wrapper($uri), 'Dummy stream wrapper registered');
+    DrupalStreamWrapperRegistry::register($scheme, $class);
+    $this->assertTrue(DrupalStreamWrapperRegistry::getInstance($uri), 'Dummy stream wrapper registered');
 
     // $this->assertEqual($this->scheme, stream_scheme($this->uri),  'stream_scheme() with valid stream wrapped URI.');
     // $this->assertFalse(stream_scheme('/foo/bar'),                 'stream_scheme() with faulty URI.');
     //$this->assertEqual('/dummy/example.txt', stream_wrapper($dummy_uri)->interpolate_uri($dummy_uri), 'Stream wrapper URI interpolation.');
 
     // Unregister dummy wrapper
-    $registry->unregister($scheme);
-    $this->assertFalse(stream_wrapper($uri), 'Dummy stream wrapper unregistered.');
+    DrupalStreamWrapperRegistry::unregister($scheme);
+    $this->assertFalse(DrupalStreamWrapperRegistry::getInstance($uri), 'Dummy stream wrapper unregistered.');
   }
 
   /**
@@ -2101,8 +2099,8 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
    function testCoreStreamWrapperAvailability() {
 
      $filename = 'example.txt';
-     $this->assertTrue(stream_wrapper('public://'. $filename),  'Public stream wrapper registered and available.');
-     $this->assertTrue(stream_wrapper('private://'. $filename), 'Private stream wrapper registered and available.');
-     $this->assertTrue(stream_wrapper('temp://'. $filename),    'Temp stream wrapper registered and available.');
+     $this->assertTrue(DrupalStreamWrapperRegistry::getInstance('public://'. $filename),  'Public stream wrapper registered and available.');
+     $this->assertTrue(DrupalStreamWrapperRegistry::getInstance('private://'. $filename), 'Private stream wrapper registered and available.');
+     $this->assertTrue(DrupalStreamWrapperRegistry::getInstance('temp://'. $filename),    'Temp stream wrapper registered and available.');
    }
 }

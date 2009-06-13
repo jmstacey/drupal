@@ -13,10 +13,9 @@ require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
 require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
 
 // Register core wrappers
-$manager = DrupalStreamWrapperRegistry::singleton();
-$manager->register('public',  'DrupalPublicStreamWrapper');
-$manager->register('private', 'DrupalPrivateStreamWrapper');
-$manager->register('temp',    'DrupalTempStreamWrapper');
+DrupalStreamWrapperRegistry::register('public',  'DrupalPublicStreamWrapper');
+DrupalStreamWrapperRegistry::register('private', 'DrupalPrivateStreamWrapper');
+DrupalStreamWrapperRegistry::register('temp',    'DrupalTempStreamWrapper');
 
 /**
  * @defgroup file File interface
@@ -91,10 +90,10 @@ define('FILE_STATUS_PERMANENT', 1);
 /**
  * Create the download path to a file.
  *
- * @param $path A string containing the path of the file to generate URL for.
+ * @param $file A file object.
  * @return A string containing a URL that can be used to download the file.
  */
-function file_create_url($path) {
+function file_create_url($file) {
   // Strip file_directory_path from $path. We only include relative paths in
   // URLs.
   if (strpos($path, file_directory_path() . '/') === 0) {
@@ -115,12 +114,17 @@ function file_create_url($path) {
  * @param $destination
  *   A string containing the path to verify. If this value is omitted, Drupal's
  *   'files' directory will be used.
+ * @param mixed $scheme 
+ *   An optional string specifiying the name of a stream wrapper. 
+ *   TODO: Link to stream wrappers.
  * @return
  *   A string containing the path to file, with file system directory appended
  *   if necessary, or FALSE if the path is invalid (i.e. outside the configured
  *   'files' or temp directories).
  */
-function file_create_path($destination = NULL) {
+function file_create_path($destination = NULL, $scheme = NULL) {
+  // Get the wrapper for this scheme.
+  // Ask the scheme for the directory.
   $file_path = file_directory_path();
   if (is_null($destination)) {
     return $file_path;
@@ -877,8 +881,8 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * Saves a file upload to a new location.
  *
  * The file will be added to the files table as a temporary file. Temporary
- * files are periodically cleaned. To make the file a permanent file call
- * assign the status and use file_save() to save it.
+ * files are periodically cleaned. To make the file a permanent file, move it with
+ * file_move() from the temp hanlder to a one with a permanent store, eg public:// or private://.
  *
  * @param $source
  *   A string specifying the name of the upload field to save.
@@ -886,8 +890,10 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  *   An optional, associative array of callback functions used to validate the
  *   file. See file_validate() for a full discussion of the array format.
  * @param $destination
- *   A string containing the directory $source should be copied to. If this is
- *   not provided or is not writable, the temporary directory will be used.
+ *   A string containing the location $source should be copied to within the temp directory.
+ *   $destination can be a directory or directory and filename within the temp directory.
+ *   If not provided, the temporary directory will be used, and the $replace flag will
+ *   will be honored.
  * @param $replace
  *   A boolean indicating whether an existing file of the same name in the
  *   destination directory should overwritten. A false value will generate a
@@ -1025,7 +1031,6 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   }
   return FALSE;
 }
-
 
 /**
  * Check that a file meets the criteria specified by the validators.
@@ -1503,10 +1508,13 @@ function file_directory_temp() {
 /**
  * Determine the default 'files' directory.
  *
+ *  TODO: this should be deprecated.
+ *
  * @return
  *   A string containing the path to Drupal's 'files' directory.
  */
 function file_directory_path() {
+
   return variable_get('file_directory_path', conf_path() . '/files');
 }
 
@@ -1611,8 +1619,8 @@ function drupal_chmod($uri, $mode = NULL) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
-  if (stream_scheme($uri)) {
-    if (stream_wrapper($uri)->stream_chmod($uri, $mode)) {
+  if (DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
+    if (DrupalStreamWrapperRegistry::getInstance($uri)->stream_chmod($uri, $mode)) {
       return TRUE;
     }
   }
@@ -1647,10 +1655,12 @@ function drupal_realpath($uri) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
-  if (stream_scheme($uri))
-    return stream_wrapper($uri)->stream_realpath($uri);
-  else
+  if (DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
+    return DrupalStreamWrapperRegistry::getInstance($uri)->stream_realpath($uri);
+  }
+  else {
     return realpath($uri);
+  }
 }
 
 /**
@@ -1679,47 +1689,7 @@ function drupal_tempnam($prefix) {
   /*
     TODO This implementation will change once we get the rest of the API sorted.
   */
-  return tempnam(stream_wrapper('temp://')->interpolate_uri(''), $prefix);
-}
-
-/**
- * Get the scheme of a URI (stream).
- *
- * A stream is referenced as scheme://target.
- *
- * @param $uri
- *   A stream, referenced as scheme://target
- * @return mixed
- *   A string containing the name of the scheme, or FALSE if none.
- *   For example, the URI public://example.txt would return public.
- */
-function stream_scheme($uri) {
-  $data = explode('://', $uri, 2);
-  return count($data) == 2 ? $data[0] : FALSE;
-}
-
-/**
- * Get reference to stream wrapper class responsible for given URI (stream).
- *
- * The scheme determines the stream wrapper class that should be
- * used by consulting the stream wrapper registry.
- *
- * @param $uri
- *   A stream, referenced as scheme://target
- * @return mixed
- *   Returns a new stream wrapper object appropriate for the given URI.
- *   For example, a URI of public://example.txt would return a new
- *   private stream wrapper object (DrupalPrivateStreamWrapper).
- *   FALSE is returned if no registered handler could be found.
- */
-function stream_wrapper($uri) {
-  $registry = DrupalStreamWrapperRegistry::singleton();
-  $class    = $registry->class_name(stream_scheme($uri));
-
-  if (class_exists($class))
-    return new $class;
-  else
-    return FALSE;
+  return tempnam(DrupalStreamWrapperRegistry::getInstance('temp://')->interpolate_uri(''), $prefix);
 }
 
 /**
