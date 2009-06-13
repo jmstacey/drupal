@@ -20,7 +20,9 @@ class drupal_stream_wrapper_registry {
 
   private $wrappers = array(); // stream wrapper registry
 
-  // private constructor to enforce singleton.
+  /**
+   * Private constructor to enforce singleton.
+   */
   private function __construct() { }
 
   /**
