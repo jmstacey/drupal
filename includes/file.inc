@@ -7,15 +7,10 @@
  */
 
 // Stream wrapper interface and base class implementation
-require_once DRUPAL_ROOT . '/includes/stream_wrapper.inc';
+require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
 
 // Stream wrapper registry
 require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
-
-// Core stream wrapper implementations
-require_once DRUPAL_ROOT . '/includes/public_stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/private_stream_wrapper.inc';
-require_once DRUPAL_ROOT . '/includes/temp_stream_wrapper.inc';
 
 // Register core wrappers
 $manager = drupal_stream_wrapper_registry::singleton();
