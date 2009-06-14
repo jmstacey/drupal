@@ -100,7 +100,7 @@ function file_create_url($file) {
   // URLs.
 
   // Get a stream wrapper instance for this file.
-  return DrupalStreamWrapperRegistry::getInstance($file->filepath)->html_uri($file->filepath);
+  return DrupalStreamWrapperRegistry::getInstanceByUri($file->filepath)->html_uri($file->filepath);
 
   if (strpos($path, file_directory_path() . '/') === 0) {
     $path = trim(substr($path, strlen(file_directory_path())), '\\/');
@@ -1626,7 +1626,7 @@ function drupal_chmod($uri, $mode = NULL) {
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
   if (DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
-    if (DrupalStreamWrapperRegistry::getInstance($uri)->stream_chmod($uri, $mode)) {
+    if (DrupalStreamWrapperRegistry::getInstanceByUri($uri)->stream_chmod($uri, $mode)) {
       return TRUE;
     }
   }
@@ -1662,7 +1662,7 @@ function drupal_realpath($uri) {
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
   if (DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
-    return DrupalStreamWrapperRegistry::getInstance($uri)->stream_realpath($uri);
+    return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->stream_realpath($uri);
   }
   else {
     return realpath($uri);
@@ -1695,7 +1695,7 @@ function drupal_tempnam($prefix) {
   /*
     TODO This implementation will change once we get the rest of the API sorted.
   */
-  return tempnam(DrupalStreamWrapperRegistry::getInstance('temp://')->getInternalUri(''), $prefix);
+  return tempnam(DrupalStreamWrapperRegistry::getInstanceByScheme('temp')->getInternalUri(''), $prefix);
 }
 
 /**

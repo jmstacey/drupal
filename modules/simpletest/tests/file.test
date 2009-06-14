@@ -2086,7 +2086,7 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
     $uri = $scheme .'://'. $filename;
 
     DrupalStreamWrapperRegistry::register($scheme, $class);
-    $this->assertTrue(DrupalStreamWrapperRegistry::getInstance($uri), 'Dummy stream wrapper registered');
+    $this->assertTrue(DrupalStreamWrapperRegistry::getInstanceByUri($uri), 'Dummy stream wrapper registered');
 
     // $this->assertEqual($this->scheme, stream_scheme($this->uri),  'stream_scheme() with valid stream wrapped URI.');
     // $this->assertFalse(stream_scheme('/foo/bar'),                 'stream_scheme() with faulty URI.');
@@ -2094,7 +2094,7 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
 
     // Unregister dummy wrapper
     DrupalStreamWrapperRegistry::unregister($scheme);
-    $this->assertFalse(DrupalStreamWrapperRegistry::getInstance($uri), 'Dummy stream wrapper unregistered.');
+    $this->assertFalse(DrupalStreamWrapperRegistry::getInstanceByUri($uri), 'Dummy stream wrapper unregistered.');
   }
 
   /**
@@ -2103,8 +2103,8 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
    function testCoreStreamWrapperAvailability() {
 
      $filename = 'example.txt';
-     $this->assertTrue(DrupalStreamWrapperRegistry::getInstance('public://'. $filename),  'Public stream wrapper registered and available.');
-     $this->assertTrue(DrupalStreamWrapperRegistry::getInstance('private://'. $filename), 'Private stream wrapper registered and available.');
-     $this->assertTrue(DrupalStreamWrapperRegistry::getInstance('temp://'. $filename),    'Temp stream wrapper registered and available.');
+     $this->assertTrue(DrupalStreamWrapperRegistry::getInstanceByUri('public://'. $filename),  'Public stream wrapper registered and available.');
+     $this->assertTrue(DrupalStreamWrapperRegistry::getInstanceByUri('private://'. $filename), 'Private stream wrapper registered and available.');
+     $this->assertTrue(DrupalStreamWrapperRegistry::getInstanceByUri('temp://'. $filename),    'Temp stream wrapper registered and available.');
    }
 }
