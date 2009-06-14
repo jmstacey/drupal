@@ -18,7 +18,11 @@
  */
 class DrupalStreamWrapperRegistry {
 
-  // stream wrapper registry
+  /**
+   * Array mapping schemes to class names.
+   *
+   * @var Array
+   */
   private static $wrappers = array();
 
   /**
@@ -75,18 +79,6 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Return the stream class name for a given scheme.
-   *
-   * @param string $scheme
-   *   Stream scheme.
-   * @return mixed
-   *   Return string if a scheme has a registered handler, or FALSE.
-   */
-  function scheme($class) {
-    return array_search(self::$wrappers, $class);
-  }
-
-  /**
    * Return the entire Drupal stream wrapper registry.
    *
    * @return array
@@ -132,14 +124,14 @@ class DrupalStreamWrapperRegistry {
 
   /**
    * Get reference to stream wrapper class responsible for given scheme.
-   * 
+   *
    * The scheme determines the stream wrapper class that should be
    * used by consulting the stream wrapper registry.
    *
    * @param $scheme
    * @return mixed
    *   Returns a new stream wrapper object appropriate for the given $scheme.
-   *   For example, for the public scheme a stream wrapper object 
+   *   For example, for the public scheme a stream wrapper object
    *   (DrupalPublicStreamWrapper).
    *   FALSE is returned if no registered handler could be found.
    */
