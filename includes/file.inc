@@ -114,8 +114,8 @@ function file_create_url($file) {
  * @param $destination
  *   A string containing the path to verify. If this value is omitted, Drupal's
  *   'files' directory will be used.
- * @param mixed $scheme 
- *   An optional string specifiying the name of a stream wrapper. 
+ * @param mixed $scheme
+ *   An optional string specifiying the name of a stream wrapper.
  *   TODO: Link to stream wrappers.
  * @return
  *   A string containing the path to file, with file system directory appended
@@ -1689,7 +1689,7 @@ function drupal_tempnam($prefix) {
   /*
     TODO This implementation will change once we get the rest of the API sorted.
   */
-  return tempnam(DrupalStreamWrapperRegistry::getInstance('temp://')->interpolate_uri(''), $prefix);
+  return tempnam(DrupalStreamWrapperRegistry::getInstance('temp://')->getInternalUri(''), $prefix);
 }
 
 /**

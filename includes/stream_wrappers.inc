@@ -53,16 +53,16 @@ interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
    *   Stream wrapper resource url.
    * @return string
    */
-  function interpolate_uri($uri);
+  static function getInternalUri($uri);
 
   /**
-   * Return the html accessible URL for a resource.
+   * Return the HTML accessible URL for a resource.
    *
    * @param $uri
    *   Stream wrapper resource url.
    * @return string
    */
-  function html_uri($uri);
+  static function getExternalUrl($uri);
 
   /**
    * Return the mime type of a resource.
@@ -71,7 +71,7 @@ interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
    *   Stream wrapper resource url.
    * @return string
    */
-  function mime($uri);
+  static function getMimeType($uri);
 
   /**
    * Change permissions of stream.
@@ -85,7 +85,7 @@ interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
    * @return bool
    *   Returns TRUE on success or FALSE on failure.
    */
-  function stream_chmod($uri, $mode);
+  static function chmod($uri, $mode);
 
   /**
    * Returns canonicalized absolute pathname.
@@ -101,7 +101,7 @@ interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
    *   by core wrappers), or FALSE on failure or the registered
    *   wrapper does not provide an implementation.
    */
-  function stream_realpath($uri);
+  static function realpath($uri);
 }
 
 
@@ -113,7 +113,7 @@ interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
  * the invoking PHP filesystem function.
  *
  * DrupalLocalStreamWrapper implementations need to override at least the
- * interpolate_uri() method to rewrite the URI before is it passed back to the
+ * getInternalUri() method to rewrite the URI before is it passed back to the
  * calling function.
  */
 abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface {
@@ -126,30 +126,29 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   String specifying the path
    */
-  abstract static protected function directoryPath();
+  abstract static function getDirectoryPath();
 
   /**
-   * Interpolate the URI path, adding the base path from $this->directoryPath().
+   * Interpolate the URI path, adding the base path from $this->getDirectoryPath().
    */
-  function interpolate_uri($uri) {
-    $basepath = realpath($this->directoryPath());
-    return drupal_realpath($basepath) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
+  static function getInternalUri($uri) {
+    return realpath(self::getDirectoryPath()) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
   }
 
-  function html_uri($uri) {
+  static function getExternalUrl($uri) {
     return $uri;
   }
 
-  function mime($uri) {
+  static function getMimeType($uri) {
     return file_get_mimetype(basename($uri));
   }
 
-  function stream_chmod($uri, $mode) {
+  static function chmod($uri, $mode) {
     return @chmod($uri, $mode);
   }
 
-  function stream_realpath($uri) {
-    return realpath($this->interpolate_uri($uri));
+  static function realpath($uri) {
+    return @realpath(self::getInternalUri($uri));
   }
 
 
@@ -170,7 +169,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   TRUE if file was opened successfully.
    */
   public function stream_open($uri, $mode, $options, &$opened_url) {
-    $uri = $this->interpolate_uri($uri);
+    $uri = $this->getInternalUri($uri);
     $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($uri, $mode) : @fopen($uri, $mode);
 
     if ((bool)$this->handle && $options & STREAM_USE_PATH) {
@@ -313,7 +312,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   TRUE if resource was successfully deleted.
    */
   public function unlink($uri) {
-    return unlink($this->interpolate_uri($uri));
+    return unlink($this->getInternalUri($uri));
   }
 
   /**
@@ -329,7 +328,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   TRUE if file was successfully renamed.
    */
   public function rename($from_uri, $to_uri) {
-    return rename($this->interpolate_uri($from_uri), $this->interpolate_uri($to_uri));
+    return rename($this->getInternalUri($from_uri), $this->getInternalUri($to_uri));
   }
 
   /**
@@ -349,10 +348,10 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   public function mkdir($uri, $mode, $options) {
     $recursive = (bool)($options & STREAM_MKDIR_RECURSIVE);
     if ($options & STREAM_REPORT_ERRORS) {
-      return mkdir($this->interpolate_uri($uri), $mode, $recursive);
+      return mkdir($this->getInternalUri($uri), $mode, $recursive);
     }
     else {
-      return @mkdir($this->interpolate_uri($uri), $mode, $recursive);
+      return @mkdir($this->getInternalUri($uri), $mode, $recursive);
     }
   }
 
@@ -370,10 +369,10 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    */
   public function rmdir($uri, $options) {
     if ($options & STREAM_REPORT_ERRORS) {
-      return rmdir($this->interpolate_uri($uri));
+      return rmdir($this->getInternalUri($uri));
     }
     else {
-      return @rmdir($this->interpolate_uri($uri));
+      return @rmdir($this->getInternalUri($uri));
     }
   }
 
@@ -392,10 +391,10 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    */
   public function url_stat($uri, $flags) {
     if ($flags & STREAM_URL_STAT_QUIET) {
-      return @stat($this->interpolate_uri($uri));
+      return @stat($this->getInternalUri($uri));
     }
     else {
-      return stat($this->interpolate_uri($uri));
+      return stat($this->getInternalUri($uri));
     }
   }
 
@@ -412,7 +411,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   TRUE on success.
    */
   public function dir_opendir($uri, $options) {
-    $this->handle = opendir($this->interpolate_uri($uri));
+    $this->handle = opendir($this->getInternalUri($uri));
 
     return (bool)$this->handle;
   }
@@ -463,20 +462,18 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
  */
 class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
 
-  static protected function directoryPath() {
+  static function getDirectoryPath() {
     return variable_get('stream_public_path', 'sites/default/files');
   }
 
   /**
-   * Override html_uri().
+   * Override getExternalUrl().
    *
    * Return the HTML URI of a public file.
    */
-  function html_uri($uri) {
-    $basepath = $this->directoryPath();
-    $path     = parse_url($uri, PHP_URL_PATH);
-
-    return $GLOBALS['base_url'] . '/' . $basepath . '/' . str_replace('\\', '/', $path);
+  static function getExternalUrl($uri) {
+    $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
+    return $GLOBALS['base_url'] . '/' . self::getDirectoryPath() . '/' . $path;
   }
 }
 
@@ -491,16 +488,17 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
  */
 class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
 
-  static protected function directoryPath() {
+  static function getDirectoryPath() {
     return variable_get('stream_private_path', 'sites/default/files-private');
   }
 
   /**
-   * Override html_uri.
+   * Override getHtmlUri.
    *
    * Return the HTML URI of a private file.
    */
-  function html_uri($uri) {
+  static function getExternalUrl($uri) {
+    $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
     return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
 }
@@ -516,16 +514,18 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
  */
 class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
 
-  static protected function directoryPath() {
+  static function getDirectoryPath() {
     return variable_get('file_directory_temp', 'sites/default/files/tmp');
   }
 
   /**
-   * Override html_uri.
+   * Override getHtmlUri.
    *
-   * Return the HTML URI of a private file.
+   * Return the HTML URI of a temporary file.
    */
-  function html_uri($uri) {
-    return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
+  static function getExternalUrl($uri) {
+// TODO: This needs it's own separate menu handler.
+    $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
+    return url('system/files/' . $path, array('absolute' => TRUE));
   }
 }

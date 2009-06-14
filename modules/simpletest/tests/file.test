@@ -47,25 +47,25 @@ function file_test_file_scan_callback($filepath, $reset = FALSE) {
  */
 class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
   // TODO figure out what this should really return.
-  static protected function directoryPath() {
+  static function getDirectoryPath() {
     return variable_get('stream_public_path', 'sites/default/files');
   }
 
   /**
-   * Override interpolate_uri().
+   * Override getInternalUri().
    *
    * Return a dummy path for testing.
    */
-  function interpolate_uri($uri) {
+  static function getInternalUri($uri) {
     return '/dummy/example.txt';
   }
 
   /**
-   * Override html_uri().
+   * Override getExternalUrl().
    *
    * Return the HTML URI of a public file.
    */
-  function html_uri($uri) {
+  static function getExternalUrl($uri) {
     return '/dummy/example.txt';
   }
 
@@ -2090,7 +2090,7 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
 
     // $this->assertEqual($this->scheme, stream_scheme($this->uri),  'stream_scheme() with valid stream wrapped URI.');
     // $this->assertFalse(stream_scheme('/foo/bar'),                 'stream_scheme() with faulty URI.');
-    //$this->assertEqual('/dummy/example.txt', stream_wrapper($dummy_uri)->interpolate_uri($dummy_uri), 'Stream wrapper URI interpolation.');
+    //$this->assertEqual('/dummy/example.txt', stream_wrapper($dummy_uri)->getInternalUri($dummy_uri), 'Stream wrapper URI interpolation.');
 
     // Unregister dummy wrapper
     DrupalStreamWrapperRegistry::unregister($scheme);
