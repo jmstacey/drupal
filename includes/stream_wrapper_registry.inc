@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Drupal stream wrapper manager
+ * Drupal stream wrapper registry.
  *
  * Provide a class for managing and querying user defined stream wrappers
  * in PHP. PHP's internal stream_get_wrappers doesn't return the class

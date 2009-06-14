@@ -96,21 +96,24 @@ define('FILE_STATUS_PERMANENT', 1);
  * @return A string containing a URL that can be used to download the file.
  */
 function file_create_url($file) {
-  // Strip file_directory_path from $path. We only include relative paths in
-  // URLs.
 
   // Get a stream wrapper instance for this file.
   return DrupalStreamWrapperRegistry::getInstanceByUri($file->filepath)->html_uri($file->filepath);
 
-  if (strpos($path, file_directory_path() . '/') === 0) {
-    $path = trim(substr($path, strlen(file_directory_path())), '\\/');
-  }
-  switch (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC)) {
-    case FILE_DOWNLOADS_PUBLIC:
-      return $GLOBALS['base_url'] . '/' . file_directory_path() . '/' . str_replace('\\', '/', $path);
-    case FILE_DOWNLOADS_PRIVATE:
-      return url('system/files/' . $path, array('absolute' => TRUE));
-  }
+  // TODO: Is there a reason the following is still around?
+  // see http://github.com/jmstacey/drupal/commit/7766acad129accd204fafa716503c9bd0d7e13a2
+
+  // Strip file_directory_path from $path. We only include relative paths in
+  // URLs.
+  // if (strpos($path, file_directory_path() . '/') === 0) {
+  //   $path = trim(substr($path, strlen(file_directory_path())), '\\/');
+  // }
+  // switch (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC)) {
+  //   case FILE_DOWNLOADS_PUBLIC:
+  //     return $GLOBALS['base_url'] . '/' . file_directory_path() . '/' . str_replace('\\', '/', $path);
+  //   case FILE_DOWNLOADS_PRIVATE:
+  //     return url('system/files/' . $path, array('absolute' => TRUE));
+  // }
 }
 
 /**

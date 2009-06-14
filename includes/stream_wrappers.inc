@@ -6,7 +6,7 @@
  * Drupal stream wrapper interface.
  *
  * Provides a Drupal interface and classes to implement PHP stream wrappers for
- * public, private and temporary files.
+ * public, private, and temporary files.
  */
 
 
@@ -15,7 +15,7 @@
  *
  * @see: http://www.php.net/manual/en/class.streamwrapper.php
  */
-interface stream_wrapper_interface {
+interface StreamWrapperInterface {
   public function stream_open($uri, $mode, $options, &$opened_url);
   public function stream_close();
   public function stream_lock($operation);
@@ -41,10 +41,10 @@ interface stream_wrapper_interface {
 /**
  * Drupal stream wrapper extension.
  *
- * Extend the stream_wrapper_interface with methods expected by
+ * Extend the StreamWrapperInterface with methods expected by
  * Drupal stream wrapper classes.
  */
-interface DrupalStreamWrapperInterface extends stream_wrapper_interface {
+interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 
   /**
    * Return an absolute stream resource URL.
@@ -124,7 +124,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Where are the files located?
    *
    * @return
-   *   String specifying the path
+   *   String specifying the path.
    */
   abstract static function getDirectoryPath();
 
@@ -150,7 +150,6 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   static function realpath($uri) {
     return @realpath(self::getInternalUri($uri));
   }
-
 
   /**
    * Support for fopen(), file_get_contents(), file_put_contents() etc.
