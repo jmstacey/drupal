@@ -6,6 +6,8 @@
  * API for handling file uploads and server file management.
  */
 
+// TODO: add this to the bootstrap and add a file wrapper initiation phase.
+
 // Stream wrapper interface and base class implementation
 require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
 
@@ -96,6 +98,10 @@ define('FILE_STATUS_PERMANENT', 1);
 function file_create_url($file) {
   // Strip file_directory_path from $path. We only include relative paths in
   // URLs.
+
+  // Get a stream wrapper instance for this file.
+  return DrupalStreamWrapperRegistry::getInstance($file->filepath)->html_uri($file->filepath);
+
   if (strpos($path, file_directory_path() . '/') === 0) {
     $path = trim(substr($path, strlen(file_directory_path())), '\\/');
   }
