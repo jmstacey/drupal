@@ -125,9 +125,27 @@ class DrupalStreamWrapperRegistry {
    *   private stream wrapper object (DrupalPrivateStreamWrapper).
    *   FALSE is returned if no registered handler could be found.
    */
-  public static function getInstance($uri) {
+  public static function getInstanceByUri($uri) {
 
-    $class = self::getClassName(self::getStreamScheme($uri));
+    return self::getInstanceByScheme(self::getStreamScheme($uri));
+  }
+
+  /**
+   * Get reference to stream wrapper class responsible for given scheme.
+   * 
+   * The scheme determines the stream wrapper class that should be
+   * used by consulting the stream wrapper registry.
+   *
+   * @param $scheme
+   * @return mixed
+   *   Returns a new stream wrapper object appropriate for the given $scheme.
+   *   For example, for the public scheme a stream wrapper object 
+   *   (DrupalPublicStreamWrapper).
+   *   FALSE is returned if no registered handler could be found.
+   */
+  public static function getInstanceByScheme($scheme) {
+
+    $class = self::getClassName($scheme);
     if (class_exists($class)) {
       return new $class;
     }
