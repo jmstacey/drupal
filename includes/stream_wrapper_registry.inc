@@ -40,7 +40,6 @@ class DrupalStreamWrapperRegistry {
    */
   public static function register($scheme, $class_name) {
     self::$wrappers[$scheme] = $class_name;
-
     return stream_wrapper_register($scheme, $class_name);
   }
 
@@ -55,12 +54,8 @@ class DrupalStreamWrapperRegistry {
    *   result of stream_wrapper_unregister()
    */
   public static function unregister($scheme) {
-    if (stream_wrapper_unregister($scheme)) {
-      unset(self::$wrappers[$scheme]);
-      return TRUE;
-    }
-
-    return FALSE;
+    unset(self::$wrappers[$scheme]);
+    return stream_wrapper_unregister($scheme);
   }
 
   /**

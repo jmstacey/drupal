@@ -2077,6 +2077,45 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
   }
 
   /**
+   * Test the register() and unregister() functions.
+   */
+  function testRegisterUnregister() {
+    $scheme = 'dummy';
+    $classname = 'DrupalDummyStreamWrapper';
+
+    // Make sure it's not already registered.
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    if (isset($wrappers[$scheme])) {
+      DrupalStreamWrapperRegistry::unregister($scheme);
+    }
+
+    // Register the wrapper.
+    $this->assertTrue(DrupalStreamWrapperRegistry::register($scheme, $classname), t('The stream wrapper registered'));
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    $this->assertTrue(isset($wrappers[$scheme]), t('The stream wrapper has actually been registered.'));
+
+    // Unregister the wrapper.
+    $this->assertTrue(DrupalStreamWrapperRegistry::unregister($scheme), t('Stream wrapper unregistered.'));
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    $this->assertFalse(isset($wrappers[$scheme]), t('The stream has wrapper has actually been unregistered.'));
+  }
+
+  /**
+   * Test the getClassName() function.
+   */
+  function testGetClassName() {
+    $scheme = 'public';
+    $classname = 'DrupalPublicStreamWrapper';
+    $this->assertEqual($classname, DrupalStreamWrapperRegistry::getClassName($scheme), t('Got correct class name for public scheme.'));
+
+    $scheme = 'dummy';
+    $classname = 'DrupalDummyStreamWrapper';
+    DrupalStreamWrapperRegistry::register($scheme, $classname);
+    $this->assertEqual($classname, DrupalStreamWrapperRegistry::getClassName($scheme), t('Got correct class name for dummy scheme.'));
+    DrupalStreamWrapperRegistry::unregister($scheme);
+  }
+
+  /**
    * Test stream wrapper registry.
    */
   function testStreamWrapperRegistry() {
