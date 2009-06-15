@@ -1431,7 +1431,7 @@ function system_file_system_settings() {
     '#title' => t('Default download method'),
     '#default_value' => FILE_DOWNLOADS_PUBLIC,
     '#options' => array(FILE_DOWNLOADS_PUBLIC => t('Public - files are available using HTTP directly.'), FILE_DOWNLOADS_PRIVATE => t('Private - files are transferred by Drupal.')),
-    '#description' => t('This setting is simply used as the prefered download method. The download method will ultimately be determined by the URI of a file.')
+    '#description' => t('This setting is simply used as the preferred download method. The download method will ultimately be determined by the URI of a file.')
   );
 
   return system_settings_form($form, TRUE);
