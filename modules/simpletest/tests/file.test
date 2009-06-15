@@ -177,7 +177,7 @@ class FileTestCase extends DrupalWebTestCase {
   function createDirectory($path = NULL) {
     // A directory to operate on.
     if (is_null($path)) {
-      $path = file_directory_path() . '/' . $this->randomName();
+      $path = file_directory_path('public') . '/' . $this->randomName();
     }
     $this->assertTrue(mkdir($path) && is_dir($path), t('Directory was created successfully.'));
     return $path;
@@ -198,7 +198,7 @@ class FileTestCase extends DrupalWebTestCase {
    */
   function createFile($filepath = NULL, $contents = NULL) {
     if (is_null($filepath)) {
-      $filepath = file_directory_path() . '/' . $this->randomName();
+      $filepath = file_directory_path('public') . '/' . $this->randomName();
     }
 
     if (is_null($contents)) {
@@ -431,7 +431,7 @@ class FileValidatorTest extends DrupalWebTestCase {
     // Maximum size.
     if (image_get_toolkit()) {
       // Copy the image so that the original doesn't get resized.
-      $temp_dir = file_directory_temp();
+      $temp_dir = file_directory_path('temp');
       copy(drupal_realpath('misc/druplicon.png'), drupal_realpath($temp_dir) . '/druplicon.png');
       $this->image->filepath = $temp_dir . '/druplicon.png';
 
@@ -535,13 +535,13 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     // No filename.
     $filepath = file_unmanaged_save_data($contents);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path(), dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
     $filepath = file_unmanaged_save_data($contents, 'asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path(), dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));
@@ -699,11 +699,11 @@ class FileDirectoryTest extends FileTestCase {
   }
 
   /**
-   * Test the file_directory_path() function.
+   * Test the file_directory_path('public') function.
    */
   function testFileCheckDirectory() {
     // A directory to operate on.
-    $directory = file_directory_path() . '/' . $this->randomName();
+    $directory = file_directory_path('public') . '/' . $this->randomName();
     $this->assertFalse(is_dir($directory), t('Directory does not exist prior to testing.'));
 
     // Non-existent directory.
@@ -736,32 +736,32 @@ class FileDirectoryTest extends FileTestCase {
     $this->assertDirectoryPermissions($directory, variable_get('file_chmod_directory', 0775));
 
     // Remove .htaccess file to then test that it gets re-created.
-    @unlink(file_directory_path() . '/.htaccess');
-    $directory = file_directory_path();
+    @unlink(file_directory_path('public') . '/.htaccess');
+    $directory = file_directory_path('public');
     file_check_directory($directory);
-    $this->assertTrue(is_file(file_directory_path() . '/.htaccess'), t('Successfully created the .htaccess file in the files directory.'), 'File');
+    $this->assertTrue(is_file(file_directory_path('public') . '/.htaccess'), t('Successfully created the .htaccess file in the files directory.'), 'File');
 
     // Verify contents of .htaccess file.
-    $file = file_get_contents(file_directory_path() . '/.htaccess');
+    $file = file_get_contents(file_directory_path('public') . '/.htaccess');
     $this->assertEqual($file, "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks", t('The .htaccess file contains the proper content.'), 'File');
   }
 
   /**
-   * Check file_directory_path() and file_directory_temp().
+   * Check file_directory_path('public') and file_directory_path('temp').
    */
   function testFileDirectoryPath() {
     // Directory path.
-    $path = variable_get('file_directory_path', conf_path() . '/files');
-    $this->assertEqual($path, file_directory_path(), t('Properly returns the stored file directory path.'), 'File');
+    $path = variable_get('stream_public_path', conf_path() . '/files');
+    $this->assertEqual($path, file_directory_path('public'), t('Properly returns the stored file directory path.'), 'File');
   }
 
   /**
-   * Check file_directory_path() and file_directory_temp().
+   * Check file_directory_path('public') and file_directory_path('temp').
    */
   function testFileDirectoryTemp() {
     // Temporary directory handling.
     variable_set('file_directory_temp', NULL);
-    $temp = file_directory_temp();
+    $temp = file_directory_path('temp');
     $this->assertTrue(!is_null($temp), t('Properly set and retrieved temp directory %directory.', array('%directory' => $temp)), 'File');
   }
 
@@ -1008,7 +1008,7 @@ class FileUnmanagedDeleteTest extends FileTestCase {
    */
   function testMissing() {
     // Try to delete a non-existing file
-    $this->assertTrue(file_unmanaged_delete(file_directory_path() . '/' . $this->randomName()), t('Returns true when deleting a non-existent file.'));
+    $this->assertTrue(file_unmanaged_delete(file_directory_path('public') . '/' . $this->randomName()), t('Returns true when deleting a non-existent file.'));
   }
 
   /**
@@ -1042,7 +1042,7 @@ class FileUnmanagedDeleteRecursiveTest extends FileTestCase {
    */
   function testSingleFile() {
     // Create a file for testing
-    $filepath = file_directory_path() . '/' . $this->randomName();
+    $filepath = file_directory_path('public') . '/' . $this->randomName();
     file_put_contents($filepath, '');
 
     // Delete the file.
@@ -1122,7 +1122,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $file = $this->createFile();
 
     // Moving to a new name.
-    $desired_filepath = file_directory_path() . '/' . $this->randomName();
+    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
     $new_filepath = file_unmanaged_move($file->filepath, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Move was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
@@ -1131,7 +1131,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Moving with rename.
-    $desired_filepath = file_directory_path() . '/' . $this->randomName();
+    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
     $this->assertTrue(file_exists($new_filepath), t('File exists before moving.'));
     $this->assertTrue(file_put_contents($desired_filepath, ' '), t('Created a file so a rename will have to happen.'));
     $newer_filepath = file_unmanaged_move($new_filepath, $desired_filepath, FILE_EXISTS_RENAME);
@@ -1194,7 +1194,7 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $file = $this->createFile();
 
     // Copying to a new name.
-    $desired_filepath = file_directory_path() . '/' . $this->randomName();
+    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
     $new_filepath = file_unmanaged_copy($file->filepath, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Copy was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
@@ -1203,7 +1203,7 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Copying with rename.
-    $desired_filepath = file_directory_path() . '/' . $this->randomName();
+    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
     $this->assertTrue(file_put_contents($desired_filepath, ' '), t('Created a file so a rename will have to happen.'));
     $newer_filepath = file_unmanaged_copy($file->filepath, $desired_filepath, FILE_EXISTS_RENAME);
     $this->assertTrue($newer_filepath, t('Copy was successful.'));
@@ -1310,7 +1310,7 @@ class FileMoveTest extends FileHookTestCase {
   function testNormal() {
     $contents = $this->randomName(10);
     $source = $this->createFile(NULL, $contents);
-    $desired_filepath = file_directory_path() . '/' . $this->randomName();
+    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
@@ -1471,7 +1471,7 @@ class FileCopyTest extends FileHookTestCase {
   function testNormal() {
     $contents = $this->randomName(10);
     $source = $this->createFile(NULL, $contents);
-    $desired_filepath = file_directory_path() . '/' . $this->randomName();
+    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
@@ -1812,7 +1812,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents);
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path(), dirname($result->filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, basename($result->filepath), t("Filename was set to the file's basename."));
     $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
@@ -1834,7 +1834,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, 'asdf.txt');
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path(), dirname($result->filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($result->filepath), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'text/plain', t('A MIME type was set.'));
@@ -1858,7 +1858,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, $existing->filepath, FILE_EXISTS_RENAME);
     $this->assertTrue($result, t("File saved sucessfully."));
 
-    $this->assertEqual(file_directory_path(), dirname($result->filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t("Filename was set to the basename of the source, rather than that of the renamed file."));
     $this->assertEqual($contents, file_get_contents($result->filepath), t("Contents of the file are correct."));
     $this->assertEqual($result->filemime, 'application/octet-stream', t("A MIME type was set."));
@@ -1886,7 +1886,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, $existing->filepath, FILE_EXISTS_REPLACE);
     $this->assertTrue($result, t('File saved sucessfully.'));
 
-    $this->assertEqual(file_directory_path(), dirname($result->filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t('Filename was set to the basename of the existing file, rather than preserving the original name.'));
     $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));

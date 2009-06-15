@@ -326,10 +326,10 @@ function simpletest_clean_database() {
  * Find all leftover temporary directories and remove them.
  */
 function simpletest_clean_temporary_directories() {
-  $files = scandir(file_directory_path());
+  $files = scandir(file_directory_path('public'));
   $count = 0;
   foreach ($files as $file) {
-    $path = file_directory_path() . '/' . $file;
+    $path = file_directory_path('public') . '/' . $file;
     if (is_dir($path) && preg_match('/^simpletest\d+/', $file)) {
       file_unmanaged_delete_recursive($path);
       $count++;

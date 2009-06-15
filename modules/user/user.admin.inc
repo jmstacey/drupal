@@ -350,7 +350,7 @@ function user_admin_settings() {
     '#default_value' => variable_get('user_picture_path', 'pictures'),
     '#size' => 30,
     '#maxlength' => 255,
-    '#description' => t('Subdirectory in the directory %dir where pictures will be stored.', array('%dir' => file_directory_path() . '/')),
+    '#description' => t('Subdirectory in the directory %dir where pictures will be stored.', array('%dir' => file_directory_path('public') . '/')),
   );
   $form['personalization']['pictures']['user_picture_default'] = array(
     '#type' => 'textfield',

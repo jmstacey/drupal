@@ -483,11 +483,11 @@ class DrupalUnitTestCase extends DrupalTestCase {
 
     // Store necessary current values before switching to prefixed database.
     $this->originalPrefix = $db_prefix;
-    $this->originalFileDirectory = file_directory_path();
+    $this->originalFileDirectory = file_directory_path('public');
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
     $db_prefix = Database::getConnection()->prefixTables('{simpletest' . mt_rand(1000, 1000000) . '}');
-    $conf['file_directory_path'] = $this->originalFileDirectory . '/' . $db_prefix;
+    $conf['stream_public_path'] = $this->originalFileDirectory . '/' . $db_prefix;
 
     // If locale is enabled then t() will try to access the database and
     // subsequently will fail as the database is not accessible.
@@ -502,7 +502,7 @@ class DrupalUnitTestCase extends DrupalTestCase {
   function tearDown() {
     global $db_prefix, $conf;
     if (preg_match('/simpletest\d+/', $db_prefix)) {
-      $conf['file_directory_path'] = $this->originalFileDirectory;
+      $conf['stream_public_path'] = $this->originalFileDirectory;
       // Return the database prefix to the original.
       $db_prefix = $this->originalPrefix;
       // Restore modules if necessary.
@@ -978,7 +978,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     $this->originalLanguage = $language;
     $this->originalLanguageDefault = variable_get('language_default');
     $this->originalPrefix = $db_prefix;
-    $this->originalFileDirectory = file_directory_path();
+    $this->originalFileDirectory = file_directory_path('public');
     $clean_url_original = variable_get('clean_url', 0);
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
@@ -1039,8 +1039,8 @@ class DrupalWebTestCase extends DrupalTestCase {
     variable_set('smtp_library', drupal_get_path('module', 'simpletest') . '/drupal_web_test_case.php');
 
     // Use temporary files directory with the same prefix as database.
-    variable_set('file_directory_path', $this->originalFileDirectory . '/' . $db_prefix);
-    $directory = file_directory_path();
+    variable_set('stream_public_path', $this->originalFileDirectory . '/' . $db_prefix);
+    $directory = file_directory_path('public');
     // Create the files directory.
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
@@ -1090,8 +1090,8 @@ class DrupalWebTestCase extends DrupalTestCase {
 
     if (preg_match('/simpletest\d+/', $db_prefix)) {
       // Delete temporary files directory and reset files directory path.
-      file_unmanaged_delete_recursive(file_directory_path());
-      variable_set('file_directory_path', $this->originalFileDirectory);
+      file_unmanaged_delete_recursive(file_directory_path('public'));
+      variable_set('stream_public_path', $this->originalFileDirectory);
 
       // Remove all prefixed tables (all the tables in the schema).
       $schema = drupal_get_schema(NULL, TRUE);

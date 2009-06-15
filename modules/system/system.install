@@ -177,7 +177,7 @@ function system_requirements($phase) {
   }
 
   // Test files directory
-  $directory = file_directory_path();
+  $directory = file_directory_path('public');
   $requirements['file system'] = array(
     'title' => $t('File system'),
   );

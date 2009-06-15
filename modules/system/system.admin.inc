@@ -318,8 +318,8 @@ function system_themes_form_submit($form, &$form_state) {
  * @see system_theme_settings_submit()
  */
 function system_theme_settings(&$form_state, $key = '') {
-  $directory_path = file_directory_path();
-  file_check_directory($directory_path, FILE_CREATE_DIRECTORY, 'file_directory_path');
+  $directory_path = file_directory_path('public');
+  file_check_directory($directory_path, FILE_CREATE_DIRECTORY, 'stream_public_path');
 
   // Default settings are defined in theme_get_settings() in includes/theme.inc
   if ($key) {
@@ -1344,7 +1344,7 @@ function system_performance_settings() {
     '#description' => '<p>' . t('Drupal can automatically optimize external resources like CSS and JavaScript, which can reduce both the size and number of requests made to your website. CSS files can be aggregated and compressed into a single file, while JavaScript files are aggregated (but not compressed). These optional optimizations may reduce server load, bandwidth requirements, and page loading times.') . '</p><p>' . t('These options are disabled if you have not set up your files directory, or if your download method is set to private.') . '</p>'
   );
 
-  $directory = file_directory_path();
+  $directory = file_directory_path('public');
   $is_writable = is_dir($directory) && is_writable($directory) && (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC);
   $form['bandwidth_optimizations']['preprocess_css'] = array(
     '#type' => 'radios',
@@ -1399,30 +1399,39 @@ function system_clear_cache_submit($form, &$form_state) {
  */
 function system_file_system_settings() {
 
-  $form['file_directory_path'] = array(
+  $form['stream_public_path'] = array(
     '#type' => 'textfield',
-    '#title' => t('File system path'),
-    '#default_value' => file_directory_path(),
+    '#title' => t('Public file system path'),
+    '#default_value' => file_directory_path('public'),
     '#maxlength' => 255,
-    '#description' => t('A file system path where the files will be stored. This directory must exist and be writable by Drupal. If the download method is set to public, this directory must be relative to the Drupal installation directory and be accessible over the web. If the download method is set to private, this directory should not be accessible over the web. Changing this location will modify all download paths and may cause unexpected problems on an existing site.'),
+    '#description' => t('A local file system path where public files will be stored. This directory must exist and be writable by Drupal. This directory must be relative to the Drupal installation directory and be accessible over the web.'),
     '#after_build' => array('system_check_directory'),
   );
 
-  $form['file_directory_temp'] = array(
+  $form['stream_private_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Private file system path'),
+    '#default_value' => file_directory_path('private'),
+    '#maxlength' => 255,
+    '#description' => t('A local file system path where private files will be stored. This directory must exist and be writable by Drupal. This directory should not be accessible over the web.'),
+    '#after_build' => array('system_check_directory'),
+  );
+
+  $form['stream_temp_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Temporary directory'),
-    '#default_value' => file_directory_temp(),
+    '#default_value' => file_directory_path('temp'),
     '#maxlength' => 255,
-    '#description' => t('A file system path where uploaded files will be stored during previews.'),
+    '#description' => t('A local file system path where temporary files will be stored. This directory should not be accessible over the web.'),
     '#after_build' => array('system_check_directory'),
   );
 
   $form['file_downloads'] = array(
     '#type' => 'radios',
-    '#title' => t('Download method'),
+    '#title' => t('Default download method'),
     '#default_value' => FILE_DOWNLOADS_PUBLIC,
     '#options' => array(FILE_DOWNLOADS_PUBLIC => t('Public - files are available using HTTP directly.'), FILE_DOWNLOADS_PRIVATE => t('Private - files are transferred by Drupal.')),
-    '#description' => t('Choose the <em>Public download</em> method unless you wish to enforce fine-grained access controls over file downloads. Changing the download method will modify all download paths and may cause unexpected problems on an existing site.')
+    '#description' => t('This setting is simply used as the prefered download method. The download method will ultimately be determined by the URI of a file.')
   );
 
   return system_settings_form($form, TRUE);

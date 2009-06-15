@@ -701,7 +701,7 @@ class LocaleImportFunctionalTest extends DrupalWebTestCase {
    *   Additional options to pass to the translation import form.
    */
   function importPoFile($contents, array $options = array()) {
-    $name = tempnam(file_directory_temp(), "po_");
+    $name = tempnam(file_directory_path('temp'), "po_");
     file_put_contents($name, $contents);
     $options['files[file]'] = $name;
     $this->drupalPost('admin/international/translate/import', $options, t('Import'));
@@ -849,7 +849,7 @@ class LocaleExportFunctionalTest extends DrupalWebTestCase {
   function testExportTranslation() {
     // First import some known translations.
     // This will also automatically enable the 'fr' language.
-    $name = tempnam(file_directory_temp(), "po_");
+    $name = tempnam(file_directory_path('temp'), "po_");
     file_put_contents($name, $this->getPoFile());
     $this->drupalPost('admin/international/translate/import', array(
       'langcode' => 'fr',

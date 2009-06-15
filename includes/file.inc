@@ -92,13 +92,18 @@ define('FILE_STATUS_PERMANENT', 1);
 /**
  * Create the download path to a file.
  *
- * @param $file A file object.
- * @return A string containing a URL that can be used to download the file.
+ * @param $path 
+ *   A string containing the path of the file to generate URL for.
+ * @return string
+ *   A string containing a URL that can be used to download the file.
  */
-function file_create_url($file) {
+function file_create_url($path) {
 
-  // Get a stream wrapper instance for this file.
-  return DrupalStreamWrapperRegistry::getInstanceByUri($file->filepath)->html_uri($file->filepath);
+  /*
+    TODO: Fix this. It doesn't work.
+  */
+
+  return DrupalStreamWrapperRegistry::getInstanceByUri($path)->getExternalUrl($path);
 
   // TODO: Is there a reason the following is still around?
   // see http://github.com/jmstacey/drupal/commit/7766acad129accd204fafa716503c9bd0d7e13a2
@@ -134,7 +139,7 @@ function file_create_url($file) {
 function file_create_path($destination = NULL, $scheme = NULL) {
   // Get the wrapper for this scheme.
   // Ask the scheme for the directory.
-  $file_path = file_directory_path();
+  $file_path = file_directory_path('public');
   if (is_null($destination)) {
     return $file_path;
   }
@@ -145,7 +150,7 @@ function file_create_path($destination = NULL, $scheme = NULL) {
   }
   // Check if the destination is instead inside the Drupal temporary files
   // directory.
-  elseif (file_check_location($destination, file_directory_temp())) {
+  elseif (file_check_location($destination, file_directory_path('temp'))) {
     return $destination;
   }
   // Not found, try again with prefixed directory path.
@@ -206,7 +211,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
     }
   }
 
-  if ((file_directory_path() == $directory || file_directory_temp() == $directory) && !is_file("$directory/.htaccess")) {
+  if ((file_directory_path('public') == $directory || file_directory_path('temp') == $directory) && !is_file("$directory/.htaccess")) {
     $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
     if (file_put_contents("$directory/.htaccess", $htaccess_lines)) {
       drupal_chmod("$directory/.htaccess");
@@ -980,7 +985,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   // If the destination is not provided, or is not writable, then use the
   // temporary directory.
   if (empty($destination) || file_check_path($destination) === FALSE) {
-    $destination = file_directory_temp();
+    $destination = file_directory_path('temp');
   }
 
   $file->source = $source;
@@ -1315,7 +1320,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  */
 function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   // Write the data to a temporary file.
-  $temp_name = tempnam(file_directory_temp(), 'file');
+  $temp_name = tempnam(file_directory_path('temp'), 'file');
   if (file_put_contents($temp_name, $data) === FALSE) {
     drupal_set_message(t('The file could not be created.'), 'error');
     return FALSE;
@@ -1475,56 +1480,23 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 }
 
 /**
- * Determine the default temporary directory.
+ * Determine the base path of a given wrapper.
  *
+ * This function will return the base path of a stream by providing a scheme.
+ * A stream is referenced as: scheme://target.
+ * For example, a scheme of public might return sites/all/default/files
+ * or temp might return /tmp.
+ *
+ * @param string $scheme
+ *   A string representing the scheme of a stream. A stream is referenced as: scheme://target.
  * @return
- *   A string containing a temp directory.
+ *   A string containing the base path of a stream. 
  */
-function file_directory_temp() {
-  $temporary_directory = variable_get('file_directory_temp');
+function file_directory_path($scheme) {
+  if (!isset($scheme))
+    return FALSE;
 
-  if (is_null($temporary_directory)) {
-    $directories = array();
-
-    // Has PHP been set with an upload_tmp_dir?
-    if (ini_get('upload_tmp_dir')) {
-      $directories[] = ini_get('upload_tmp_dir');
-    }
-
-    // Operating system specific dirs.
-    if (substr(PHP_OS, 0, 3) == 'WIN') {
-      $directories[] = 'c:/windows/temp';
-      $directories[] = 'c:/winnt/temp';
-    }
-    else {
-      $directories[] = '/tmp';
-    }
-
-    foreach ($directories as $directory) {
-      if (!$temporary_directory && is_dir($directory)) {
-        $temporary_directory = $directory;
-      }
-    }
-
-    // if a directory has been found, use it, otherwise default to 'files/tmp'
-    $temporary_directory = $temporary_directory ? $temporary_directory : file_directory_path() . '/tmp';
-    variable_set('file_directory_temp', $temporary_directory);
-  }
-
-  return $temporary_directory;
-}
-
-/**
- * Determine the default 'files' directory.
- *
- *  TODO: this should be deprecated.
- *
- * @return
- *   A string containing the path to Drupal's 'files' directory.
- */
-function file_directory_path() {
-
-  return variable_get('file_directory_path', conf_path() . '/files');
+  return DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->getDirectoryPath();
 }
 
 /**

@@ -12,7 +12,7 @@
 function simpletest_install() {
   drupal_install_schema('simpletest');
   // Check for files directory.
-  $path = file_directory_path() . '/simpletest';
+  $path = file_directory_path('public') . '/simpletest';
   if (file_check_directory($path, FILE_CREATE_DIRECTORY)) {
     // Generate binary and text test files.
     $generated = FALSE;
@@ -79,7 +79,7 @@ function simpletest_generate_file($filename, $width, $lines, $type = 'binary-tex
   $text = wordwrap($text, $width - 1, "\n", TRUE) . "\n"; // Add \n for symetrical file.
 
   // Create filename.
-  $path = file_directory_path() . '/simpletest/';
+  $path = file_directory_path('public') . '/simpletest/';
   $count = simpletest_get_file_count($path, $filename);
   file_put_contents($path . $filename . '-' . ($count + 1) . '.txt', $text);
 }
@@ -114,7 +114,7 @@ function simpletest_uninstall() {
   drupal_uninstall_schema('simpletest');
 
   // Remove generated files.
-  $path = file_directory_path() . '/simpletest';
+  $path = file_directory_path('public') . '/simpletest';
   $files = file_scan_directory($path, '/.*/');
   foreach ($files as $file) {
     file_unmanaged_delete($file->filepath);

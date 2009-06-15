@@ -86,7 +86,7 @@ class UploadTestCase extends DrupalWebTestCase {
       $this->assertRaw(t('Page %title has been updated.', array('%title' => $node->title)), 'File deleted successfully.');
 
       $this->assertNoText($new_name, $new_name . ' not found on node.');
-      $this->drupalGet($base_url . '/' . file_directory_path() . '/' . $upload->description, array('external' => TRUE));
+      $this->drupalGet($base_url . '/' . file_directory_path('public') . '/' . $upload->description, array('external' => TRUE));
       $this->assertResponse(array(404), 'Uploaded ' . $upload->description . ' is not accessible.');
     }
     else {
@@ -206,7 +206,7 @@ class UploadTestCase extends DrupalWebTestCase {
    */
   function checkUploadedFile($filename) {
     global $base_url;
-    $file = file_directory_path() . '/' . $filename;
+    $file = file_directory_path('public') . '/' . $filename;
     $this->drupalGet(file_create_url($file), array('external' => TRUE));
     $this->assertResponse(array(200), 'Uploaded ' . $filename . ' is accessible.');
     $this->assertTrue(strpos($this->drupalGetHeader('Content-Type'), 'text/plain') === 0, t('MIME type is text/plain.'));

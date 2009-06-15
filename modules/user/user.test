@@ -517,8 +517,12 @@ class UserPictureTestCase extends DrupalWebTestCase {
     $this->user = $this->drupalCreateUser();
 
     // Test if directories specified in settings exist in filesystem.
-    $file_dir = file_directory_path();
-    $file_check = file_check_directory($file_dir, FILE_CREATE_DIRECTORY, 'file_directory_path');
+    $file_dir = file_directory_path('public');
+    $file_check = file_check_directory($file_dir, FILE_CREATE_DIRECTORY, 'stream_public_path');
+
+    /*
+      TODO: Test private files directory
+    */
 
     $picture_dir = variable_get('user_picture_path', 'pictures');
     $picture_path = $file_dir . '/' . $picture_dir;
@@ -710,7 +714,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
 
     $img_info = image_get_info($image->filepath);
     $picture_dir = variable_get('user_picture_path', 'pictures');
-    $pic_path = file_directory_path() . '/' . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
+    $pic_path = file_directory_path('public') . '/' . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
 
     return $pic_path;
   }
