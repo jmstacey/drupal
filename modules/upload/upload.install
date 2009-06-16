@@ -106,6 +106,7 @@ function upload_update_7000(&$sandbox) {
 
   /*
     TODO: Fix the updates. This is broken. See http://drupal.org/node/329301#comment-1404336
+    Also note new DB structure http://drupal.org/node/227232#comment-1683976
   */
 
   if (!isset($sandbox['progress'])) {
