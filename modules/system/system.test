@@ -1,5 +1,5 @@
 <?php
-// $Id: system.test,v 1.47 2009-06-12 08:39:40 dries Exp $
+// $Id: system.test,v 1.50 2009-06-13 21:08:31 dries Exp $
 
 /**
  * Helper class for module test cases.
@@ -454,8 +454,8 @@ class AdminOverviewTestCase extends DrupalWebTestCase {
     $this->assertLink(t('Content management'));
 
     // Make sure menu items without children are hidden.
-    $this->assertNoLink(t('Site building'));
     $this->assertNoLink(t('Site configuration'));
+    $this->assertNoLink(t('Site building'));
     $this->assertNoLink(t('User management'));
     $this->assertNoLink(t('Reports'));
   }
