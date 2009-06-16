@@ -104,6 +104,23 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
+   * Get the targat of a URI (stream).
+   *
+   * A stream is referenced as scheme://target.
+   *
+   * @param $uri
+   *   A stream, referenced as scheme://target
+   * @return mixed
+   *   A string containing the target (path), or FALSE if none.
+   *   For example, the URI public://sample/test.txt would return 
+   *   /sample/test.txt
+   */
+  public static function getStreamTarget($uri) {
+    $data = explode('://', $uri, 2);
+    return count($data) == 2 ? $data[1] : FALSE;
+  }
+
+  /**
    * Get reference to stream wrapper class responsible for given URI (stream).
    *
    * The scheme determines the stream wrapper class that should be
