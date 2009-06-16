@@ -3565,7 +3565,7 @@ function system_update_7027() {
 /**
  * Create the {file} with the unique key on the filepath.
  */
-function system_update_7021() {
+function system_update_7028() {
   $ret = array();
 
   $schema['file'] = array(
@@ -3591,8 +3591,8 @@ function system_update_7021() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'filepath' => array(
-        'description' => 'Path of the file relative to Drupal root.',
+      'uri' => array(
+        'description' => 'URI of file.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -3632,7 +3632,7 @@ function system_update_7021() {
       'timestamp' => array('timestamp'),
     ),
     'unique keys' => array(
-      'filepath' => array('filepath'),
+      'uri' => array('uri'),
     ),
     'primary key' => array('fid'),
   );
