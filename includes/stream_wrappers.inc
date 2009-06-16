@@ -53,7 +53,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *   Stream wrapper resource url.
    * @return string
    */
-  static function getInternalUri($uri);
+  function getInternalUri($uri);
 
   /**
    * Return the HTML accessible URL for a resource.
@@ -101,7 +101,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *   by core wrappers), or FALSE on failure or the registered
    *   wrapper does not provide an implementation.
    */
-  static function realpath($uri);
+  function realpath($uri);
 }
 
 
@@ -126,13 +126,13 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   String specifying the path.
    */
-  abstract static function getDirectoryPath();
+  abstract function getDirectoryPath();
 
   /**
    * Interpolate the URI path, adding the base path from $this->getDirectoryPath().
    */
-  static function getInternalUri($uri) {
-    return realpath(self::getDirectoryPath()) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
+  function getInternalUri($uri) {
+    return realpath($this->getDirectoryPath()) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
   }
 
   static function getExternalUrl($uri) {
@@ -144,11 +144,14 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 
   static function chmod($uri, $mode) {
+    /*
+      TODO Umm... Interpolate. chmod doesn't support stream wrappers last I checked.
+    */
     return @chmod($uri, $mode);
   }
 
-  static function realpath($uri) {
-    return @realpath(self::getInternalUri($uri));
+  function realpath($uri) {
+    return @realpath($this->getInternalUri($uri));
   }
 
   /**
@@ -187,7 +190,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return bool
    *   Always returns TRUE.
    */
-  function stream_lock($operation) {
+  public function stream_lock($operation) {
     if (in_array($operation, array(LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB))) {
       return flock($this->handle, $operation);
     }
@@ -461,7 +464,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
  */
 class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
 
-  static function getDirectoryPath() {
+  public function getDirectoryPath() {
     return variable_get('stream_public_path', 'sites/default/files');
   }
 
@@ -487,7 +490,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
  */
 class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
 
-  static function getDirectoryPath() {
+  public function getDirectoryPath() {
     return variable_get('stream_private_path', 'sites/default/files-private');
   }
 
@@ -513,7 +516,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
  */
 class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
 
-  static function getDirectoryPath() {
+  public function getDirectoryPath() {
     $temporary_directory = variable_get('stream_temp_path');
 
     if (is_null($temporary_directory)) {

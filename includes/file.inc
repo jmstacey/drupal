@@ -102,6 +102,8 @@ function file_create_url($path) {
   /*
     TODO: Fix this. It doesn't work.
   */
+  $path = 'public://'. $path;
+
 
   return DrupalStreamWrapperRegistry::getInstanceByUri($path)->getExternalUrl($path);
 
@@ -1637,7 +1639,7 @@ function drupal_realpath($uri) {
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
   if (DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
-    return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->stream_realpath($uri);
+    return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->realpath($uri);
   }
   else {
     return realpath($uri);

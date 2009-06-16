@@ -47,7 +47,7 @@ function file_test_file_scan_callback($filepath, $reset = FALSE) {
  */
 class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
   // TODO figure out what this should really return.
-  static function getDirectoryPath() {
+  function getDirectoryPath() {
     return variable_get('stream_public_path', 'sites/default/files');
   }
 
@@ -56,7 +56,7 @@ class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return a dummy path for testing.
    */
-  static function getInternalUri($uri) {
+  function getInternalUri($uri) {
     return '/dummy/example.txt';
   }
 
