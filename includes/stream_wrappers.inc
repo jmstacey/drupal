@@ -47,27 +47,30 @@ interface StreamWrapperInterface {
 interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 
   /**
-   * Return an absolute stream resource URL.
+   * Return an absolute stream resource URL for internal purposes. In the case 
+   * of the three local wrappers (public, private, temp) realpath should be
+   * used for security reasons.
    *
-   * @param $uri
+   * @param string $uri
    *   Stream wrapper resource url.
    * @return string
+   *   Returns cononcialized absolute pathname for internal purposes.
    */
-  function getInternalUri($uri);
+  public function getInternalUri($uri);
 
   /**
    * Return the HTML accessible URL for a resource.
    *
-   * @param $uri
+   * @param string $uri
    *   Stream wrapper resource url.
    * @return string
    */
-  static function getExternalUrl($uri);
+  public static function getExternalUrl($uri);
 
   /**
    * Return the mime type of a resource.
    *
-   * @param $uri
+   * @param string $uri
    *   Stream wrapper resource url.
    * @return string
    */
@@ -85,7 +88,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * @return bool
    *   Returns TRUE on success or FALSE on failure.
    */
-  static function chmod($uri, $mode);
+  public static function chmod($uri, $mode);
 
   /**
    * Returns canonicalized absolute pathname.
@@ -101,7 +104,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *   by core wrappers), or FALSE on failure or the registered
    *   wrapper does not provide an implementation.
    */
-  function realpath($uri);
+  public function realpath($uri);
 }
 
 
@@ -132,7 +135,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Interpolate the URI path, adding the base path from $this->getDirectoryPath().
    */
   function getInternalUri($uri) {
-    return realpath($this->getDirectoryPath()) . str_replace('/..','', parse_url($uri, PHP_URL_PATH));
+    return $this->getDirectoryPath() . DrupalStreamWrapperRegistry::getStreamTarget($uri);
   }
 
   static function getExternalUrl($uri) {
@@ -144,14 +147,11 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 
   static function chmod($uri, $mode) {
-    /*
-      TODO Umm... Interpolate. chmod doesn't support stream wrappers last I checked.
-    */
-    return @chmod($uri, $mode);
+    return @chmod($this->realpath($uri), $mode);
   }
 
   function realpath($uri) {
-    return @realpath($this->getInternalUri($uri));
+    return @realpath($this->getDirectoryPath() . DrupalStreamWrapperRegistry::getStreamTarget($uri));
   }
 
   /**
