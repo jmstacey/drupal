@@ -103,7 +103,7 @@ function file_create_url($path) {
     TODO: Fix this. It doesn't work.
   */
   $path = 'public://'. $path;
-
+  
 
   return DrupalStreamWrapperRegistry::getInstanceByUri($path)->getExternalUrl($path);
 
@@ -1603,7 +1603,7 @@ function drupal_chmod($uri, $mode = NULL) {
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
   if (DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
-    if (DrupalStreamWrapperRegistry::getInstanceByUri($uri)->stream_chmod($uri, $mode)) {
+    if (DrupalStreamWrapperRegistry::getInstanceByUri($uri)->chmod($uri, $mode)) {
       return TRUE;
     }
   }
