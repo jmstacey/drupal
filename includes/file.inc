@@ -296,7 +296,7 @@ function file_check_location($source, $directory = '') {
  * @param $fids
  *   An array of file IDs.
  * @param $conditions
- *   An array of conditions to match against the {files} table. These
+ *   An array of conditions to match against the {file} table. These
  *   should be supplied in the form array('field_name' => 'field_value').
  * @return
  *  An array of file objects, indexed by fid.
@@ -305,7 +305,7 @@ function file_check_location($source, $directory = '') {
  * @see file_load()
  */
 function file_load_multiple($fids = array(), $conditions = array()) {
-  $query = db_select('files', 'f')->fields('f');
+  $query = db_select('file', 'f')->fields('f');
 
   // If the $fids array is populated, add those to the query.
   if ($fids) {
@@ -367,12 +367,12 @@ function file_save($file) {
   $file->filesize = filesize($file->filepath);
 
   if (empty($file->fid)) {
-    drupal_write_record('files', $file);
+    drupal_write_record('file', $file);
     // Inform modules about the newly added file.
     module_invoke_all('file_insert', $file);
   }
   else {
-    drupal_write_record('files', $file, 'fid');
+    drupal_write_record('file', $file, 'fid');
     // Inform modules that the file has been updated.
     module_invoke_all('file_update', $file);
   }
@@ -791,7 +791,7 @@ function file_delete($file, $force = FALSE) {
   // Make sure the file is deleted before removing its row from the
   // database, so UIs can still find the file in the database.
   if (file_unmanaged_delete($file->filepath)) {
-    db_delete('files')->condition('fid', $file->fid)->execute();
+    db_delete('file')->condition('fid', $file->fid)->execute();
     return TRUE;
   }
   return FALSE;
@@ -882,7 +882,7 @@ function file_unmanaged_delete_recursive($path) {
  *   An integer containing the number of bytes used.
  */
 function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
-  $query = db_select('files', 'f');
+  $query = db_select('file', 'f');
   // Use separate placeholders for the status to avoid a bug in some versions
   // of PHP. @see http://drupal.org/node/352956
   $query->where('f.status & :status1 = :status2', array(':status1' => $status, ':status2' => $status));

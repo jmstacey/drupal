@@ -1250,7 +1250,7 @@ function hook_file_delete($file) {
 function hook_file_download($filepath) {
   // Check if the file is controlled by the current module.
   $filepath = file_create_path($filepath);
-  $result = db_query("SELECT f.* FROM {files} f INNER JOIN {upload} u ON f.fid = u.fid WHERE filepath = :filepath", array('filepath' => $filepath));
+  $result = db_query("SELECT f.* FROM {file} f INNER JOIN {upload} u ON f.fid = u.fid WHERE filepath = :filepath", array('filepath' => $filepath));
   foreach ($result as $file) {
     if (!user_access('view uploaded files')) {
       return -1;

@@ -617,7 +617,7 @@ function system_schema() {
   $schema['cache_registry'] = $schema['cache'];
   $schema['cache_registry']['description'] = 'Cache table for the code registry system to remember what code files need to be loaded on any given page.';
 
-  $schema['files'] = array(
+  $schema['file'] = array(
     'description' => 'Stores information for uploaded files.',
     'fields' => array(
       'fid' => array(
@@ -679,6 +679,9 @@ function system_schema() {
       'uid' => array('uid'),
       'status' => array('status'),
       'timestamp' => array('timestamp'),
+    ),
+    'unique keys' => array(
+      'filepath' => array('filepath'),
     ),
     'primary key' => array('fid'),
     'foreign keys' => array(
@@ -3556,6 +3559,85 @@ function system_update_7027() {
   $module_list = array('text', 'number', 'list', 'options');
   drupal_install_modules($module_list);
   module_enable($module_list);
+  return $ret;
+}
+
+/**
+ * Create the {file} with the unique key on the filepath.
+ */
+function system_update_7021() {
+  $ret = array();
+
+  $schema['file'] = array(
+    'description' => 'Stores information for uploaded files.',
+    'fields' => array(
+      'fid' => array(
+        'description' => 'File ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The {user}.uid of the user who is associated with the file.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'filename' => array(
+        'description' => 'Name of the file with no path components. This may differ from the basename of the filepath if the file is renamed to avoid overwriting an existing file.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'filepath' => array(
+        'description' => 'Path of the file relative to Drupal root.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'filemime' => array(
+        'description' => "The file's MIME type.",
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'filesize' => array(
+        'description' => 'The size of the file in bytes.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'description' => 'A bitmapped field indicating the status of the file the least sigifigant bit indicates temporary (1) or permanent (0). Temporary files older than DRUPAL_MAXIMUM_TEMP_FILE_AGE will be removed during a cron run.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'timestamp' => array(
+        'description' => 'UNIX timestamp for when the file was added.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'status' => array('status'),
+      'timestamp' => array('timestamp'),
+    ),
+    'unique keys' => array(
+      'filepath' => array('filepath'),
+    ),
+    'primary key' => array('fid'),
+  );
+  db_create_table($ret, 'file', $schema['file']);
+
   return $ret;
 }
 
