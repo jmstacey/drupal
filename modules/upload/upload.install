@@ -104,6 +104,10 @@ function upload_schema() {
 function upload_update_7000(&$sandbox) {
   $ret = array();
 
+  /*
+    TODO: Fix the updates. This is broken. See http://drupal.org/node/329301#comment-1404336
+  */
+
   if (!isset($sandbox['progress'])) {
     // Initialize batch update information.
     $sandbox['progress'] = 0;
