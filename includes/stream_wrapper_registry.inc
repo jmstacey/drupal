@@ -117,7 +117,7 @@ class DrupalStreamWrapperRegistry {
    */
   public static function getStreamTarget($uri) {
     $data = explode('://', $uri, 2);
-    return count($data) == 2 ? $data[1] : FALSE;
+    return count($data) == 2 ? '/'. $data[1] : FALSE;
   }
 
   /**
