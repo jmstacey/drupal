@@ -92,20 +92,18 @@ define('FILE_STATUS_PERMANENT', 1);
 /**
  * Create the download path to a file.
  *
- * @param $path 
- *   A string containing the path of the file to generate URL for.
+ * @param $uri
+ *   A string containing the URI of the file to generate URL for.
  * @return string
- *   A string containing a URL that can be used to download the file.
+ *   A string containing a URL that can be used to download the file
  */
-function file_create_url($path) {
+function file_create_url($uri) {
+	
+	if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+		return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->getExternalUrl($uri);
+	}
 
-  /*
-    TODO: Fix this. It doesn't work.
-  */
-  $path = 'public://'. $path;
-  
-
-  return DrupalStreamWrapperRegistry::getInstanceByUri($path)->getExternalUrl($path);
+//  return DrupalStreamWrapperRegistry::getInstanceByUri($path)->getExternalUrl($path);
 
   // TODO: Is there a reason the following is still around?
   // see http://github.com/jmstacey/drupal/commit/7766acad129accd204fafa716503c9bd0d7e13a2
@@ -1424,8 +1422,9 @@ function file_transfer($source, $headers) {
  */
 function file_download() {
   // Merge remainder of arguments from GET['q'], into relative file path.
-  $args = func_get_args();
-  $filepath = implode('/', $args);
+  $args 		= func_get_args();
+	$scheme 	= array_shift($args);
+  $filepath = $scheme . '://' . implode('/', $args);
 
   // Maintain compatibility with old ?file=paths saved in node bodies.
   if (isset($_GET['file'])) {
