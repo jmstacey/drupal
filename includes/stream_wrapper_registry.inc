@@ -93,7 +93,7 @@ class DrupalStreamWrapperRegistry {
    * A stream is referenced as scheme://target.
    *
    * @param $uri
-   *   A stream, referenced as scheme://target
+   *   A stream, referenced as scheme://target.
    * @return mixed
    *   A string containing the name of the scheme, or FALSE if none.
    *   For example, the URI public://example.txt would return public.
@@ -101,6 +101,48 @@ class DrupalStreamWrapperRegistry {
   public static function getStreamScheme($uri) {
     $data = explode('://', $uri, 2);
     return count($data) == 2 ? $data[0] : FALSE;
+  }
+
+  /**
+   * Is the provided scheme valid?
+   *
+   * Confirms that there is a registered stream handler for the
+   * provided scheme and that it is callable. This is usefule if
+   * you want to confirm a valid scheme without creating a new instance
+   * of the registered handler.
+   *
+   * A stream is referenced as scheme://target.
+   *
+   * @code
+   *   // Return 'public'
+   *   DrupalStreamWrapperRegistry::getStreamValidate('public://example.txt');
+   *
+   *   // Return FALSE unless there is a registered wrapper for 'foobar'
+   *   DrupalStreamWrapperRegistry::getStreamValidate('foobar://exampl.txt');
+   *
+   * @param $uri
+   *   A stream, referenced as scheme://target.
+   * @return mixed
+   *   Returns a string containing the name of a validated stream.
+   *   Returns false if the URI does not contain a scheme or the scheme
+   *   does not have a registered handler.
+   */
+  public static function getValidStreamScheme($uri) {
+    $data = explode('://', $uri, 2);
+
+    // URI does not contain a scheme
+    if (count($data) != 2)) {
+      return FALSE
+    }
+
+    // Does the scheme have a registered handler that is callable?
+    $class = self::getClassName($scheme);
+    if (class_exists($class)) {
+      return $data[0];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**
