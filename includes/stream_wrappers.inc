@@ -65,7 +65,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *   Stream wrapper resource url.
    * @return string
    */
-  public static function getExternalUrl($uri);
+  public function getExternalUrl($uri);
 
   /**
    * Return the mime type of a resource.
@@ -74,7 +74,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *   Stream wrapper resource url.
    * @return string
    */
-  static function getMimeType($uri);
+  function getMimeType($uri);
 
   /**
    * Change permissions of stream.
@@ -88,7 +88,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * @return bool
    *   Returns TRUE on success or FALSE on failure.
    */
-  public static function chmod($uri, $mode);
+  public function chmod($uri, $mode);
 
   /**
    * Returns canonicalized absolute pathname.
@@ -153,23 +153,23 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Interpolate the URI path, adding the base path from $this->getDirectoryPath().
    */
   function getInternalUri($uri) {
-    return $this->getDirectoryPath() . DrupalStreamWrapperRegistry::getStreamTarget($uri);
+    return $this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($uri);
   }
 
-  static function getExternalUrl($uri) {
+  function getExternalUrl($uri) {
     return $uri;
   }
 
-  static function getMimeType($uri) {
+  function getMimeType($uri) {
     return file_get_mimetype(basename($uri));
   }
 
-  static function chmod($uri, $mode) {
+  function chmod($uri, $mode) {
     return @chmod($this->realpath($uri), $mode);
   }
 
   function realpath($uri) {
-    return @realpath($this->getDirectoryPath() . DrupalStreamWrapperRegistry::getStreamTarget($uri));
+    return @realpath($this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($uri));
   }
 
   /**
@@ -491,7 +491,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return the HTML URI of a public file.
    */
-  static function getExternalUrl($uri) {
+  function getExternalUrl($uri) {
     $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
     return $GLOBALS['base_url'] . '/' . self::getDirectoryPath() . '/' . $path;
   }
@@ -517,7 +517,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return the HTML URI of a private file.
    */
-  static function getExternalUrl($uri) {
+  function getExternalUrl($uri) {
     $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
     return url('system/files/' . parse_url($uri, PHP_URL_PATH), array('absolute' => TRUE));
   }
@@ -574,7 +574,7 @@ class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return the HTML URI of a temporary file().
    */
-  static function getExternalUrl($uri) {
+  function getExternalUrl($uri) {
 // TODO: This needs it's own separate menu handler.
     $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
     return url('system/files/' . $path, array('absolute' => TRUE));

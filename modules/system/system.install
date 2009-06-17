@@ -617,6 +617,9 @@ function system_schema() {
   $schema['cache_registry'] = $schema['cache'];
   $schema['cache_registry']['description'] = 'Cache table for the code registry system to remember what code files need to be loaded on any given page.';
 
+  /*
+    TODO: Update the master record when removing the status column.
+  */
   $schema['file'] = array(
     'description' => 'Stores information for uploaded files.',
     'fields' => array(
@@ -640,7 +643,7 @@ function system_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'filepath' => array(
+      'uri' => array(
         'description' => 'Path of the file relative to Drupal root.',
         'type' => 'varchar',
         'length' => 255,
@@ -681,7 +684,7 @@ function system_schema() {
       'timestamp' => array('timestamp'),
     ),
     'unique keys' => array(
-      'filepath' => array('filepath'),
+      'uri' => array('uri'),
     ),
     'primary key' => array('fid'),
     'foreign keys' => array(
@@ -3567,6 +3570,10 @@ function system_update_7027() {
  */
 function system_update_7028() {
   $ret = array();
+
+  /*
+    TODO Update the update record when removing the status column
+  */
 
   $schema['file'] = array(
     'description' => 'Stores information for uploaded files.',

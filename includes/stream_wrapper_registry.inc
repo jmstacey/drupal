@@ -155,11 +155,14 @@ class DrupalStreamWrapperRegistry {
    * @return mixed
    *   A string containing the target (path), or FALSE if none.
    *   For example, the URI public://sample/test.txt would return 
-   *   /sample/test.txt
+   *   sample/test.txt
    */
   public static function getStreamTarget($uri) {
     $data = explode('://', $uri, 2);
-    return count($data) == 2 ? '/'. $data[1] : FALSE;
+    // scheme://target
+    // $data[0]://$data[1]
+
+    return count($data) == 2 ? $data[1] : FALSE;
   }
 
   /**

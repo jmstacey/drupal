@@ -65,7 +65,7 @@ class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return the HTML URI of a public file.
    */
-  static function getExternalUrl($uri) {
+  function getExternalUrl($uri) {
     return '/dummy/example.txt';
   }
 
@@ -89,7 +89,7 @@ class FileTestCase extends DrupalWebTestCase {
     $this->assertEqual($before->fid, $after->fid, t('File id is the same: %file1 == %file2.', array('%file1' => $before->fid, '%file2' => $after->fid)), 'File unchanged');
     $this->assertEqual($before->uid, $after->uid, t('File owner is the same: %file1 == %file2.', array('%file1' => $before->uid, '%file2' => $after->uid)), 'File unchanged');
     $this->assertEqual($before->filename, $after->filename, t('File name is the same: %file1 == %file2.', array('%file1' => $before->filename, '%file2' => $after->filename)), 'File unchanged');
-    $this->assertEqual($before->filepath, $after->filepath, t('File path is the same: %file1 == %file2.', array('%file1' => $before->filepath, '%file2' => $after->filepath)), 'File unchanged');
+    $this->assertEqual($before->uri, $after->uri, t('File path is the same: %file1 == %file2.', array('%file1' => $before->uri, '%file2' => $after->uri)), 'File unchanged');
     $this->assertEqual($before->filemime, $after->filemime, t('File MIME type is the same: %file1 == %file2.', array('%file1' => $before->filemime, '%file2' => $after->filemime)), 'File unchanged');
     $this->assertEqual($before->filesize, $after->filesize, t('File size is the same: %file1 == %file2.', array('%file1' => $before->filesize, '%file2' => $after->filesize)), 'File unchanged');
     $this->assertEqual($before->status, $after->status, t('File status is the same: %file1 == %file2.', array('%file1' => $before->status, '%file2' => $after->status)), 'File unchanged');
@@ -105,7 +105,7 @@ class FileTestCase extends DrupalWebTestCase {
    */
   function assertDifferentFile($file1, $file2) {
     $this->assertNotEqual($file1->fid, $file2->fid, t('Files have different ids: %file1 != %file2.', array('%file1' => $file1->fid, '%file2' => $file2->fid)), 'Different file');
-    $this->assertNotEqual($file1->filepath, $file2->filepath, t('Files have different paths: %file1 != %file2.', array('%file1' => $file1->filepath, '%file2' => $file2->filepath)), 'Different file');
+    $this->assertNotEqual($file1->uri, $file2->uri, t('Files have different paths: %file1 != %file2.', array('%file1' => $file1->uri, '%file2' => $file2->uri)), 'Different file');
   }
 
   /**
@@ -118,7 +118,7 @@ class FileTestCase extends DrupalWebTestCase {
    */
   function assertSameFile($file1, $file2) {
     $this->assertEqual($file1->fid, $file2->fid, t('Files have the same ids: %file1 == %file2.', array('%file1' => $file1->fid, '%file2-fid' => $file2->fid)), 'Same file');
-    $this->assertEqual($file1->filepath, $file2->filepath, t('Files have the same path: %file1 == %file2.', array('%file1' => $file1->filepath, '%file2' => $file2->filepath)), 'Same file');
+    $this->assertEqual($file1->uri, $file2->uri, t('Files have the same path: %file1 == %file2.', array('%file1' => $file1->uri, '%file2' => $file2->uri)), 'Same file');
   }
 
   /**
@@ -187,35 +187,35 @@ class FileTestCase extends DrupalWebTestCase {
    * Create a file and save it to the files table and assert that it occurs
    * correctly.
    *
-   * @param $filepath
-   *   Optional string specifying the file path. If none is provided then a
-   *   randomly named file will be created in the site's files directory.
+   * @param $uri
+   *   Optional string specifying the file URI. If none is provided then a
+   *   randomly named file will be created in the site's public files directory.
    * @param $contents
    *   Optional contents to save into the file. If a NULL value is provided an
    *   arbitrary string will be used.
    * @return
    *   File object.
    */
-  function createFile($filepath = NULL, $contents = NULL) {
-    if (is_null($filepath)) {
-      $filepath = file_directory_path('public') . '/' . $this->randomName();
+  function createFile($uri = NULL, $contents = NULL) {
+    if (is_null($uri)) {
+      $uri = 'public://' . $this->randomName();
     }
 
     if (is_null($contents)) {
       $contents = "file_put_contents() doesn't seem to appreciate empty strings so let's put in some data.";
     }
 
-    file_put_contents($filepath, $contents);
-    $this->assertTrue(is_file($filepath), t('The test file exists on the disk.'), 'Create test file');
+    file_put_contents($uri, $contents);
+    $this->assertTrue(is_file($uri), t('The test file exists on the disk.'), 'Create test file');
 
     $file = new stdClass();
-    $file->filepath = $filepath;
-    $file->filename = basename($file->filepath);
-    $file->filemime = 'text/plain';
-    $file->uid = 1;
+    $file->uri       = $uri;
+    $file->filename  = basename($file->uri);
+    $file->filemime  = 'text/plain';
+    $file->uid       = 1;
     $file->timestamp = REQUEST_TIME;
-    $file->filesize = filesize($file->filepath);
-    $file->status = 0;
+    $file->filesize  = filesize($file->uri);
+    $file->status    = 0;
     // Write the record directly rather than calling file_save() so we don't
     // invoke the hooks.
     $this->assertNotIdentical(drupal_write_record('file', $file), FALSE, t('The file was added to the database.'), 'Create test file');
@@ -372,12 +372,12 @@ class FileValidatorTest extends DrupalWebTestCase {
     parent::setUp();
 
     $this->image = new stdClass();
-    $this->image->filepath = 'misc/druplicon.png';
-    $this->image->filename = basename($this->image->filepath);
+    $this->image->uri = 'misc/druplicon.png';
+    $this->image->filename = basename($this->image->uri);
 
     $this->non_image = new stdClass();
-    $this->non_image->filepath = 'misc/jquery.js';
-    $this->non_image->filename = basename($this->non_image->filepath);
+    $this->non_image->uri = 'misc/jquery.js';
+    $this->non_image->filename = basename($this->non_image->uri);
   }
 
   /**
@@ -398,11 +398,11 @@ class FileValidatorTest extends DrupalWebTestCase {
    *  This ensures a specific file is actually an image.
    */
   function testFileValidateIsImage() {
-    $this->assertTrue(file_exists($this->image->filepath), t('The image being tested exists.'), 'File');
+    $this->assertTrue(file_exists($this->image->uri), t('The image being tested exists.'), 'File');
     $errors = file_validate_is_image($this->image);
     $this->assertEqual(count($errors), 0, t('No error reported for our image file.'), 'File');
 
-    $this->assertTrue(file_exists($this->non_image->filepath), t('The non-image being tested exists.'), 'File');
+    $this->assertTrue(file_exists($this->non_image->uri), t('The non-image being tested exists.'), 'File');
     $errors = file_validate_is_image($this->non_image);
     $this->assertEqual(count($errors), 1, t('An error reported for our non-image file.'), 'File');
   }
@@ -433,12 +433,12 @@ class FileValidatorTest extends DrupalWebTestCase {
       // Copy the image so that the original doesn't get resized.
       $temp_dir = file_directory_path('temp');
       copy(drupal_realpath('misc/druplicon.png'), drupal_realpath($temp_dir) . '/druplicon.png');
-      $this->image->filepath = $temp_dir . '/druplicon.png';
+      $this->image->uri = $temp_dir . '/druplicon.png';
 
       $errors = file_validate_image_resolution($this->image, '10x5');
       $this->assertEqual(count($errors), 0, t('No errors should be reported when an oversized image can be scaled down.'), 'File');
 
-      $info = image_get_info($this->image->filepath);
+      $info = image_get_info($this->image->uri);
       $this->assertTrue($info['width'] <= 10, t('Image scaled to correct width.'), 'File');
       $this->assertTrue($info['height'] <= 5, t('Image scaled to correct height.'), 'File');
 
@@ -535,13 +535,13 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     // No filename.
     $filepath = file_unmanaged_save_data($contents);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path('public'), dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), drupal_dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
     $filepath = file_unmanaged_save_data($contents, 'asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path('public'), dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), drupal_dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));
@@ -576,14 +576,14 @@ class FileSaveUploadTest extends FileHookTestCase {
     $this->drupalLogin($account);
 
     $this->image = current($this->drupalGetTestFiles('image'));
-    $this->assertTrue(is_file($this->image->filepath), t("The file we're going to upload exists."));
+    $this->assertTrue(is_file($this->image->uri), t("The file we're going to upload exists."));
 
     $this->maxFidBefore = db_query('SELECT MAX(fid) AS fid FROM {file}')->fetchField();
 
     // Upload with replace to gurantee there's something there.
     $edit = array(
       'file_test_replace' => FILE_EXISTS_REPLACE,
-      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->uri)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -610,7 +610,7 @@ class FileSaveUploadTest extends FileHookTestCase {
     // Upload a second file.
     $max_fid_before = db_query('SELECT MAX(fid) AS fid FROM {file}')->fetchField();
     $image2 = current($this->drupalGetTestFiles('image'));
-    $edit = array('files[file_test_upload]' => drupal_realpath($image2->filepath));
+    $edit = array('files[file_test_upload]' => drupal_realpath($image2->uri));
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
     $this->assertRaw(t('You WIN!'));
@@ -635,7 +635,7 @@ class FileSaveUploadTest extends FileHookTestCase {
   function testExistingRename() {
     $edit = array(
       'file_test_replace' => FILE_EXISTS_RENAME,
-      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->uri)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -651,7 +651,7 @@ class FileSaveUploadTest extends FileHookTestCase {
   function testExistingReplace() {
     $edit = array(
       'file_test_replace' => FILE_EXISTS_REPLACE,
-      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->uri)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -667,7 +667,7 @@ class FileSaveUploadTest extends FileHookTestCase {
   function testExistingError() {
     $edit = array(
       'file_test_replace' => FILE_EXISTS_ERROR,
-      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->uri)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -880,15 +880,15 @@ class FileScanDirectoryTest extends FileTestCase {
 
     // Check the first file.
     $file = reset($all_files);
-    $this->assertEqual(key($all_files), $file->filepath, t('Correct array key was used for the first returned file.'));
-    $this->assertEqual($file->filepath, $this->path . '/javascript-1.txt', t('First file name was set correctly.'));
+    $this->assertEqual(key($all_files), $file->uri, t('Correct array key was used for the first returned file.'));
+    $this->assertEqual($file->uri, $this->path . '/javascript-1.txt', t('First file name was set correctly.'));
     $this->assertEqual($file->filename, 'javascript-1.txt', t('First basename was set correctly'));
     $this->assertEqual($file->name, 'javascript-1', t('First name was set correctly.'));
 
     // Check the second file.
     $file = next($all_files);
-    $this->assertEqual(key($all_files), $file->filepath, t('Correct array key was used for the second returned file.'));
-    $this->assertEqual($file->filepath, $this->path . '/javascript-2.script', t('Second file name was set correctly.'));
+    $this->assertEqual(key($all_files), $file->uri, t('Correct array key was used for the second returned file.'));
+    $this->assertEqual($file->uri, $this->path . '/javascript-2.script', t('Second file name was set correctly.'));
     $this->assertEqual($file->filename, 'javascript-2.script', t('Second basename was set correctly'));
     $this->assertEqual($file->name, 'javascript-2', t('Second name was set correctly.'));
   }
@@ -999,8 +999,8 @@ class FileUnmanagedDeleteTest extends FileTestCase {
     $file = $this->createFile();
 
     // Delete a regular file
-    $this->assertTrue(file_unmanaged_delete($file->filepath), t('Deleted worked.'));
-    $this->assertFalse(file_exists($file->filepath), t('Test file has actually been deleted.'));
+    $this->assertTrue(file_unmanaged_delete($file->uri), t('Deleted worked.'));
+    $this->assertFalse(file_exists($file->uri), t('Test file has actually been deleted.'));
   }
 
   /**
@@ -1123,11 +1123,11 @@ class FileUnmanagedMoveTest extends FileTestCase {
 
     // Moving to a new name.
     $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
-    $new_filepath = file_unmanaged_move($file->filepath, $desired_filepath, FILE_EXISTS_ERROR);
+    $new_filepath = file_unmanaged_move($file->uri, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Move was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
     $this->assertTrue(file_exists($new_filepath), t('File exists at the new location.'));
-    $this->assertFalse(file_exists($file->filepath), t('No file remains at the old location.'));
+    $this->assertFalse(file_exists($file->uri), t('No file remains at the old location.'));
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Moving with rename.
@@ -1161,14 +1161,14 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $file = $this->createFile();
 
     // Move the file onto itself without renaming shouldn't make changes.
-    $new_filepath = file_unmanaged_move($file->filepath, $file->filepath, FILE_EXISTS_REPLACE);
+    $new_filepath = file_unmanaged_move($file->uri, $file->uri, FILE_EXISTS_REPLACE);
     $this->assertFalse($new_filepath, t('Moving onto itself without renaming fails.'));
-    $this->assertTrue(file_exists($file->filepath), t('File exists after moving onto itself.'));
+    $this->assertTrue(file_exists($file->uri), t('File exists after moving onto itself.'));
 
     // Move the file onto itself with renaming will result in a new filename.
-    $new_filepath = file_unmanaged_move($file->filepath, $file->filepath, FILE_EXISTS_RENAME);
+    $new_filepath = file_unmanaged_move($file->uri, $file->uri, FILE_EXISTS_RENAME);
     $this->assertTrue($new_filepath, t('Moving onto itself with renaming works.'));
-    $this->assertFalse(file_exists($file->filepath), t('Original file has been removed.'));
+    $this->assertFalse(file_exists($file->uri), t('Original file has been removed.'));
     $this->assertTrue(file_exists($new_filepath), t('File exists after moving onto itself.'));
   }
 }
@@ -1195,20 +1195,20 @@ class FileUnmanagedCopyTest extends FileTestCase {
 
     // Copying to a new name.
     $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
-    $new_filepath = file_unmanaged_copy($file->filepath, $desired_filepath, FILE_EXISTS_ERROR);
+    $new_filepath = file_unmanaged_copy($file->uri, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Copy was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
-    $this->assertTrue(file_exists($file->filepath), t('Original file remains.'));
+    $this->assertTrue(file_exists($file->uri), t('Original file remains.'));
     $this->assertTrue(file_exists($new_filepath), t('New file exists.'));
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Copying with rename.
     $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
     $this->assertTrue(file_put_contents($desired_filepath, ' '), t('Created a file so a rename will have to happen.'));
-    $newer_filepath = file_unmanaged_copy($file->filepath, $desired_filepath, FILE_EXISTS_RENAME);
+    $newer_filepath = file_unmanaged_copy($file->uri, $desired_filepath, FILE_EXISTS_RENAME);
     $this->assertTrue($newer_filepath, t('Copy was successful.'));
     $this->assertNotEqual($newer_filepath, $desired_filepath, t('Returned expected filepath.'));
-    $this->assertTrue(file_exists($file->filepath), t('Original file remains.'));
+    $this->assertTrue(file_exists($file->uri), t('Original file remains.'));
     $this->assertTrue(file_exists($newer_filepath), t('New file exists.'));
     $this->assertFilePermissions($newer_filepath, variable_get('file_chmod_file', 0664));
 
@@ -1234,28 +1234,28 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $file = $this->createFile();
 
     // Copy the file onto itself with renaming works.
-    $new_filepath = file_unmanaged_copy($file->filepath, $file->filepath, FILE_EXISTS_RENAME);
+    $new_filepath = file_unmanaged_copy($file->uri, $file->uri, FILE_EXISTS_RENAME);
     $this->assertTrue($new_filepath, t('Copying onto itself with renaming works.'));
-    $this->assertNotEqual($new_filepath, $file->filepath, t('Copied file has a new name.'));
-    $this->assertTrue(file_exists($file->filepath), t('Original file exists after copying onto itself.'));
+    $this->assertNotEqual($new_filepath, $file->uri, t('Copied file has a new name.'));
+    $this->assertTrue(file_exists($file->uri), t('Original file exists after copying onto itself.'));
     $this->assertTrue(file_exists($new_filepath), t('Copied file exists after copying onto itself.'));
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Copy the file onto itself without renaming fails.
-    $new_filepath = file_unmanaged_copy($file->filepath, $file->filepath, FILE_EXISTS_ERROR);
+    $new_filepath = file_unmanaged_copy($file->uri, $file->uri, FILE_EXISTS_ERROR);
     $this->assertFalse($new_filepath, t('Copying onto itself without renaming fails.'));
-    $this->assertTrue(file_exists($file->filepath), t('File exists after copying onto itself.'));
+    $this->assertTrue(file_exists($file->uri), t('File exists after copying onto itself.'));
 
     // Copy the file into same directory without renaming fails.
-    $new_filepath = file_unmanaged_copy($file->filepath, dirname($file->filepath), FILE_EXISTS_ERROR);
+    $new_filepath = file_unmanaged_copy($file->uri, drupal_dirname($file->uri), FILE_EXISTS_ERROR);
     $this->assertFalse($new_filepath, t('Copying onto itself fails.'));
-    $this->assertTrue(file_exists($file->filepath), t('File exists after copying onto itself.'));
+    $this->assertTrue(file_exists($file->uri), t('File exists after copying onto itself.'));
 
     // Copy the file into same directory with renaming works.
-    $new_filepath = file_unmanaged_copy($file->filepath, dirname($file->filepath), FILE_EXISTS_RENAME);
+    $new_filepath = file_unmanaged_copy($file->uri, drupal_dirname($file->uri), FILE_EXISTS_RENAME);
     $this->assertTrue($new_filepath, t('Copying into same directory works.'));
-    $this->assertNotEqual($new_filepath, $file->filepath, t('Copied file has a new name.'));
-    $this->assertTrue(file_exists($file->filepath), t('Original file exists after copying onto itself.'));
+    $this->assertNotEqual($new_filepath, $file->uri, t('Copied file has a new name.'));
+    $this->assertTrue(file_exists($file->uri), t('Original file exists after copying onto itself.'));
     $this->assertTrue(file_exists($new_filepath), t('Copied file exists after copying onto itself.'));
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
   }
@@ -1280,10 +1280,10 @@ class FileDeleteTest extends FileHookTestCase {
     $file = $this->createFile();
 
     // Check that deletion removes the file and database record.
-    $this->assertTrue(is_file($file->filepath), t("File exists."));
+    $this->assertTrue(is_file($file->uri), t("File exists."));
     $this->assertIdentical(file_delete($file), TRUE, t("Delete worked."));
     $this->assertFileHooksCalled(array('references', 'delete'));
-    $this->assertFalse(file_exists($file->filepath), t("Test file has actually been deleted."));
+    $this->assertFalse(file_exists($file->uri), t("Test file has actually been deleted."));
     $this->assertFalse(file_load($file->fid), t('File was removed from the database.'));
 
     // TODO: implement hook_file_references() in file_test.module and report a
@@ -1318,8 +1318,8 @@ class FileMoveTest extends FileHookTestCase {
 
     // Check the return status and that the contents changed.
     $this->assertTrue($result, t('File moved sucessfully.'));
-    $this->assertFalse(file_exists($source->filepath));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of file correctly written.'));
+    $this->assertFalse(file_exists($source->uri));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of file correctly written.'));
 
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(array('move', 'update'));
@@ -1346,12 +1346,12 @@ class FileMoveTest extends FileHookTestCase {
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_move(clone $source, $target->filepath, FILE_EXISTS_RENAME);
+    $result = file_move(clone $source, $target->uri, FILE_EXISTS_RENAME);
 
     // Check the return status and that the contents changed.
     $this->assertTrue($result, t('File moved sucessfully.'));
-    $this->assertFalse(file_exists($source->filepath));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of file correctly written.'));
+    $this->assertFalse(file_exists($source->uri));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of file correctly written.'));
 
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(array('move', 'update'));
@@ -1366,7 +1366,7 @@ class FileMoveTest extends FileHookTestCase {
     // Compare the source and results.
     $loaded_source = file_load($source->fid, TRUE);
     $this->assertEqual($loaded_source->fid, $result->fid, t("Returned file's id matches the source."));
-    $this->assertNotEqual($loaded_source->filepath, $source->filepath, t("Returned file path has changed from the original."));
+    $this->assertNotEqual($loaded_source->uri, $source->uri, t("Returned file path has changed from the original."));
   }
 
   /**
@@ -1381,11 +1381,11 @@ class FileMoveTest extends FileHookTestCase {
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_move(clone $source, $target->filepath, FILE_EXISTS_REPLACE);
+    $result = file_move(clone $source, $target->uri, FILE_EXISTS_REPLACE);
 
     // Look at the results.
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of file were overwritten.'));
-    $this->assertFalse(file_exists($source->filepath));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of file were overwritten.'));
+    $this->assertFalse(file_exists($source->uri));
     $this->assertTrue($result, t('File moved sucessfully.'));
 
     // Check that the correct hooks were called.
@@ -1411,9 +1411,9 @@ class FileMoveTest extends FileHookTestCase {
 
     // Copy the file over itself. Clone the object so we don't have to worry
     // about the function changing our reference copy.
-    $result = file_move(clone $source, $source->filepath, FILE_EXISTS_REPLACE);
+    $result = file_move(clone $source, $source->uri, FILE_EXISTS_REPLACE);
     $this->assertFalse($result, t('File move failed.'));
-    $this->assertEqual($contents, file_get_contents($source->filepath), t('Contents of file were not altered.'));
+    $this->assertEqual($contents, file_get_contents($source->uri), t('Contents of file were not altered.'));
 
     // Check that no hooks were called while failing.
     $this->assertFileHooksCalled(array());
@@ -1435,12 +1435,12 @@ class FileMoveTest extends FileHookTestCase {
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_move(clone $source, $target->filepath, FILE_EXISTS_ERROR);
+    $result = file_move(clone $source, $target->uri, FILE_EXISTS_ERROR);
 
     // Check the return status and that the contents did not change.
     $this->assertFalse($result, t('File move failed.'));
-    $this->assertTrue(file_exists($source->filepath));
-    $this->assertEqual($contents, file_get_contents($target->filepath), t('Contents of file were not altered.'));
+    $this->assertTrue(file_exists($source->uri));
+    $this->assertEqual($contents, file_get_contents($target->uri), t('Contents of file were not altered.'));
 
     // Check that no hooks were called while failing.
     $this->assertFileHooksCalled(array());
@@ -1469,25 +1469,25 @@ class FileCopyTest extends FileHookTestCase {
    * Test file copying in the normal, base case.
    */
   function testNormal() {
-    $contents = $this->randomName(10);
-    $source = $this->createFile(NULL, $contents);
-    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
+    $contents    = $this->randomName(10);
+    $source      = $this->createFile(NULL, $contents);
+    $desired_uri = 'public://' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_copy(clone $source, $desired_filepath, FILE_EXISTS_ERROR);
+    $result = file_copy(clone $source, $desired_uri, FILE_EXISTS_ERROR);
 
     // Check the return status and that the contents changed.
     $this->assertTrue($result, t('File copied sucessfully.'));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of file were copied correctly.'));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of file were copied correctly.'));
 
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(array('copy', 'insert'));
 
     $this->assertDifferentFile($source, $result);
-    $this->assertEqual($result->filepath, $desired_filepath, t('The copied file object has the desired filepath.'));
-    $this->assertTrue(file_exists($source->filepath), t('The original file still exists.'));
-    $this->assertTrue(file_exists($result->filepath), t('The copied file exists.'));
+    $this->assertEqual($result->uri, $desired_uri, t('The copied file object has the desired filepath.'));
+    $this->assertTrue(file_exists($source->uri), t('The original file still exists.'));
+    $this->assertTrue(file_exists($result->uri), t('The copied file exists.'));
 
     // Reload the file from the database and check that the changes were
     // actually saved.
@@ -1500,18 +1500,18 @@ class FileCopyTest extends FileHookTestCase {
   function testExistingRename() {
     // Setup a file to overwrite.
     $contents = $this->randomName(10);
-    $source = $this->createFile(NULL, $contents);
-    $target = $this->createFile();
+    $source   = $this->createFile(NULL, $contents);
+    $target   = $this->createFile();
     $this->assertDifferentFile($source, $target);
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_copy(clone $source, $target->filepath, FILE_EXISTS_RENAME);
+    $result = file_copy(clone $source, $target->uri, FILE_EXISTS_RENAME);
 
     // Check the return status and that the contents changed.
     $this->assertTrue($result, t('File copied sucessfully.'));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of file were copied correctly.'));
-    $this->assertNotEqual($result->filepath, $source->filepath, t('Returned file path has changed from the original.'));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of file were copied correctly.'));
+    $this->assertNotEqual($result->uri, $source->uri, t('Returned file path has changed from the original.'));
 
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(array('copy', 'insert'));
@@ -1546,11 +1546,11 @@ class FileCopyTest extends FileHookTestCase {
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_copy(clone $source, $target->filepath, FILE_EXISTS_REPLACE);
+    $result = file_copy(clone $source, $target->uri, FILE_EXISTS_REPLACE);
 
     // Check the return status and that the contents changed.
     $this->assertTrue($result, t('File copied sucessfully.'));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of file were overwritten.'));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of file were overwritten.'));
     $this->assertDifferentFile($source, $result);
 
     // Check that the correct hooks were called.
@@ -1584,11 +1584,11 @@ class FileCopyTest extends FileHookTestCase {
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
-    $result = file_copy(clone $source, $target->filepath, FILE_EXISTS_ERROR);
+    $result = file_copy(clone $source, $target->uri, FILE_EXISTS_ERROR);
 
     // Check the return status and that the contents were not changed.
     $this->assertFalse($result, t('File copy failed.'));
-    $this->assertEqual($contents, file_get_contents($target->filepath), t('Contents of file were not altered.'));
+    $this->assertEqual($contents, file_get_contents($target->uri), t('Contents of file were not altered.'));
 
     // Check that the correct hooks were called.
     $this->assertFileHooksCalled(array());
@@ -1654,7 +1654,7 @@ class FileLoadTest extends FileHookTestCase {
     $this->assertFileHookCalled('load');
     $this->assertTrue(is_object($by_fid_file), t('file_load() returned an object.'));
     $this->assertEqual($by_fid_file->fid, $file->fid, t("Loading by fid got the same fid."), 'File');
-    $this->assertEqual($by_fid_file->filepath, $file->filepath, t("Loading by fid got the correct filepath."), 'File');
+    $this->assertEqual($by_fid_file->uri, $file->uri, t("Loading by fid got the correct filepath."), 'File');
     $this->assertEqual($by_fid_file->filename, $file->filename, t("Loading by fid got the correct filename."), 'File');
     $this->assertEqual($by_fid_file->filemime, $file->filemime, t("Loading by fid got the correct MIME type."), 'File');
     $this->assertEqual($by_fid_file->status, $file->status, t("Loading by fid got the correct status."), 'File');
@@ -1678,7 +1678,7 @@ class FileLoadTest extends FileHookTestCase {
 
     // Load by path.
     file_test_reset();
-    $by_path_files = file_load_multiple(array(), array('filepath' => $file->filepath));
+    $by_path_files = file_load_multiple(array(), array('filepath' => $file->uri));
     $this->assertFileHookCalled('load');
     $this->assertEqual(1, count($by_path_files), t('file_load_multiple() returned an array of the correct size.'));
     $by_path_file = reset($by_path_files);
@@ -1692,7 +1692,7 @@ class FileLoadTest extends FileHookTestCase {
     $this->assertEqual(1, count($by_fid_files), t('file_load_multiple() returned an array of the correct size.'));
     $by_fid_file = reset($by_fid_files);
     $this->assertTrue($by_fid_file->file_test['loaded'], t('file_test_file_load() was able to modify the file during load.'));
-    $this->assertEqual($by_fid_file->filepath, $file->filepath, t("Loading by fid got the correct filepath."), 'File');
+    $this->assertEqual($by_fid_file->uri, $file->uri, t("Loading by fid got the correct filepath."), 'File');
   }
 }
 
@@ -1731,7 +1731,7 @@ class FileSaveTest extends FileHookTestCase {
     $loaded_file = db_query('SELECT * FROM {file} f WHERE f.fid = :fid', array(':fid' => $saved_file->fid))->fetch(PDO::FETCH_OBJ);
     $this->assertNotNull($loaded_file, t("Record exists in the database."));
     $this->assertEqual($loaded_file->status, $file->status, t("Status was saved correctly."));
-    $this->assertEqual($saved_file->filesize, filesize($file->filepath), t("File size was set correctly."), 'File');
+    $this->assertEqual($saved_file->filesize, filesize($file->uri), t("File size was set correctly."), 'File');
     $this->assertTrue($saved_file->timestamp > 1, t("File size was set correctly."), 'File');
 
 
@@ -1812,9 +1812,9 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents);
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
-    $this->assertEqual($result->filename, basename($result->filepath), t("Filename was set to the file's basename."));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of the file are correct.'));
+    $this->assertEqual(file_directory_path('public'), drupal_dirname($result->uri), t("File was placed in Drupal's files directory."));
+    $this->assertEqual($result->filename, basename($result->uri), t("Filename was set to the file's basename."));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
     $this->assertEqual($result->status, FILE_STATUS_PERMANENT, t("The file's status was set to permanent."));
 
@@ -1834,9 +1834,9 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, 'asdf.txt');
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
-    $this->assertEqual('asdf.txt', basename($result->filepath), t('File was named correctly.'));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of the file are correct.'));
+    $this->assertEqual(file_directory_path('public'), drupal_dirname($result->uri), t("File was placed in Drupal's files directory."));
+    $this->assertEqual('asdf.txt', basename($result->uri), t('File was named correctly.'));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'text/plain', t('A MIME type was set.'));
     $this->assertEqual($result->status, FILE_STATUS_PERMANENT, t("The file's status was set to permanent."));
 
@@ -1855,12 +1855,12 @@ class FileSaveDataTest extends FileHookTestCase {
     $existing = $this->createFile();
     $contents = $this->randomName(8);
 
-    $result = file_save_data($contents, $existing->filepath, FILE_EXISTS_RENAME);
+    $result = file_save_data($contents, $existing->uri, FILE_EXISTS_RENAME);
     $this->assertTrue($result, t("File saved sucessfully."));
 
-    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), drupal_dirname($result->uri), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t("Filename was set to the basename of the source, rather than that of the renamed file."));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t("Contents of the file are correct."));
+    $this->assertEqual($contents, file_get_contents($result->uri), t("Contents of the file are correct."));
     $this->assertEqual($result->filemime, 'application/octet-stream', t("A MIME type was set."));
     $this->assertEqual($result->status, FILE_STATUS_PERMANENT, t("The file's status was set to permanent."));
 
@@ -1883,12 +1883,12 @@ class FileSaveDataTest extends FileHookTestCase {
     $existing = $this->createFile();
     $contents = $this->randomName(8);
 
-    $result = file_save_data($contents, $existing->filepath, FILE_EXISTS_REPLACE);
+    $result = file_save_data($contents, $existing->uri, FILE_EXISTS_REPLACE);
     $this->assertTrue($result, t('File saved sucessfully.'));
 
-    $this->assertEqual(file_directory_path('public'), dirname($result->filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), drupal_dirname($result->uri), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t('Filename was set to the basename of the existing file, rather than preserving the original name.'));
-    $this->assertEqual($contents, file_get_contents($result->filepath), t('Contents of the file are correct.'));
+    $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
     $this->assertEqual($result->status, FILE_STATUS_PERMANENT, t("The file's status was set to permanent."));
 
@@ -1910,9 +1910,9 @@ class FileSaveDataTest extends FileHookTestCase {
     $existing = $this->createFile(NULL, $contents);
 
     // Check the overwrite error.
-    $result = file_save_data('asdf', $existing->filepath, FILE_EXISTS_ERROR);
+    $result = file_save_data('asdf', $existing->uri, FILE_EXISTS_ERROR);
     $this->assertFalse($result, t('Overwriting a file fails when FILE_EXISTS_ERROR is specified.'));
-    $this->assertEqual($contents, file_get_contents($existing->filepath), t('Contents of existing file were unchanged.'));
+    $this->assertEqual($contents, file_get_contents($existing->uri), t('Contents of existing file were unchanged.'));
 
     // Check that no hooks were called while failing.
     $this->assertFileHooksCalled(array());
