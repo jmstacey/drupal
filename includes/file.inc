@@ -232,21 +232,28 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
     }
   }
 
-	// TODO: Clean this ugly mess up.
-	// Watch out for the $directory/.htaccess which will break things if $directory is a stream scheme.
-//  if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
-//			 'public://' == $directory || 'private://' == $directory || 'temp://' == $directory && !is_file("$directory/.htaccess")) {
-//			 	
-//    $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
-//    if (file_put_contents("$directory/.htaccess", $htaccess_lines)) {
-//      drupal_chmod("$directory/.htaccess");
-//    }
-//    else {
-//      $variables = array('%directory' => $directory, '!htaccess' => '<br />' . nl2br(check_plain($htaccess_lines)));
-//      form_set_error($form_item, t("Security warning: Couldn't write .htaccess file. Please create a .htaccess file in your %directory directory which contains the following lines: <code>!htaccess</code>", $variables));
-//      watchdog('security', "Security warning: Couldn't write .htaccess file. Please create a .htaccess file in your %directory directory which contains the following lines: <code>!htaccess</code>", $variables, WATCHDOG_ERROR);
-//    }
-//  }
+  // Security SA_2006_06 compliance
+  if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+    $htaccess_path = $directory . '.htaccess';
+  }
+  else {
+    $htaccess_path = $directory . '/.htaccess';
+  }
+
+  // Try created the .htaccess file if it's missing from the public, private, or temp directories.
+  if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
+       'public://' == $directory || 'private://' == $directory || 'temp://' == $directory && !is_file("$directory/.htaccess")) {
+
+    $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
+    if (file_put_contents($htaccess_path, $htaccess_lines)) {
+      drupal_chmod($htaccess_path);
+    }
+    else {
+      $variables = array('%directory' => $directory, '!htaccess' => '<br />' . nl2br(check_plain($htaccess_lines)));
+      form_set_error($form_item, t("Security warning: Couldn't write .htaccess file. Please create a .htaccess file in your %directory directory which contains the following lines: <code>!htaccess</code>", $variables));
+      watchdog('security', "Security warning: Couldn't write .htaccess file. Please create a .htaccess file in your %directory directory which contains the following lines: <code>!htaccess</code>", $variables, WATCHDOG_ERROR);
+    }
+  }
 
   return TRUE;
 }
