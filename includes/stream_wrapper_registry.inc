@@ -131,12 +131,12 @@ class DrupalStreamWrapperRegistry {
     $data = explode('://', $uri, 2);
 
     // URI does not contain a scheme
-    if (count($data) != 2)) {
-      return FALSE
+    if (count($data) != 2) {
+      return FALSE;
     }
 
     // Does the scheme have a registered handler that is callable?
-    $class = self::getClassName($scheme);
+    $class = self::getClassName($data[0]);
     if (class_exists($class)) {
       return $data[0];
     }
