@@ -519,7 +519,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
    */
   function getExternalUrl($uri) {
     $path = str_replace('\\', '/', DrupalStreamWrapperRegistry::getStreamTarget($uri));
-    return url('system/files/private/' . $path, array('absolute' => TRUE));
+    return url('system/files/' . $path, array('absolute' => TRUE));
   }
 }
 
