@@ -2142,4 +2142,12 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
   function testGetStreamScheme() {
     $this->assertEqual('foo', DrupalStreamWrapperRegistry::getStreamScheme('foo://pork//chops'), t('Got the correct scheme from foo://asdf'));
   }
+
+  /**
+   * Test the getValidStreamScheme() function.
+   */
+  function testGetValidStreamScheme() {
+    $this->assertEqual('public', DrupalStreamWrapperRegistry::getValidStreamScheme('public://asdf'), t('Got a valid stream scheme from public://asdf'));
+    $this->assertFalse(DrupalStreamWrapperRegistry::getValidStreamScheme('foo://asdf'), t('Did not get a valid stream scheme from foo://asdf'));
+  }
 }
