@@ -187,34 +187,33 @@ class FileTestCase extends DrupalWebTestCase {
    * Create a file and save it to the files table and assert that it occurs
    * correctly.
    *
-   * @param $uri
-   *   Optional string specifying the file URI. If none is provided then a
-   *   randomly named file will be created in the site's public files directory.
+   * @param $path
+   *   Optional string specifying the file path. If none is provided then a
+   *   randomly named file will be created.
    * @param $contents
    *   Optional contents to save into the file. If a NULL value is provided an
    *   arbitrary string will be used.
    * @param $scheme
-   * 	 Optionaly string indicating the stream scheme to use. Drupal core includes
-   * 	 public://, private://, and temp://. The public:// wrapper is the default.
-   *	 The stream scheme to create the file as. Core includes public://, private://,
-   *	 temp://.
+   *   Optionaly string indicating the stream scheme to use. Drupal core includes
+   *   public://, private://, and temp://. The public:// wrapper is the default.
    * @return
    *   File object.
    */
-  function createFile($uri = NULL, $contents = NULL, $scheme = 'public://') {
-    if (is_null($uri)) {
-    	$uri = $scheme . $this->randomName();
+  function createFile($path = NULL, $contents = NULL, $scheme = 'public://') {
+    if (is_null($path)) {
+      $path = $this->randomName();
     }
+    $path = $scheme . $path;
 
     if (is_null($contents)) {
       $contents = "file_put_contents() doesn't seem to appreciate empty strings so let's put in some data.";
     }
 
-    file_put_contents($uri, $contents);
-    $this->assertTrue(is_file($uri), t('The test file exists on the disk.'), 'Create test file');
+    file_put_contents($path, $contents);
+    $this->assertTrue(is_file($path), t('The test file exists on the disk.'), 'Create test file');
 
     $file = new stdClass();
-    $file->uri       = $uri;
+    $file->uri       = $path;
     $file->filename  = basename($file->uri);
     $file->filemime  = 'text/plain';
     $file->uid       = 1;
@@ -1625,10 +1624,10 @@ class FileLoadTest extends FileHookTestCase {
   }
 
   /**
-   * Try to load a non-existent file by filepath.
+   * Try to load a non-existent file by URI.
    */
   function testLoadMissingFilepath() {
-    $this->assertFalse(reset(file_load_multiple(array(), array('filepath' => 'misc/druplicon.png'))), t("Try to load a file that doesn't exist in the database fails."));
+    $this->assertFalse(reset(file_load_multiple(array(), array('uri' => 'foobar://misc/druplicon.png'))), t("Try to load a file that doesn't exist in the database fails."));
     $this->assertFileHooksCalled(array());
   }
 
@@ -1645,15 +1644,7 @@ class FileLoadTest extends FileHookTestCase {
    */
   function testSingleValues() {
     // Create a new file object from scratch so we know the values.
-    $file = array(
-      'uid' => 1,
-      'filename' => 'druplicon.png',
-      'filepath' => 'misc/druplicon.png',
-      'filemime' => 'image/png',
-      'timestamp' => 1,
-      'status' => FILE_STATUS_PERMANENT,
-    );
-    $file = file_save($file);
+    $file = $this->createFile('druplicon.txt', NULL, 'public://');
 
     $by_fid_file = file_load($file->fid);
     $this->assertFileHookCalled('load');
@@ -1671,19 +1662,11 @@ class FileLoadTest extends FileHookTestCase {
    */
   function testMultiple() {
     // Create a new file object.
-    $file = array(
-      'uid' => 1,
-      'filename' => 'druplicon.png',
-      'filepath' => 'misc/druplicon.png',
-      'filemime' => 'image/png',
-      'timestamp' => 1,
-      'status' => FILE_STATUS_PERMANENT,
-    );
-    $file = file_save($file);
+    $file = $this->createFile('druplicon.txt', NULL, 'public://');
 
     // Load by path.
     file_test_reset();
-    $by_path_files = file_load_multiple(array(), array('filepath' => $file->uri));
+    $by_path_files = file_load_multiple(array(), array('uri' => $file->uri));
     $this->assertFileHookCalled('load');
     $this->assertEqual(1, count($by_path_files), t('file_load_multiple() returned an array of the correct size.'));
     $by_path_file = reset($by_path_files);
@@ -1717,11 +1700,11 @@ class FileSaveTest extends FileHookTestCase {
     // Create a new file object.
     $file = array(
       'uid' => 1,
-      'filename' => 'druplicon.png',
-      'filepath' => 'misc/druplicon.png',
-      'filemime' => 'image/png',
+      'filename'  => 'druplicon.txt',
+      'uri' 		  => 'public://druplicon.txt',
+      'filemime'  => 'text/plain',
       'timestamp' => 1,
-      'status' => FILE_STATUS_PERMANENT,
+      'status'    => FILE_STATUS_PERMANENT,
     );
     $file = (object) $file;
 
