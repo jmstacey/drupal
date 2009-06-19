@@ -632,14 +632,14 @@ function file_destination($destination, $replace) {
 function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   $source = (object)$source;
 
-  if ($filepath = file_unmanaged_move($source->uri, $destination, $replace)) {
+  if ($uri = file_unmanaged_move($source->uri, $destination, $replace)) {
     $delete_source = FALSE;
 
     $file = clone $source;
-    $file->uri = $filepath;
+    $file->uri = $uri;
     // If we are replacing an existing file re-use its database record.
     if ($replace == FILE_EXISTS_REPLACE) {
-      $existing_files = file_load_multiple(array(), array('filepath' => $filepath));
+      $existing_files = file_load_multiple(array(), array('uri' => $uri));
       if (count($existing_files)) {
         $existing = reset($existing_files);
         $delete_source = TRUE;
