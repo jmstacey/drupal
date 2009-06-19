@@ -1708,7 +1708,9 @@ class FileSaveTest extends FileHookTestCase {
       'timestamp' => 1,
       'status'    => FILE_STATUS_PERMANENT,
     );
-    $file = (object) $file;
+    $file = (object)$file;
+
+    file_put_contents($file->uri, 'hello world');
 
     // Save it, inserting a new record.
     $saved_file = file_save($file);
