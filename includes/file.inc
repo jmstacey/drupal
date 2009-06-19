@@ -135,20 +135,23 @@ function file_create_url($uri) {
  */
 function file_create_path($uri = NULL) {
 
+  /**
+   * TODO: Return the default wrapper based on the default download method?
+   */
+  $default_scheme = 'public://';
+
   if (is_null($uri)) {
-  	/**
-  	 * TODO: Return the default wrapper based on the default download method?
-  	 */
-  	return 'public://';
+  	return $default_scheme;
   }
 
 	// The URI must contain a valid scheme
-	if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+	if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
 		$file_path = $scheme . '://';
 	}
 	else {
-		return FALSE;
-	}
+    $file_path = $default_scheme . $uri;
+    $uri       = $default_scheme . $uri;
+  }
 
   // Check if the destination is inside the specified path.
   if ($path = file_check_location($uri, $file_path))
