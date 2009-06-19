@@ -135,9 +135,6 @@ function file_create_url($uri) {
  */
 function file_create_path($uri = NULL) {
 
-  /**
-   * TODO: Return the default wrapper based on the default download method?
-   */
   $default_scheme = 'public://';
 
   if (is_null($uri)) {
