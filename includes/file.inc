@@ -1314,18 +1314,18 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
 function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   global $user;
 
-  if ($filepath = file_unmanaged_save_data($data, $destination, $replace)) {
+  if ($uri = file_unmanaged_save_data($data, $destination, $replace)) {
     // Create a file object.
     $file = new stdClass();
     $file->fid = NULL;
-    $file->uri = $filepath;
-    $file->filename = basename($filepath);
+    $file->uri = $uri;
+    $file->filename = basename($uri);
     $file->filemime = file_get_mimetype($file->uri);
     $file->uid      = $user->uid;
     $file->status  |= FILE_STATUS_PERMANENT;
     // If we are replacing an existing file re-use its database record.
     if ($replace == FILE_EXISTS_REPLACE) {
-      $existing_files = file_load_multiple(array(), array('filepath' => $filepath));
+      $existing_files = file_load_multiple(array(), array('uri' => $uri));
       if (count($existing_files)) {
         $existing = reset($existing_files);
         $file->fid = $existing->fid;
