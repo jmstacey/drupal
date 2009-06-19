@@ -1126,7 +1126,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $file = $this->createFile();
 
     // Moving to a new name.
-    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
     $new_filepath = file_unmanaged_move($file->uri, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Move was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
@@ -1135,7 +1135,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Moving with rename.
-    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
     $this->assertTrue(file_exists($new_filepath), t('File exists before moving.'));
     $this->assertTrue(file_put_contents($desired_filepath, ' '), t('Created a file so a rename will have to happen.'));
     $newer_filepath = file_unmanaged_move($new_filepath, $desired_filepath, FILE_EXISTS_RENAME);
@@ -1146,6 +1146,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $this->assertFilePermissions($newer_filepath, variable_get('file_chmod_file', 0664));
 
     // TODO: test moving to a directory (rather than full directory/file path)
+    // TODO: test creating and moving normal files (rather than streams)
   }
 
   /**
