@@ -769,12 +769,16 @@ function file_unmunge_filename($filename) {
  *   of $basename.
  */
 function file_create_filename($basename, $directory) {
-	if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
-		$destination = $directory . $basename;
-	}
-	else {
-		$destination = $directory . '/' . $basename;
-	}
+
+  // Are we dealing with a stream?
+  if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+    $separator = '';
+  }
+  else {
+    $separator = '/';
+  }
+
+  $destination = $directory . $separator . $basename;
 
   if (file_exists($destination)) {
     // Destination file already exists, generate an alternative.
@@ -790,7 +794,7 @@ function file_create_filename($basename, $directory) {
 
     $counter = 0;
     do {
-      $destination = $directory . '/' . $name . '_' . $counter++ . $ext;
+      $destination = $directory . $separator . $name . '_' . $counter++ . $ext;
     } while (file_exists($destination));
   }
 
