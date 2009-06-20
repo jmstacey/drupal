@@ -43,7 +43,7 @@ function simpletest_install() {
     // the test files back easily.
     if (count($files) > count(file_scan_directory($path, '/(html|image|javascript|php|sql)-.*/'))) {
       foreach ($files as $file) {
-        file_unmanaged_copy($file->filepath, $path, FILE_EXISTS_REPLACE);
+        file_unmanaged_copy($file->uri, $path, FILE_EXISTS_REPLACE);
       }
       $generated = TRUE;
     }
@@ -117,7 +117,7 @@ function simpletest_uninstall() {
   $path = file_directory_path('public') . '/simpletest';
   $files = file_scan_directory($path, '/.*/');
   foreach ($files as $file) {
-    file_unmanaged_delete($file->filepath);
+    file_unmanaged_delete($file->uri);
   }
   rmdir($path);
 }

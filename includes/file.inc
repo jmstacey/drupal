@@ -1491,32 +1491,32 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
     'nomask' => '/(\.\.?|CVS)$/',
     'callback' => 0,
     'recurse' => TRUE,
-    'key' => 'filepath',
+    'key' => 'uri',
     'min_depth' => 0,
   );
 
-  $options['key'] = in_array($options['key'], array('filepath', 'filename', 'name')) ? $options['key'] : 'filepath';
+  $options['key'] = in_array($options['key'], array('uri', 'filename', 'name')) ? $options['key'] : 'uri';
   $files = array();
   if (is_dir($dir) && $handle = opendir($dir)) {
     while (FALSE !== ($filename = readdir($handle))) {
       if (!preg_match($options['nomask'], $filename) && $filename[0] != '.') {
-        $filepath = "$dir/$filename";
-        if (is_dir($filepath) && $options['recurse']) {
+        $uri = "$dir/$filename";
+        if (is_dir($uri) && $options['recurse']) {
           // Give priority to files in this folder by merging them in after any subdirectory files.
-          $files = array_merge(file_scan_directory($filepath, $mask, $options, $depth + 1), $files);
+          $files = array_merge(file_scan_directory($uri, $mask, $options, $depth + 1), $files);
         }
         elseif ($depth >= $options['min_depth'] && preg_match($mask, $filename)) {
           // Always use this match over anything already set in $files with the
           // same $$options['key'].
           $file = (object) array(
-            'filepath' => $filepath,
+            'uri' => $uri,
             'filename' => $filename,
             'name' => pathinfo($filename, PATHINFO_FILENAME),
           );
           $key = $options['key'];
           $files[$file->$key] = $file;
           if ($options['callback']) {
-            $options['callback']($filepath);
+            $options['callback']($uri);
           }
         }
       }

@@ -956,7 +956,7 @@ function drupal_find_theme_templates($cache, $extension, $path) {
   $files = drupal_system_listing($regex, $path, 'name', 0);
   foreach ($files as $template => $file) {
     // Ignore sub-theme templates for the current theme.
-    if (strpos($file->filepath, str_replace($subtheme_paths, '', $file->filepath)) !== 0) {
+    if (strpos($file->uri, str_replace($subtheme_paths, '', $file->uri)) !== 0) {
       continue;
     }
     // Chop off the remaining extensions if there are any. $template already
@@ -971,7 +971,7 @@ function drupal_find_theme_templates($cache, $extension, $path) {
     if (isset($cache[$hook])) {
       $templates[$hook] = array(
         'template' => $template,
-        'path' => dirname($file->filepath),
+        'path' => dirname($file->uri),
       );
     }
     // Ensure that the pattern is maintained from base themes to its sub-themes.
@@ -997,7 +997,7 @@ function drupal_find_theme_templates($cache, $extension, $path) {
           // Put the underscores back in for the hook name and register this pattern.
           $templates[strtr($file, '-', '_')] = array(
             'template' => $file,
-            'path' => dirname($files[$match]->filepath),
+            'path' => dirname($files[$match]->uri),
             'arguments' => $info['arguments'],
           );
         }

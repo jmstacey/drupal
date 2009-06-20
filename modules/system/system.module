@@ -1158,7 +1158,7 @@ function system_get_files_database(&$files, $type) {
   $result = db_query("SELECT filename, name, type, status, schema_version, weight FROM {system} WHERE type = :type", array(':type' => $type));
   foreach ($result as $file) {
     if (isset($files[$file->name]) && is_object($files[$file->name])) {
-      $file->filepath = $file->filename;
+      $file->uri = $file->filename;
       foreach ($file as $key => $value) {
         if (!isset($files[$file->name]->key)) {
           $files[$file->name]->$key = $value;
@@ -1234,7 +1234,7 @@ function system_update_files_database(&$files, $type) {
     }
     else {
       $query->values(array(
-        'filename' => $file->filepath,
+        'filename' => $file->uri,
         'name' => $file->name,
         'type' => $type,
         'owner' => isset($file->owner) ? $file->owner : '',
@@ -1272,7 +1272,7 @@ function _system_get_module_data() {
   // Read info files for each module.
   foreach ($modules as $key => $module) {
     // Look for the info file.
-    $module->info = drupal_parse_info_file(dirname($module->filepath) . '/' . $module->name . '.info');
+    $module->info = drupal_parse_info_file(dirname($module->uri) . '/' . $module->name . '.info');
 
     // Skip modules that don't provide info.
     if (empty($module->info)) {
@@ -1356,8 +1356,8 @@ function _system_get_theme_data() {
     $sub_themes = array();
     // Read info files for each theme
     foreach ($themes as $key => $theme) {
-      $themes[$key]->filename = $theme->filepath;
-      $themes[$key]->info = drupal_parse_info_file($theme->filepath) + $defaults;
+      $themes[$key]->filename = $theme->uri;
+      $themes[$key]->info = drupal_parse_info_file($theme->uri) + $defaults;
 
       // Invoke hook_system_info_alter() to give installed modules a chance to
       // modify the data in the .info files if necessary.
@@ -1367,7 +1367,7 @@ function _system_get_theme_data() {
         $sub_themes[] = $key;
       }
       if (empty($themes[$key]->info['engine'])) {
-        $filename = dirname($themes[$key]->filepath) . '/' . $themes[$key]->name . '.theme';
+        $filename = dirname($themes[$key]->uri) . '/' . $themes[$key]->name . '.theme';
         if (file_exists($filename)) {
           $themes[$key]->owner = $filename;
           $themes[$key]->prefix = $key;
@@ -1376,7 +1376,7 @@ function _system_get_theme_data() {
       else {
         $engine = $themes[$key]->info['engine'];
         if (isset($engines[$engine])) {
-          $themes[$key]->owner = $engines[$engine]->filepath;
+          $themes[$key]->owner = $engines[$engine]->uri;
           $themes[$key]->prefix = $engines[$engine]->name;
           $themes[$key]->template = TRUE;
         }
@@ -1387,7 +1387,7 @@ function _system_get_theme_data() {
       if (isset($themes[$key]->info['stylesheets'])) {
         foreach ($themes[$key]->info['stylesheets'] as $media => $stylesheets) {
           foreach ($stylesheets as $stylesheet) {
-            $pathed_stylesheets[$media][$stylesheet] = dirname($themes[$key]->filepath) . '/' . $stylesheet;
+            $pathed_stylesheets[$media][$stylesheet] = dirname($themes[$key]->uri) . '/' . $stylesheet;
           }
         }
       }
@@ -1397,13 +1397,13 @@ function _system_get_theme_data() {
       $scripts = array();
       if (isset($themes[$key]->info['scripts'])) {
         foreach ($themes[$key]->info['scripts'] as $script) {
-          $scripts[$script] = dirname($themes[$key]->filepath) . '/' . $script;
+          $scripts[$script] = dirname($themes[$key]->uri) . '/' . $script;
         }
       }
       $themes[$key]->info['scripts'] = $scripts;
       // Give the screenshot proper path information.
       if (!empty($themes[$key]->info['screenshot'])) {
-        $themes[$key]->info['screenshot'] = dirname($themes[$key]->filepath) . '/' . $themes[$key]->info['screenshot'];
+        $themes[$key]->info['screenshot'] = dirname($themes[$key]->uri) . '/' . $themes[$key]->info['screenshot'];
       }
     }
 
@@ -1760,7 +1760,7 @@ function system_cron() {
   foreach ($result as $row) {
     if ($file = file_load($row->fid)) {
       if (!file_delete($file)) {
-        watchdog('file system', 'Could not delete temporary file "%path" during garbage collection', array('%path' => $file->filepath), WATCHDOG_ERROR);
+        watchdog('file system', 'Could not delete temporary file "%path" during garbage collection', array('%path' => $file->uri), WATCHDOG_ERROR);
       }
     }
   }

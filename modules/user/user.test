@@ -554,7 +554,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         $this->drupalLogin($this->user);
 
         $image = current($this->drupalGetTestFiles('image'));
-        $info = image_get_info($image->filepath);
+        $info = image_get_info($image->uri);
 
         // Set new variables: invalid dimensions, valid filesize (0 = no limit).
         $test_dim = ($info['width'] - 10) . 'x' . ($info['height'] - 10);
@@ -590,7 +590,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         // Images are sorted first by size then by name. We need an image
         // bigger than 1 KB so we'll grab the last one.
         $image = end($this->drupalGetTestFiles('image'));
-        $info = image_get_info($image->filepath);
+        $info = image_get_info($image->uri);
 
         // Set new variables: valid dimensions, invalid filesize.
         $test_dim = ($info['width'] + 10) . 'x' . ($info['height'] + 10);
@@ -603,7 +603,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         // Test that the upload failed and that the correct reason was cited.
         $text = t('The specified file %filename could not be uploaded.', array('%filename' => $image->filename));
         $this->assertRaw($text, t('Upload failed.'));
-        $text = t('The file is %filesize exceeding the maximum file size of %maxsize.', array('%filesize' => format_size(filesize($image->filepath)), '%maxsize' => format_size($test_size * 1024)));
+        $text = t('The file is %filesize exceeding the maximum file size of %maxsize.', array('%filesize' => format_size(filesize($image->uri)), '%maxsize' => format_size($test_size * 1024)));
         $this->assertRaw($text, t('File size cited as reason for failure.'));
 
         // Check if file is not uploaded.
@@ -625,7 +625,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         $this->drupalLogin($this->user);
 
         $image = current($this->drupalGetTestFiles('image'));
-        $info = image_get_info($image->filepath);
+        $info = image_get_info($image->uri);
 
         // Set new variables: invalid dimensions, valid filesize (0 = no limit).
         $test_dim = ($info['width'] - 10) . 'x' . ($info['height'] - 10);
@@ -658,7 +658,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         $this->drupalLogin($this->user);
 
         $image = current($this->drupalGetTestFiles('image'));
-        $info = image_get_info($image->filepath);
+        $info = image_get_info($image->uri);
 
         // Set new variables: valid dimensions, invalid filesize.
         $test_dim = ($info['width'] + 10) . 'x' . ($info['height'] + 10);
@@ -671,7 +671,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         // Test that the upload failed and that the correct reason was cited.
         $text = t('The specified file %filename could not be uploaded.', array('%filename' => $image->filename));
         $this->assertRaw($text, t('Upload failed.'));
-        $text = t('The file is %filesize exceeding the maximum file size of %maxsize.', array('%filesize' => format_size(filesize($image->filepath)), '%maxsize' => format_size($test_size * 1024)));
+        $text = t('The file is %filesize exceeding the maximum file size of %maxsize.', array('%filesize' => format_size(filesize($image->uri)), '%maxsize' => format_size($test_size * 1024)));
         $this->assertRaw($text, t('File size cited as reason for failure.'));
 
         // Check if file is not uploaded.
@@ -690,7 +690,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
       $this->drupalLogin($this->user);
 
       $image = current($this->drupalGetTestFiles('image'));
-      $info = image_get_info($image->filepath);
+      $info = image_get_info($image->uri);
 
       // Set new variables: valid dimensions, valid filesize (0 = no limit).
       $test_dim = ($info['width'] + 10) . 'x' . ($info['height'] + 10);
@@ -709,10 +709,10 @@ class UserPictureTestCase extends DrupalWebTestCase {
   }
 
   function saveUserPicture($image) {
-    $edit = array('files[picture_upload]' => realpath($image->filepath));
+    $edit = array('files[picture_upload]' => realpath($image->uri));
     $this->drupalPost('user/' . $this->user->uid . '/edit', $edit, t('Save'));
 
-    $img_info = image_get_info($image->filepath);
+    $img_info = image_get_info($image->uri);
     $picture_dir = variable_get('user_picture_path', 'pictures');
     $pic_path = file_directory_path('public') . '/' . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
 

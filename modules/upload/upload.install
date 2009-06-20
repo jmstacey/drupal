@@ -125,7 +125,7 @@ function upload_update_7000(&$sandbox) {
       continue;
     }
 
-    $new_file = db_query('SELECT f.* FROM {files} f WHERE f.filepath = :filepath', array(':filepath' => $old_file->filepath))->fetch(PDO::FETCH_OBJ);
+    $new_file = db_query('SELECT f.* FROM {files} f WHERE f.filepath = :filepath', array(':filepath' => $old_file->uri))->fetch(PDO::FETCH_OBJ);
     if (!$new_file) {
       // Re-save the file into the new {file} table.
       $new_file = clone $old_file;

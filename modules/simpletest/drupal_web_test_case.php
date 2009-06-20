@@ -761,9 +761,9 @@ class DrupalWebTestCase extends DrupalTestCase {
       // If size is set then remove any files that are not of that size.
       if ($size !== NULL) {
         foreach ($files as $file) {
-          $stats = stat($file->filepath);
+          $stats = stat($file->uri);
           if ($stats['size'] != $size) {
-            unset($files[$file->filepath]);
+            unset($files[$file->uri]);
           }
         }
       }
@@ -776,7 +776,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * Compare two files based on size and file name.
    */
   protected function drupalCompareFiles($file1, $file2) {
-    $compare_size = filesize($file1->filepath) - filesize($file2->filepath);
+    $compare_size = filesize($file1->uri) - filesize($file2->uri);
     if ($compare_size) {
       // Sort by file size.
       return $compare_size;

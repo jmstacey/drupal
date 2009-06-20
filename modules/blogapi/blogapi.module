@@ -472,7 +472,7 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
 
   $row = new stdClass();
   $row->uid = $user->uid;
-  $row->filepath = $file;
+  $row->uri = $file;
   $row->filesize = $filesize;
 
   drupal_write_record('blogapi_files', $row);

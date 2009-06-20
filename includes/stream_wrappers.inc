@@ -123,24 +123,6 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
 
   private $handle = NULL;
 
-  /*
-    NOTE: for drewish
-    I had no luck with "abstract static function getDirectoryPath()." that occurred in
-    http://github.com/jmstacey/drupal/commit/62872379a91d6c76d88038ec0a112ad9fda45052
-    
-    I ran across following excerpt while trying to figure out what was wrong on
-    http://www.mail-archive.com/internals@lists.php.net/msg27104.html
-    
-    "...it doesn't make sense to declare an abstract static method as a static method always
-    belongs to a class. So if you declare it as abstract it needs to be overridden and
-    wouldn't belong to the class anymore as each subclass has its own implementation.
-
-    So from an OO point of view this would be a complete nonsense."
-    
-    Remove this comment when drewish has read it.
-        (jmstacey on 6/16/2009).
-  */
-
   /**
    * Where are the files located?
    *

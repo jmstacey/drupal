@@ -1225,7 +1225,7 @@ function _locale_import_po($file, $langcode, $mode, $group = NULL) {
  */
 function _locale_import_read_po($op, $file, $mode = NULL, $lang = NULL, $group = 'default') {
 
-  $fd = fopen($file->filepath, "rb"); // File will get closed by PHP on return
+  $fd = fopen($file->uri, "rb"); // File will get closed by PHP on return
   if (!$fd) {
     _locale_import_message('The translation import failed, because the file %filename could not be read.', $file);
     return FALSE;
@@ -2652,7 +2652,7 @@ function _locale_batch_build($files, $finished = NULL, $components = array()) {
     $operations = array();
     foreach ($files as $file) {
       // We call _locale_batch_import for every batch operation.
-      $operations[] = array('_locale_batch_import', array($file->filepath));
+      $operations[] = array('_locale_batch_import', array($file->uri));
     }
     $batch = array(
       'operations'    => $operations,

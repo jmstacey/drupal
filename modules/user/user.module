@@ -430,7 +430,7 @@ function user_save($account, $edit = array(), $category = 'account') {
       // If the picture is a temporary file move it to its final location and
       // make it permanent.
       if (($picture->status & FILE_STATUS_PERMANENT) == 0) {
-        $info = image_get_info($picture->filepath);
+        $info = image_get_info($picture->uri);
         $destination = file_create_path(variable_get('user_picture_path', 'pictures') . '/picture-' . $account->uid . '.' . $info['extension']);
         if ($picture = file_move($picture, $destination, FILE_EXISTS_REPLACE)) {
           $picture->status |= FILE_STATUS_PERMANENT;
@@ -1192,8 +1192,8 @@ function template_preprocess_user_picture(&$variables) {
       if (is_numeric($account->picture)) {
         $account->picture = file_load($account->picture);
       }
-      if (!empty($account->picture->filepath)) {
-        $filepath = $account->picture->filepath;
+      if (!empty($account->picture->uri)) {
+        $filepath = $account->picture->uri;
       }
     }
     elseif (variable_get('user_picture_default', '')) {
