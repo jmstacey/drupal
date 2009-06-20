@@ -316,16 +316,16 @@ class FileSpaceUsedTest extends FileTestCase {
     parent::setUp();
 
     // Create records for a couple of users with different sizes.
-    drupal_write_record('file', $file = array('uid' => 2, 'filesize' => 50, 'status' => FILE_STATUS_PERMANENT));
-    drupal_write_record('file', $file = array('uid' => 2, 'filesize' => 20, 'status' => FILE_STATUS_PERMANENT));
-    drupal_write_record('file', $file = array('uid' => 3, 'filesize' => 100, 'status' => FILE_STATUS_PERMANENT));
-    drupal_write_record('file', $file = array('uid' => 3, 'filesize' => 200, 'status' => FILE_STATUS_PERMANENT));
+    drupal_write_record('file', $file = array('uid' => 2, 'uri' => 'public://example1.txt', 'filesize' => 50, 'status' => FILE_STATUS_PERMANENT));
+    drupal_write_record('file', $file = array('uid' => 2, 'uri' => 'public://example2.txt', 'filesize' => 20, 'status' => FILE_STATUS_PERMANENT));
+    drupal_write_record('file', $file = array('uid' => 3, 'uri' => 'public://example3.txt', 'filesize' => 100, 'status' => FILE_STATUS_PERMANENT));
+    drupal_write_record('file', $file = array('uid' => 3, 'uri' => 'public://example4.txt', 'filesize' => 200, 'status' => FILE_STATUS_PERMANENT));
 
     // Now create some with other statuses. These values were chosen arbitrarily
     // for the sole purpose of testing that bitwise operators were used
     // correctly on the field.
-    drupal_write_record('file', $file = array('uid' => 2, 'filesize' => 1, 'status' => 2 | 8));
-    drupal_write_record('file', $file = array('uid' => 3, 'filesize' => 3, 'status' => 2 | 4));
+    drupal_write_record('file', $file = array('uid' => 2, 'uri' => 'public://example5.txt', 'filesize' => 1, 'status' => 2 | 8));
+    drupal_write_record('file', $file = array('uid' => 3, 'uri' => 'public://example6.txt', 'filesize' => 3, 'status' => 2 | 4));
   }
 
   /**
