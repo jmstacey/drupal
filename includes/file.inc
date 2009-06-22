@@ -1147,7 +1147,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
 
   // If we are replacing an existing file re-use its database record.
   if ($replace == FILE_EXISTS_REPLACE) {
-    $existing_files = file_load_multiple(array(), array('filepath' => $file->uri));
+    $existing_files = file_load_multiple(array(), array('uri' => $file->uri));
     if (count($existing_files)) {
       $existing = reset($existing_files);
       $file->fid = $existing->fid;

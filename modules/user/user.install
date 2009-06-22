@@ -442,7 +442,7 @@ function user_update_7004(&$sandbox) {
     }
 
     // Check if the file already exists.
-    $files = file_load_multiple(array(), array('filepath' => $user->picture));
+    $files = file_load_multiple(array(), array('uri' => $user->picture));
     if (count($files)) {
       $file = reset($files);
     }
