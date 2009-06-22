@@ -162,10 +162,13 @@ function file_create_path($uri = NULL, $stream = TRUE) {
      */
     $file_path = file_directory_path('public');
   }
-  
+
   // Check if the destination is inside the specified path.
   if ($path = file_check_location($uri, $file_path)) {
     return $path;
+  }
+  elseif (file_check_location($file_path . '/' . $uri, $file_path)) {
+    return $file_path . '/' . $uri;
   }
 
   // File not found.
