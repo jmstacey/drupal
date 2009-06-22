@@ -2076,8 +2076,6 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
   function setUp() {
     parent::setUp();
     DrupalStreamWrapperRegistry::register($this->scheme, $this->classname);
-
-
   }
 
   function tearDown() {
@@ -2107,7 +2105,7 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
     // Unregister the wrapper.
     $this->assertTrue(DrupalStreamWrapperRegistry::unregister($this->scheme), t('Stream wrapper unregistered.'));
     $wrappers = DrupalStreamWrapperRegistry::wrappers();
-    $this->assertFalse(isset($wrappers[$this->scheme]), t('The stream has wrapper has actually been unregistered.'));
+    $this->assertFalse(isset($wrappers[$this->scheme]), t('The stream wrapper has actually been unregistered.'));
   }
 
   /**
