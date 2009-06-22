@@ -120,19 +120,23 @@ function file_create_url($uri) {
  * Asserts that the URI is a complete path that resides in a valid 
  * filesystem directory.
  *
- * Compatability: only stream wrappers.
+ * Compatability: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
+ * @param bool $stream
+ *   TRUE indicates that $uri should be a stream and a valid scheme is
+ *   required. FALSE indicates that $uri should be treated as a normal
+ *   path.
  * @return mixed
  *   Returns a string containing the path to the stream. If the URI is
  *   invalid (i.e. outside a valid filesystem directory), FALSE will be 
  *   returned.
  */
-function file_create_path($uri = NULL) {
+function file_create_path($uri = NULL, $stream = TRUE) {
 
   $default_scheme = 'public://';
 
@@ -141,15 +145,24 @@ function file_create_path($uri = NULL) {
   	return $default_scheme;
   }
 
-	// The URI must contain a valid scheme
 	if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+	  // The URI contains a valid stream scheme.
 		$file_path = $scheme . '://';
 	}
-	else {
+	elseif ($stream) {
+	  // The URI must contain a valid scheme.
     $file_path = $default_scheme . $uri;
     $uri       = $default_scheme . $uri;
   }
-
+  else {
+    /**
+     * Normal paths must still fall within a directory managed by a registered
+     * stream wrapper for security reasons. We'll assume public:// for now.
+     * TODO: Search all registered wrapper paths for a valid match.
+     */
+    $file_path = file_directory_path('public');
+  }
+  
   // Check if the destination is inside the specified path.
   if ($path = file_check_location($uri, $file_path)) {
     return $path;
@@ -507,7 +520,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * - If file already exists in $destination either the call will error out,
  *   replace the file or rename the file based on the $replace parameter.
  *
- * Compatability: only stream wrappers.
+ * Compatability: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -530,12 +543,22 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
 
+  $separator = '';    // Directory separator ('' for streams or '/' for normal paths)
+  $stream    = TRUE;  // Should we handle this operation as a stream or normal path?
+
   if (!file_exists($source)) {
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $source)), 'error');
     return FALSE;
   }
 
-  $destination = file_create_path($destination);
+  // If $source and $destination do not contain a scheme we're dealing with a normal path.
+  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) && 
+      !DrupalStreamWrapperRegistry::getValidStreamScheme($destination)) {
+    $stream    = FALSE;
+    $separator = '/';
+  }
+
+  $destination = file_create_path($destination, $stream);
   $directory   = $destination;
   $basename    = file_check_path($directory);
 
@@ -547,7 +570,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
 
   // If the destination file is not specified then use the filename of the source file.
   $basename    = $basename ? $basename : basename($source);
-  $destination = file_destination($directory . $basename, $replace);
+  $destination = file_destination($directory . $separator . $basename, $replace);
 
   if ($destination === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination.', array('%file' => $source)), 'error');
