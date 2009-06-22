@@ -1106,7 +1106,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   }
 
   $file->source = $source;
-  $file->destination = file_destination(file_create_path($destination . '/' . $file->filename), $replace);
+  $file->destination = file_destination(file_create_path($destination . $file->filename), $replace);
   // If file_destination() returns FALSE then $replace == FILE_EXISTS_ERROR and
   // there's an existing file so we need to bail.
   if ($file->destination === FALSE) {
