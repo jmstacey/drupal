@@ -546,7 +546,6 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
 
-  $separator = '';    // Directory separator ('' for streams or '/' for normal paths)
   $stream    = TRUE;  // Should we handle this operation as a stream or normal path?
 
   if (!file_exists($source)) {
@@ -558,7 +557,6 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) && 
       !DrupalStreamWrapperRegistry::getValidStreamScheme($destination)) {
     $stream    = FALSE;
-    $separator = '/';
   }
 
   $destination = file_create_path($destination, $stream);
@@ -573,7 +571,8 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
 
   // If the destination file is not specified then use the filename of the source file.
   $basename    = $basename ? $basename : basename($source);
-  $destination = file_destination($directory . $separator . $basename, $replace);
+  $destination = file_destination($directory . '/'. $basename, $replace);
+  // $destination = file_destination($directory . $separator . $basename, $replace);
 
   if ($destination === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination.', array('%file' => $source)), 'error');
@@ -1807,7 +1806,7 @@ function drupal_dirname($uri) {
     $target  = DrupalStreamWrapperRegistry::getStreamTarget($uri);
     $dirname = dirname($target);
 
-    if ($dirname = '.') {
+    if ($dirname == '.') {
       $dirname = '';
     }
 

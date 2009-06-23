@@ -474,7 +474,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
    * Return the HTML URI of a public file.
    */
   function getExternalUrl($uri) {
-    $path = str_replace('\\', '/', parse_url($uri, PHP_URL_PATH));
+    $path = str_replace('\\', '/', DrupalStreamWrapperRegistry::getStreamTarget($uri));
     return $GLOBALS['base_url'] . '/' . self::getDirectoryPath() . '/' . $path;
   }
 }
