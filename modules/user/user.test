@@ -567,7 +567,11 @@ class UserPictureTestCase extends DrupalWebTestCase {
         $text = t('The image was resized to fit within the maximum allowed dimensions of %dimensions pixels.', array('%dimensions' => $test_dim));
         $this->assertRaw($text, t('Image was resized.'));
         $alt = t("@user's picture", array('@user' => $this->user->name));
-        $this->assertRaw(theme('image', $pic_path, $alt, $alt, '', FALSE), t("Image is displayed in user's edit page"));
+        echo "pic_path: $pic_path <br />";
+        $pic_path_external = DrupalStreamWrapperRegistry::getInstanceByUri($pic_path)->getExternalUrl($pic_path);
+        echo "pic_path_external: $pic_path_external <br />";
+        print_r($this);
+        $this->assertRaw(theme('image', $pic_path_external, $alt, $alt, '', FALSE), t("Image is displayed in user's edit page"));
 
         // Check if file is located in proper directory.
         $this->assertTrue(is_file($pic_path), t("File is located in proper directory"));
@@ -712,9 +716,9 @@ class UserPictureTestCase extends DrupalWebTestCase {
     $edit = array('files[picture_upload]' => realpath($image->uri));
     $this->drupalPost('user/' . $this->user->uid . '/edit', $edit, t('Save'));
 
-    $img_info = image_get_info($image->uri);
+    $img_info    = image_get_info($image->uri);
     $picture_dir = variable_get('user_picture_path', 'pictures');
-    $pic_path = file_directory_path('public') . '/' . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
+    $pic_path    = 'public://' . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
 
     return $pic_path;
   }

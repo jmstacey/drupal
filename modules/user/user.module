@@ -431,7 +431,8 @@ function user_save($account, $edit = array(), $category = 'account') {
       // make it permanent.
       if (($picture->status & FILE_STATUS_PERMANENT) == 0) {
         $info = image_get_info($picture->uri);
-        $destination = file_create_path(variable_get('user_picture_path', 'pictures') . '/picture-' . $account->uid . '.' . $info['extension']);
+        // TODO: Lookup a private/public setting. Or user_picture_path should include private:// or public://.
+        $destination = 'public://' . file_create_path(variable_get('user_picture_path', 'pictures') . '/picture-' . $account->uid . '.' . $info['extension']);
         if ($picture = file_move($picture, $destination, FILE_EXISTS_REPLACE)) {
           $picture->status |= FILE_STATUS_PERMANENT;
           $edit['picture'] = file_save($picture);
@@ -1201,7 +1202,7 @@ function template_preprocess_user_picture(&$variables) {
     }
     if (isset($filepath)) {
       $alt = t("@user's picture", array('@user' => $account->name ? $account->name : variable_get('anonymous', t('Anonymous'))));
-      $variables['picture'] = theme('image', $filepath, $alt, $alt, '', FALSE);
+      $variables['picture'] = theme('image', DrupalStreamWrapperRegistry::getInstanceByUri($filepath)->getExternalUrl($filepath), $alt, $alt, '', FALSE);
       if (!empty($account->uid) && user_access('access user profiles')) {
         $attributes = array('attributes' => array('title' => t('View user profile.')), 'html' => TRUE);
         $variables['picture'] = l($variables['picture'], "user/$account->uid", $attributes);
