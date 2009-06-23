@@ -159,8 +159,11 @@ class DrupalStreamWrapperRegistry {
    */
   public static function getStreamTarget($uri) {
     $data = explode('://', $uri, 2);
-    // scheme://target
     // $data[0]://$data[1]
+    // scheme://target
+
+    // Remove erroneous beginning forward slash
+    $data[1] = ltrim($data[1], '\/');
 
     return count($data) == 2 ? $data[1] : FALSE;
   }
