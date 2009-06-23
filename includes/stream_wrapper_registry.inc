@@ -31,7 +31,7 @@ class DrupalStreamWrapperRegistry {
   private function __construct() { }
 
   /**
-   * Register a stream wrapper scheme.
+   * Registers a stream wrapper scheme.
    *
    * @see: http://php.net/manual/en/function.stream-wrapper-register.php
    *
@@ -48,7 +48,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Unregister a stream wrapper.
+   * Unregisters a stream wrapper.
    *
    * @see: http://php.net/manual/en/function.stream-wrapper-unregister.php
    *
@@ -63,7 +63,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Return the stream wrapper class name for a given scheme.
+   * Returns the stream wrapper class name for a given scheme.
    *
    * @param string $scheme
    *   Stream scheme.
@@ -79,7 +79,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Return the entire Drupal stream wrapper registry.
+   * Returns the entire Drupal stream wrapper registry.
    *
    * @return array
    */
@@ -88,7 +88,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Get the scheme of a URI (stream).
+   * Gets the scheme of a URI (stream).
    *
    * A stream is referenced as scheme://target.
    *
@@ -104,7 +104,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Is the provided scheme valid?
+   * Asserts that the scheme is valid.
    *
    * Confirms that there is a registered stream handler for the
    * provided scheme and that it is callable. This is usefule if
@@ -131,7 +131,7 @@ class DrupalStreamWrapperRegistry {
 
     if (!$scheme = self::getStreamScheme($uri)) {
       // URI doesn't even contain a scheme
-      return FALSE
+      return FALSE;
     }
 
     // Does the scheme have a registered handler that is callable?
@@ -145,7 +145,27 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Get the targat of a URI (stream).
+   * Normalizes URI by making it syntactically correct.
+   *
+   * A stream is referenced as scheme://target.
+   *
+   * The following actions are taken:
+   * - Replace ':///' with '://'
+   * - Remove trailing slashes on target.
+   *
+   * @param string &$uri
+   *   String reference containing the URI to normalize.
+   */
+  public static function normalizeUri(&$uri) {
+    if ($scheme = DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
+
+      $target = DrupalStreamWrapperRegistry::getStreamTarget($uri);
+      $uri    = $scheme . '://' . rtrim($target, '/\\');
+    }
+  }
+
+  /**
+   * Gets the targat of a URI (stream).
    *
    * A stream is referenced as scheme://target.
    *
@@ -168,7 +188,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Get reference to stream wrapper class responsible for given URI (stream).
+   * Gets reference to stream wrapper class responsible for given URI (stream).
    *
    * The scheme determines the stream wrapper class that should be
    * used by consulting the stream wrapper registry.
@@ -187,7 +207,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Get reference to stream wrapper class responsible for given scheme.
+   * Gets reference to stream wrapper class responsible for given scheme.
    *
    * The scheme determines the stream wrapper class that should be
    * used by consulting the stream wrapper registry.
