@@ -554,7 +554,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   }
 
   // If $source and $destination do not contain a scheme we're dealing with a normal path.
-  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) && 
+  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) &&
       !DrupalStreamWrapperRegistry::getValidStreamScheme($destination)) {
     $stream    = FALSE;
   }
@@ -572,7 +572,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // If the destination file is not specified then use the filename of the source file.
   $basename    = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
-  // $destination = file_destination($directory . $separator . $basename, $replace);
+  DrupalStreamWrapperRegistry::normalizeUri($destination);
 
   if ($destination === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination.', array('%file' => $source)), 'error');
