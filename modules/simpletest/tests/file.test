@@ -1318,7 +1318,7 @@ class FileMoveTest extends FileHookTestCase {
   function testNormal() {
     $contents = $this->randomName(10);
     $source = $this->createFile(NULL, $contents);
-    $desired_filepath = file_directory_path('public') . '/' . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
