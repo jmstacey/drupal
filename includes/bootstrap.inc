@@ -141,7 +141,7 @@ define('DRUPAL_BOOTSTRAP_STREAM_WRAPPERS', 6);
 define('DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE', 7);
 
 /**
- * Nineth bootstrap phase: find out language of the page.
+ * Ninth bootstrap phase: find out language of the page.
  */
 define('DRUPAL_BOOTSTRAP_LANGUAGE', 8);
 
