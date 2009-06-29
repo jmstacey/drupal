@@ -1,5 +1,5 @@
 <?php
-// $Id: node.tpl.php,v 1.13 2009-06-18 21:19:02 webchick Exp $
+// $Id: node.tpl.php,v 1.15 2009-06-24 18:16:38 dries Exp $
 
 /**
  * @file
@@ -7,9 +7,9 @@
  *
  * Available variables:
  * - $title: the (sanitized) title of the node.
- * - $content: An array of node items. Use render($content) to print them all, or 
- *   print a subset such as render($content['field_example']). Use 
- *   hide($content['field_example]) to temporarily suppress the printing of a 
+ * - $content: An array of node items. Use render($content) to print them all, or
+ *   print a subset such as render($content['field_example']). Use
+ *   hide($content['field_example]) to temporarily suppress the printing of a
  *   given element.
  * - $comments: the themed list of comments (if any).
  * - $picture: The authors picture of the node output from
@@ -36,7 +36,6 @@
  *   - node-promoted: Nodes promoted to the front page.
  *   - node-sticky: Nodes ordered above other non-sticky nodes in teaser listings.
  *   - node-unpublished: Unpublished nodes visible only to administrators.
- * TODO D7 : document $FIELD_NAME_rendered variables.
  *
  * Other variables:
  * - $node: Full node object. Contains data that may not be safe.
@@ -51,7 +50,8 @@
  * - $id: Position of the node. Increments each time it's output.
  *
  * Node status variables:
- * - $teaser: Flag for the teaser state.
+ * - $build_mode: Build mode, e.g. 'full', 'teaser'...
+ * - $teaser: Flag for the teaser state (shortcut for $build_mode == 'teaser').
  * - $page: Flag for the full page state.
  * - $promote: Flag for front page promotion state.
  * - $sticky: Flags for sticky post setting.

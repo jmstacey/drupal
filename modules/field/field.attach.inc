@@ -1,5 +1,5 @@
 <?php
-// $Id: field.attach.inc,v 1.22 2009-06-07 00:00:57 webchick Exp $
+// $Id: field.attach.inc,v 1.27 2009-06-28 01:00:42 webchick Exp $
 
 /**
  * @file
@@ -141,7 +141,6 @@ define('FIELD_STORAGE_INSERT', 'insert');
  *   - delete revision
  *   - sanitize
  *   - view
- *   - preprocess
  *   - prepare translation
  * @param $obj_type
  *   The type of $object; e.g. 'node' or 'user'.
@@ -149,7 +148,7 @@ define('FIELD_STORAGE_INSERT', 'insert');
  *   The fully formed $obj_type object.
  * @param $a
  *   - The $form in the 'form' operation.
- *   - The value of $teaser in the 'view' operation.
+ *   - The value of $build_mode in the 'view' operation.
  *   - Otherwise NULL.
  * @param $b
  *   - The $form_state in the 'submit' operation.
@@ -364,7 +363,7 @@ function _field_invoke_multiple_default($op, $obj_type, $objects, &$a = NULL, &$
  * TODO : document the resulting $form structure, like we do for
  * field_attach_view().
  */
-function field_attach_form($obj_type, $object, &$form, $form_state) {
+function field_attach_form($obj_type, $object, &$form, &$form_state) {
   // TODO : something's not right here : do we alter the form or return a value ?
   $form += (array) _field_invoke_default('form', $obj_type, $object, $form, $form_state);
 
@@ -400,28 +399,36 @@ function field_attach_load($obj_type, $objects, $age = FIELD_LOAD_CURRENT) {
   $info = field_info_fieldable_types($obj_type);
   $cacheable = $load_current && $info['cacheable'];
 
-  $queried_objects = array();
+  if (empty($objects)) {
+    return;
+  }
 
-  // Fetch avaliable objects from cache.
+  // Assume all objects will need to be queried. Objects found in the cache
+  // will be removed from the list.
+  $queried_objects = $objects;
+
+  // Fetch available objects from cache, if applicable.
   if ($cacheable) {
+    // Build the list of cache entries to retrieve.
+    $cids = array();
+    foreach ($objects as $id => $object) {
+      $cids[] = "field:$obj_type:$id";
+    }
+    $cache = cache_get_multiple($cids, 'cache_field');
+    // Put the cached field values back into the objects and remove them from
+    // the list of objects to query.
     foreach ($objects as $id => $object) {
       $cid = "field:$obj_type:$id";
-      if ($cached = cache_get($cid, 'cache_field')) {
-        foreach ($cached->data as $key => $value) {
-          $object->$key = $value;
+      if (isset($cache[$cid])) {
+        unset($queried_objects[$id]);
+        foreach ($cache[$cid]->data as $field_name => $values) {
+          $object->$field_name = $values;
         }
-      }
-      else {
-        $queried_objects[$id] = $objects[$id];
       }
     }
   }
-  else {
-    $queried_objects = $objects;
-  }
 
-
-  // Fetch other objects from the database.
+  // Fetch other objects from their storage location.
   if ($queried_objects) {
     // The invoke order is:
     // - hook_field_attach_pre_load()
@@ -883,33 +890,22 @@ function field_attach_query_revisions($field_name, $conditions, $result_format =
  *   The type of $object; e.g. 'node' or 'user'.
  * @param $object
  *   The object with fields to render.
- * @param $teaser
- *   Whether to display the teaser only, as on the main page.
+ * @param $build_mode
+ *   Build mode, e.g. 'full', 'teaser'...
  * @return
  *   A structured content array tree for drupal_render().
  */
-function field_attach_view($obj_type, $object, $teaser = FALSE) {
+function field_attach_view($obj_type, $object, $build_mode = 'full') {
   // Let field modules sanitize their data for output.
   _field_invoke('sanitize', $obj_type, $object);
 
-  $output = _field_invoke_default('view', $obj_type, $object, $teaser);
+  $output = _field_invoke_default('view', $obj_type, $object, $build_mode);
 
   // Let other modules make changes after rendering the view.
-  drupal_alter('field_attach_view', $output, $obj_type, $object, $teaser);
+  drupal_alter('field_attach_view', $output, $obj_type, $object, $build_mode);
 
   return $output;
 
-}
-
-/**
- * To be called in entity preprocessor.
- *
- * - Adds $FIELD_NAME_rendered variables
- *   containing the themed output for the whole field.
- * - Adds the formatted values in the 'view' key of the items.
- */
-function field_attach_preprocess($obj_type, $object) {
-  return _field_invoke_default('preprocess', $obj_type, $object);
 }
 
 /**
