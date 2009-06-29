@@ -94,21 +94,16 @@ class DrupalStreamWrapperRegistry {
    *
    * @param $uri
    *   A stream, referenced as scheme://target.
-   * @return string
-   *   A string containing the name of the scheme, or 'public',
-   *   if the a scheme isn't provided.
+   * @return mixed
+   *   A string containing the name of the scheme, or FALSE if none.
+   *   For example, the URI public://example.txt would return public.
    */
   public static function getStreamScheme($uri) {
     $data = explode('://', $uri, 2);
     // $data[0]://$data[1]
     // scheme://target
     
-    if (count($data) == 2) {
-      return $data[0];
-    }
-    else {
-      return 'public';
-    }
+    return count($data) == 2 ? $data[0] : FALSE;
   }
 
   /**
