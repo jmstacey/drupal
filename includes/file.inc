@@ -9,10 +9,9 @@
 
 /**
  * Stream wrapper initialization was moved to bootstrap in commit 20447c6d
- * and removed in 37142ef2 because there are cases where File API is beling
+ * and reverted in 37142ef2 because there are cases where File API is beling
  * loaded outside of the bootstrap system (e.g. maintenance mode). File API
  * would never be used without stream wrapper support.
- * to assume that you will never use File with 
  */
 
 // Stream wrapper interface and base class implementation
