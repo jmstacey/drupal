@@ -83,7 +83,7 @@ define('FILE_STATUS_PERMANENT', 1);
 /**
  * Creates the web accessible URL to a stream.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -107,7 +107,7 @@ function file_create_url($uri) {
  * Asserts that the URI is a complete path that resides in a valid 
  * filesystem directory.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -168,7 +168,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  * Directories need to have execute permissions to be considered a directory by
  * FTP servers, etc.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -250,7 +250,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
 /**
  * Determines whether a path is a directory, or a directory/file.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -293,7 +293,7 @@ function file_check_path(&$path) {
  *   file_check_location('public://dir1/../example.txt', 'public://');
  * @endcode
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -437,7 +437,7 @@ function file_save($file) {
  *   temporary file, the resulting file will also be a temporary file.
  *   @see file_save_upload() for details on temporary files.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -510,7 +510,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * - If file already exists in $destination either the call will error out,
  *   replace the file or rename the file based on the $replace parameter.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -587,7 +587,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
  * Determines the destination path for a file depending on how replacement of
  * existing files should be handled.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -635,7 +635,7 @@ function file_destination($destination, $replace) {
  *   replace the file or rename the file based on the $replace parameter.
  * - Adds the new file to the files database.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -704,7 +704,7 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * Moves a file to a new location without calling any hooks or making any
  * changes to the database.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -797,7 +797,7 @@ function file_unmunge_filename($filename) {
  * If a file with the specified name already exists, an alternative will be
  * used.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -892,7 +892,7 @@ function file_delete($file, $force = FALSE) {
  * This function should be used when the file to be deleted does not have an
  * entry recorded in the files table.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -937,7 +937,7 @@ function file_unmanaged_delete($path) {
  *
  * Note that this only deletes visible files with write permission.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -996,7 +996,7 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * files are periodically cleaned. To make the file a permanent file, assign
  * the status and use file_save() to save the changes.
  *
- * Compatability: source may be a normal path or stream, but the destination must
+ * Compatibility: source may be a normal path or stream, but the destination must
  *           always be a stream.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
@@ -1345,7 +1345,7 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
 /**
  * Saves a string to the specified destination and creates a database file entry.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  *
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
@@ -1515,7 +1515,7 @@ function file_download() {
  * prevents hidden files and directories (such as SVN working directories)
  * from being scanned.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -1600,7 +1600,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  * For example, a scheme of public might return sites/all/default/files
  * or temp might return /tmp.
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -1697,7 +1697,7 @@ function file_get_mimetype($filename, $mapping = NULL) {
  *
  * @see http://php.net/manual/en/function.chmod.php
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -1749,7 +1749,7 @@ function drupal_chmod($uri, $mode = NULL) {
  *
  * @see http://php.net/manual/en/function.realpath.php
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -1780,7 +1780,7 @@ function drupal_realpath($uri) {
  * that gap. It is backwards compatible with normal paths and will use
  * PHP's dirname() as a fallback.
  *
- * Compatability: normal paths and stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
@@ -1820,7 +1820,7 @@ function drupal_dirname($uri) {
  *
  * @see http://php.net/manual/en/function.tempnam.php
  *
- * Compatability: only stream wrappers.
+ * Compatibility: only stream wrappers.
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
