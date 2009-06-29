@@ -6,6 +6,19 @@
  * API for handling file uploads and server file management.
  */
 
+// TODO: add this to the bootstrap and add a file wrapper initiation phase.
+
+// Stream wrapper interface and base class implementation
+require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
+
+// Stream wrapper registry
+require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
+
+// Register core wrappers
+DrupalStreamWrapperRegistry::register('public',  'DrupalPublicStreamWrapper');
+DrupalStreamWrapperRegistry::register('private', 'DrupalPrivateStreamWrapper');
+DrupalStreamWrapperRegistry::register('temp',    'DrupalTempStreamWrapper');
+
 /**
  * @defgroup file File interface
  * @{

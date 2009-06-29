@@ -130,31 +130,26 @@ define('DRUPAL_BOOTSTRAP_SESSION', 4);
 define('DRUPAL_BOOTSTRAP_VARIABLES', 5);
 
 /**
- * Seventh bootstrap phase: initialize Drupal's stream wrappers.
- */
-define('DRUPAL_BOOTSTRAP_STREAM_WRAPPERS', 6);
-
-/**
- * Eighth bootstrap phase: load bootstrap.inc and module.inc, start
+ * Seventh bootstrap phase: load bootstrap.inc and module.inc, start
  * the variable system and try to serve a page from the cache.
  */
-define('DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE', 7);
+define('DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE', 6);
 
 /**
- * Ninth bootstrap phase: find out language of the page.
+ * Eighth bootstrap phase: find out language of the page.
  */
-define('DRUPAL_BOOTSTRAP_LANGUAGE', 8);
+define('DRUPAL_BOOTSTRAP_LANGUAGE', 7);
 
 /**
- * Tenth bootstrap phase: set $_GET['q'] to Drupal path of request.
+ * Nineth bootstrap phase: set $_GET['q'] to Drupal path of request.
  */
-define('DRUPAL_BOOTSTRAP_PATH', 9);
+define('DRUPAL_BOOTSTRAP_PATH', 8);
 
 /**
  * Final bootstrap phase: Drupal is fully loaded; validate and fix
  * input data.
  */
-define('DRUPAL_BOOTSTRAP_FULL', 10);
+define('DRUPAL_BOOTSTRAP_FULL', 9);
 
 /**
  * Role ID for anonymous users; should match what's in the "role" table.
@@ -1291,7 +1286,6 @@ function drupal_bootstrap($phase = NULL) {
     DRUPAL_BOOTSTRAP_ACCESS,
     DRUPAL_BOOTSTRAP_SESSION,
     DRUPAL_BOOTSTRAP_VARIABLES,
-    DRUPAL_BOOTSTRAP_STREAM_WRAPPERS,
     DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE,
     DRUPAL_BOOTSTRAP_LANGUAGE,
     DRUPAL_BOOTSTRAP_PATH,
@@ -1372,17 +1366,6 @@ function _drupal_bootstrap($phase) {
     case DRUPAL_BOOTSTRAP_VARIABLES:
       // Initialize configuration variables, using values from settings.php if available.
       $conf = variable_init(isset($conf) ? $conf : array());
-      break;
-
-    case DRUPAL_BOOTSTRAP_STREAM_WRAPPERS:
-      // Stream wrapper interface, base class implementation and registry.
-      require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
-      require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
-
-      // Register core wrappers
-      DrupalStreamWrapperRegistry::register('public',  'DrupalPublicStreamWrapper');
-      DrupalStreamWrapperRegistry::register('private', 'DrupalPrivateStreamWrapper');
-      DrupalStreamWrapperRegistry::register('temp',    'DrupalTempStreamWrapper');
       break;
 
     case DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE:
