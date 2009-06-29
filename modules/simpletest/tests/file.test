@@ -1705,7 +1705,7 @@ class FileSaveTest extends FileHookTestCase {
     $file = array(
       'uid' => 1,
       'filename'  => 'druplicon.txt',
-      'uri' 		  => 'public://druplicon.txt',
+      'uri'       => 'public://druplicon.txt',
       'filemime'  => 'text/plain',
       'timestamp' => 1,
       'status'    => FILE_STATUS_PERMANENT,

@@ -95,12 +95,12 @@ define('FILE_STATUS_PERMANENT', 1);
  */
 function file_create_url($uri) {
 
-	if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-		return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->getExternalUrl($uri);
-	}
-	else {
-	  return FALSE;
-	}
+  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+    return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->getExternalUrl($uri);
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -129,15 +129,15 @@ function file_create_path($uri = NULL, $stream = TRUE) {
 
   // If URI is omitted, use Drupal's public files directory [public://].
   if (is_null($uri)) {
-  	return $default_scheme;
+    return $default_scheme;
   }
 
-	if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-	  // The URI contains a valid stream scheme.
-		$file_path = $scheme . '://';
-	}
-	elseif ($stream) {
-	  // The URI must contain a valid scheme.
+  if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+    // The URI contains a valid stream scheme.
+    $file_path = $scheme . '://';
+  }
+  elseif ($stream) {
+    // The URI must contain a valid scheme.
     $file_path = $default_scheme . $uri;
     $uri       = $default_scheme . $uri;
   }
@@ -189,10 +189,10 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  */
 function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
 
-	if (!DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
-	  // Only trim if we're not dealing with a stream.
-		$directory = rtrim($directory, '/\\');
-	}
+  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+    // Only trim if we're not dealing with a stream.
+    $directory = rtrim($directory, '/\\');
+  }
 
   // Check if directory exists.
   if (!is_dir($directory)) {
@@ -307,8 +307,8 @@ function file_check_path(&$path) {
  */
 function file_check_location($source, $directory = '') {
 
-	$original_source = $source;
-  $abs_pathname 	 = drupal_realpath($source);
+  $original_source = $source;
+  $abs_pathname    = drupal_realpath($source);
 
   if ($abs_pathname) {
     $source = $abs_pathname;
@@ -1486,7 +1486,7 @@ function file_transfer($source, $headers) {
  */
 function file_download() {
   // Merge remainder of arguments from GET['q'], into relative file path.
-  $args 		= func_get_args();
+  $args     = func_get_args();
   $filepath = 'private://' . implode('/', $args);
 
   // Maintain compatibility with old ?file=paths saved in node bodies.
@@ -1723,11 +1723,11 @@ function drupal_chmod($uri, $mode = NULL) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
-	if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-		if (DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->chmod($uri, $mode)) {
-			return TRUE;
-		}
-	}
+  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+    if (DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->chmod($uri, $mode)) {
+      return TRUE;
+    }
+  }
   else {
     if (@chmod($uri, $mode)) {
       return TRUE;
