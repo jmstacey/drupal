@@ -125,12 +125,9 @@ function file_create_url($uri) {
  *   returned.
  */
 function file_create_path($uri = NULL, $stream = TRUE) {
-
-  $default_scheme = 'public://';
-
   // If URI is omitted, use Drupal's public files directory [public://].
   if (is_null($uri)) {
-    return $default_scheme;
+    return SCHEME_DEFAULT;
   }
 
   if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
@@ -139,8 +136,8 @@ function file_create_path($uri = NULL, $stream = TRUE) {
   }
   elseif ($stream) {
     // The URI must contain a valid scheme.
-    $file_path = $default_scheme . $uri;
-    $uri       = $default_scheme . $uri;
+    $file_path = SCHEME_DEFAULT . $uri;
+    $uri       = SCHEME_DEFAULT . $uri;
   }
   else {
     /**

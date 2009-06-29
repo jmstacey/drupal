@@ -11,6 +11,11 @@
 
 
 /**
+ *  The default Stream Wrapper scheme.
+ */
+define('SCHEME_DEFAULT', 'public://');
+
+/**
  * Generic PHP stream wrapper interface.
  *
  * @see: http://www.php.net/manual/en/class.streamwrapper.php
