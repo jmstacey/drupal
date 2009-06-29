@@ -107,7 +107,8 @@ define('FILE_STATUS_PERMANENT', 1);
  * TODO: Stream wrapper introduction documentation.
  *
  * @param string $uri
- *   A string containing the URI of a stream.
+ *   A string containing the URI to verify. If this value is omitted,
+ *   Drupal's public files directory will be used [public://].
  * @return mixed
  *   Returns a string containing a URL that may be used to access the stream.
  *   If the stream scheme is not valid, FALSE will be returned.
@@ -123,7 +124,7 @@ function file_create_url($uri) {
 }
 
 /**
- * Asserts that the URI is a complete path that resides in a valid 
+ * Asserts that the URI is a complete path that resides in a valid
  * filesystem directory.
  *
  * Compatibility: normal paths and stream wrappers.
@@ -139,7 +140,7 @@ function file_create_url($uri) {
  *   path.
  * @return mixed
  *   Returns a string containing the path to the stream. If the URI is
- *   invalid (i.e. outside a valid filesystem directory), FALSE will be 
+ *   invalid (i.e. outside a valid filesystem directory), FALSE will be
  *   returned.
  */
 function file_create_path($uri = NULL, $stream = TRUE) {
@@ -274,7 +275,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
  * TODO: Stream wrapper introduction documentation.
  *
  * @param string &$path
- *   A string reference containing a file path. This will be set to the 
+ *   A string reference containing a file path. This will be set to the
  *   directory's path.
  * @return mixed
  *   Returns the basename of the path. If the directory is not in a Drupal
@@ -1624,7 +1625,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  * TODO: Stream wrapper introduction documentation.
  *
  * @param string $scheme
- *   A string representing the scheme of a stream. 
+ *   A string representing the scheme of a stream.
  *   A stream is referenced as: scheme://target.
  * @return
  *   A string containing the base path of a stream. FALSE is returned if the scheme
@@ -1658,46 +1659,25 @@ function file_upload_max_size() {
 /**
  * Determines an Internet Media Type, or MIME type from a filename.
  *
- * @param $filename
- *   Name of the file, including extension.
- * @param $mapping
+ * @param string $uri
+ *   A string containing the URI to verify. If this value is omitted,
+ *   Drupal's public files directory will be used [public://].
+ * @param array $mapping
  *   An optional map of extensions to their mimetypes, in the form:
  *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
  *    - 'extensions': the mapping itself, an associative array in which
  *      the key is the extension and the value is the mimetype identifier.
  * @return string
- *   Returns the MIME type registered for the extention, or
+ *   Returns the MIME type registered for the extension, or
  *   'application/octet-stream' for unkown extensions.
  */
-function file_get_mimetype($filename, $mapping = NULL) {
-  if (!isset($mapping)) {
-    $mapping = variable_get('mime_extension_mapping', NULL);
-    if (!isset($mapping) && drupal_function_exists('file_default_mimetype_mapping')) {
-      // The default file map, defined in file.mimetypes.inc is quite big.
-      // We only load it when necessary.
-      $mapping = file_default_mimetype_mapping();
-    }
+function file_get_mimetype($uri, $mapping = NULL) {
+  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+    return DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->file_get_mimetype($uri, $mapping);
   }
-
-  $extension = '';
-  $file_parts = explode('.', $filename);
-
-  // Remove the first part: a full filename should not match an extension.
-  array_shift($file_parts);
-
-  // Iterate over the file parts, trying to find a match.
-  // For my.awesome.image.jpeg, we try:
-  //   - jpeg
-  //   - image.jpeg, and
-  //   - awesome.image.jpeg
-  while ($additional_part = array_pop($file_parts)) {
-    $extension = $additional_part . ($extension ? '.' . $extension : '');
-    if (isset($mapping['extensions'][$extension])) {
-      return $mapping['mimetypes'][$mapping['extensions'][$extension]];
-    }
+  else {
+    return 'application/octet-stream';
   }
-
-  return 'application/octet-stream';
 }
 
 /**
@@ -1720,9 +1700,10 @@ function file_get_mimetype($filename, $mapping = NULL) {
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *
- * @param $uri
- *   String containing the path to a file or directory.
- * @param $mode
+ * @param string $uri
+ *   A string containing the URI to verify. If this value is omitted,
+ *   Drupal's public files directory will be used [public://].
+ * @param int $mode
  *   Integer value for the permissions. Consult PHP chmod() documentation for
  *   more information.
  * @return
@@ -1773,7 +1754,8 @@ function drupal_chmod($uri, $mode = NULL) {
  * TODO: Stream wrapper introduction documentation.
  *
  * @param string $uri
- *   A string containing a path to a stream (file, directory, etc.)
+ *   A string containing the URI to verify. If this value is omitted,
+ *   Drupal's public files directory will be used [public://].
  * @return mixed
  *   Returns the absolute pathname, or FALSE on failure.
  */

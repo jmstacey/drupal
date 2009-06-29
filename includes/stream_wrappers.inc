@@ -47,7 +47,7 @@ interface StreamWrapperInterface {
 interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 
   /**
-   * Return an absolute stream resource URL for internal purposes. In the case 
+   * Return an absolute stream resource URL for internal purposes. In the case
    * of the three local wrappers (public, private, temp) realpath should be
    * used for security reasons.
    *
@@ -142,8 +142,35 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     return $uri;
   }
 
-  function getMimeType($uri) {
-    return file_get_mimetype(basename($uri));
+  function getMimeType($uri, $mapping = NULL) {
+    if (!isset($mapping)) {
+      $mapping = variable_get('mime_extension_mapping', NULL);
+      if (!isset($mapping) && drupal_function_exists('file_default_mimetype_mapping')) {
+        // The default file map, defined in file.mimetypes.inc is quite big.
+        // We only load it when necessary.
+        $mapping = file_default_mimetype_mapping();
+      }
+    }
+
+    $extension = '';
+    $file_parts = explode('.', basename($uri));
+
+    // Remove the first part: a full filename should not match an extension.
+    array_shift($file_parts);
+
+    // Iterate over the file parts, trying to find a match.
+    // For my.awesome.image.jpeg, we try:
+    //   - jpeg
+    //   - image.jpeg, and
+    //   - awesome.image.jpeg
+    while ($additional_part = array_pop($file_parts)) {
+      $extension = $additional_part . ($extension ? '.' . $extension : '');
+      if (isset($mapping['extensions'][$extension])) {
+        return $mapping['mimetypes'][$mapping['extensions'][$extension]];
+      }
+    }
+
+    return 'application/octet-stream';
   }
 
   function chmod($uri, $mode) {
