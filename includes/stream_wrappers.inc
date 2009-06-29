@@ -9,11 +9,25 @@
  * public, private, and temporary files.
  */
 
+/**
+ *  The scheme for the public stream wrapper.
+ */
+define('SCHEME_PUBLIC', 'public://');
+
+/**
+ *  The scheme for the private stream wrapper.
+ */
+define('SCHEME_PRIVATE', 'private://');
+
+/**
+ *  The scheme for the temporary stream wrapper.
+ */
+define('SCHEME_TEMP', 'temp://');
 
 /**
  *  The default Stream Wrapper scheme.
  */
-define('SCHEME_DEFAULT', 'public://');
+define('SCHEME_DEFAULT', SCHEME_PUBLIC);
 
 /**
  * Generic PHP stream wrapper interface.
