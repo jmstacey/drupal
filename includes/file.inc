@@ -229,7 +229,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
     $htaccess_path = $directory . '/.htaccess';
   }
 
-  // Try created the .htaccess file if it's missing from the public, private, or temp directories.
+  // Try creating the .htaccess file if it's missing from the public, private, or temp directories.
   if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
        'public://' == $directory || 'private://' == $directory || 'temp://' == $directory && !is_file("$directory/.htaccess")) {
 
