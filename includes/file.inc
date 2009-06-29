@@ -1654,7 +1654,7 @@ function file_upload_max_size() {
  */
 function file_get_mimetype($uri, $mapping = NULL) {
   if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    return DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->file_get_mimetype($uri, $mapping);
+    return DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->getMimeType($uri, $mapping);
   }
   else {
     return 'application/octet-stream';

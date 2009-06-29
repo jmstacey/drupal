@@ -103,7 +103,7 @@ class DrupalStreamWrapperRegistry {
     // $data[0]://$data[1]
     // scheme://target
     
-    if ($count == 2) {
+    if (count($data) == 2) {
       return $data[0];
     }
     else {
