@@ -461,6 +461,26 @@ abstract class DrupalTestCase {
 }
 
 /**
+ * Drupal simpletest (simpletest://) stream wrapper class.
+ *
+ * Provides support for the simpletest directory created within the public
+ * files directory.
+ */
+class DrupalSimpleTestStreamWrapper extends DrupalPublicStreamWrapper {
+  static private $directory;
+
+  function __construct() {
+//     if (is_null(DrupalSimpleTestStreamWrapper::$directory)) {
+      DrupalSimpleTestStreamWrapper::$directory = variable_get('stream_public_path', 'sites/default/files') .'/simpletest';
+//     }
+  }
+
+  public function getDirectoryPath() {
+    return DrupalSimpleTestStreamWrapper::$directory;
+  }
+}
+
+/**
  * Test case for Drupal unit tests.
  *
  * These tests can not access the database nor files. Calling any Drupal
@@ -979,6 +999,10 @@ class DrupalWebTestCase extends DrupalTestCase {
     $this->originalLanguageDefault = variable_get('language_default');
     $this->originalPrefix = $db_prefix;
     $this->originalFileDirectory = file_directory_path('public');
+
+    // Register our simpletest:// stream wrapper.
+    DrupalStreamWrapperRegistry::register('simpletest',  'DrupalSimpleTestStreamWrapper');
+
     $clean_url_original = variable_get('clean_url', 0);
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
@@ -1089,6 +1113,9 @@ class DrupalWebTestCase extends DrupalTestCase {
     }
 
     if (preg_match('/simpletest\d+/', $db_prefix)) {
+      // Unregister our simpletest:// stream wrapper.
+      DrupalStreamWrapperRegistry::unregister('simpletest');
+
       // Delete temporary files directory and reset files directory path.
       file_unmanaged_delete_recursive(file_directory_path('public'));
       variable_set('stream_public_path', $this->originalFileDirectory);

@@ -1,6 +1,22 @@
 <?php
 // $Id: simpletest.test,v 1.25 2009-06-17 13:40:26 dries Exp $
 
+class SimpleTestStreamWrapperTest extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => t('SimpleTest Stream Wrapper functionality'),
+      'description' => t('Test SimpleTest\'s stream wrapper, ensuring the folder (defaulting
+                          to /sites/default/files/streamwrapper) exists.'),
+      'group' => t('SimpleTest')
+    );
+  }
+
+  function testSimpleTestFolderExists() {
+    $dir = 'simpletest://';
+    $this->assertTrue(file_check_directory($dir), t('The base simpletest stream wrapper folder exists.'));
+  }
+}
+
 class SimpleTestFunctionalTest extends DrupalWebTestCase {
   /**
    * The results array that has been parsed by getTestResults().
