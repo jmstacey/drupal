@@ -467,16 +467,9 @@ abstract class DrupalTestCase {
  * files directory.
  */
 class DrupalSimpleTestStreamWrapper extends DrupalPublicStreamWrapper {
-  static private $directory;
-
-  function __construct() {
-//     if (is_null(DrupalSimpleTestStreamWrapper::$directory)) {
-      DrupalSimpleTestStreamWrapper::$directory = variable_get('stream_public_path', 'sites/default/files') .'/simpletest';
-//     }
-  }
-
   public function getDirectoryPath() {
-    return DrupalSimpleTestStreamWrapper::$directory;
+    // This gets set just before registering our stream wrapper.
+    return variable_get('simpletest_stream_wrapper_path', '');
   }
 }
 
@@ -1000,6 +993,8 @@ class DrupalWebTestCase extends DrupalTestCase {
     $this->originalPrefix = $db_prefix;
     $this->originalFileDirectory = file_directory_path('public');
 
+    variable_set('simpletest_stream_wrapper_path', $this->originalFileDirectory);
+
     // Register our simpletest:// stream wrapper.
     DrupalStreamWrapperRegistry::register('simpletest',  'DrupalSimpleTestStreamWrapper');
 
@@ -1115,6 +1110,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     if (preg_match('/simpletest\d+/', $db_prefix)) {
       // Unregister our simpletest:// stream wrapper.
       DrupalStreamWrapperRegistry::unregister('simpletest');
+      variable_del('simpletest_stream_wrapper_path');
 
       // Delete temporary files directory and reset files directory path.
       file_unmanaged_delete_recursive(file_directory_path('public'));
