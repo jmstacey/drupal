@@ -25,11 +25,6 @@ define('SCHEME_PRIVATE', 'private://');
 define('SCHEME_TEMP', 'temp://');
 
 /**
- *  The default Stream Wrapper scheme.
- */
-define('SCHEME_DEFAULT', SCHEME_PUBLIC);
-
-/**
  * Generic PHP stream wrapper interface.
  *
  * @see: http://www.php.net/manual/en/class.streamwrapper.php
