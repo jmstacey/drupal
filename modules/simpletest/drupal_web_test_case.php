@@ -468,8 +468,9 @@ abstract class DrupalTestCase {
  */
 class DrupalSimpleTestStreamWrapper extends DrupalPublicStreamWrapper {
   public function getDirectoryPath() {
+    global $simpletest_stream_wrapper_path;
     // This gets set just before registering our stream wrapper.
-    return variable_get('simpletest_stream_wrapper_path', '');
+    return $simpletest_stream_wrapper_path;
   }
 }
 
@@ -985,7 +986,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    *   List of modules to enable for the duration of the test.
    */
   protected function setUp() {
-    global $db_prefix, $user, $language;
+    global $db_prefix, $user, $language, $simpletest_stream_wrapper_path;
 
     // Store necessary current values before switching to prefixed database.
     $this->originalLanguage = $language;
@@ -993,7 +994,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     $this->originalPrefix = $db_prefix;
     $this->originalFileDirectory = file_directory_path('public');
 
-    variable_set('simpletest_stream_wrapper_path', $this->originalFileDirectory);
+    $simpletest_stream_wrapper_path = $this->originalFileDirectory .'/simpletest';
 
     // Register our simpletest:// stream wrapper.
     DrupalStreamWrapperRegistry::register('simpletest',  'DrupalSimpleTestStreamWrapper');
@@ -1099,7 +1100,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * and reset the database prefix.
    */
   protected function tearDown() {
-    global $db_prefix, $user, $language;
+    global $db_prefix, $user, $language, $simpletest_stream_wrapper_path;
 
     $emailCount = count(variable_get('simpletest_emails', array()));
     if ($emailCount) {
@@ -1110,7 +1111,8 @@ class DrupalWebTestCase extends DrupalTestCase {
     if (preg_match('/simpletest\d+/', $db_prefix)) {
       // Unregister our simpletest:// stream wrapper.
       DrupalStreamWrapperRegistry::unregister('simpletest');
-      variable_del('simpletest_stream_wrapper_path');
+      // Remove our temporary variable.
+      unset($simpletest_stream_wrapper_path);
 
       // Delete temporary files directory and reset files directory path.
       file_unmanaged_delete_recursive(file_directory_path('public'));
