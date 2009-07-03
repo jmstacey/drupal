@@ -1563,6 +1563,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
     while (FALSE !== ($filename = readdir($handle))) {
       if (!preg_match($options['nomask'], $filename) && $filename[0] != '.') {
         $uri = "$dir/$filename";
+        DrupalStreamWrapperRegistry::normalizeUri($uri);
         if (is_dir($uri) && $options['recurse']) {
           // Give priority to files in this folder by merging them in after any subdirectory files.
           $files = array_merge(file_scan_directory($uri, $mask, $options, $depth + 1), $files);

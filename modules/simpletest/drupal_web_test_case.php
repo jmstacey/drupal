@@ -769,7 +769,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     // Make sure type is valid.
     if (in_array($type, array('binary', 'html', 'image', 'javascript', 'php', 'sql', 'text'))) {
       // Use original file directory instead of one created during setUp().
-      $path = $this->originalFileDirectory . '/simpletest';
+      $path = 'simpletest://';
       $files = file_scan_directory($path, '/' . $type . '\-.*/');
 
       // If size is set then remove any files that are not of that size.
