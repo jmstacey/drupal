@@ -2039,19 +2039,21 @@ class FileMimeTypeTest extends DrupalWebTestCase {
    * Test basic extraction of mimetypes from the filename.
    */
   public function testFileMimeTypeDetection() {
+    $prefix = 'simpletest://';
+
     $test_case = array(
-      'test.jar' => 'application/java-archive',
-      'test.jpeg' => 'image/jpeg',
-      'test.jpg' => 'image/jpeg',
-      'test.jar.jpg' => 'image/jpeg',
-      'test.jpg.jar' => 'application/java-archive',
-      'test.pcf.Z' => 'application/x-font',
-      'pcf.Z' => 'application/octet-stream',
-      'jar' => 'application/octet-stream',
+      'simpltest.jar' => 'application/java-archive',
+      'test.jpeg'     => 'image/jpeg',
+      'test.jpg'      => 'image/jpeg',
+      'test.jar.jpg'  => 'image/jpeg',
+      'test.jpg.jar'  => 'application/java-archive',
+      'test.pcf.Z'    => 'application/x-font',
+      'pcf.Z'         => 'application/octet-stream',
+      'jar'           => 'application/octet-stream',
     );
 
     foreach ($test_case as $input => $expected) {
-      $output = file_get_mimetype($input);
+      $output = file_get_mimetype($prefix . $input);
       $this->assertIdentical($output, $expected, t('Mimetype for %input is %output (expected: %expected).', array('%input' => $input, '%output' => $output, '%expected' => $expected)));
     }
   }

@@ -88,7 +88,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *   Stream wrapper resource url.
    * @return string
    */
-  function getMimeType($uri);
+  public function getMimeType($uri);
 
   /**
    * Change permissions of stream.

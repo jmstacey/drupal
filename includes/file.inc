@@ -1656,6 +1656,10 @@ function file_upload_max_size() {
 /**
  * Determines an Internet Media Type, or MIME type from a filename.
  *
+ * Compatibility: only stream wrappers
+ * @see http://drupal.org/example/stream-wrappers
+ * TODO: Stream wrapper introduction documentation.
+ *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
