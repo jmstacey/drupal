@@ -1362,7 +1362,6 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
  * Saves a string to the specified destination and creates a database file entry.
  *
  * Compatibility: only stream wrappers.
- *
  * @see http://drupal.org/example/stream-wrappers
  * TODO: Stream wrapper introduction documentation.
  *

@@ -1825,10 +1825,10 @@ class FileSaveDataTest extends FileHookTestCase {
   function testWithFilename() {
     $contents = $this->randomName(8);
 
-    $result = file_save_data($contents, 'asdf.txt');
+    $result = file_save_data($contents, 'public://asdf.txt');
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path('public'), drupal_dirname($result->uri), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(DrupalStreamWrapperRegistry::getStreamScheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($result->uri), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'text/plain', t('A MIME type was set.'));
