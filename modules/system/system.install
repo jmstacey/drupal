@@ -1,5 +1,5 @@
 <?php
-// $Id: system.install,v 1.348 2009-06-28 17:04:52 webchick Exp $
+// $Id: system.install,v 1.351 2009-07-01 12:03:35 dries Exp $
 
 /**
  * @file
@@ -512,7 +512,7 @@ function system_install() {
 
   variable_set('node_options_forum', array(0 => 'status'));
 
-  $cron_key = serialize(md5(mt_rand()));
+  $cron_key = md5(mt_rand());
 
   variable_set('cron_key', $cron_key);
 }
@@ -760,7 +760,7 @@ function system_schema() {
         'default' => 0,
       ),
       'status' => array(
-        'description' => 'A bitmapped field indicating the status of the file the least sigifigant bit indicates temporary (1) or permanent (0). Temporary files older than DRUPAL_MAXIMUM_TEMP_FILE_AGE will be removed during a cron run.',
+        'description' => 'A bitmapped field indicating the status of the file. The least significant bit indicates temporary (0) or permanent (1). Temporary files older than DRUPAL_MAXIMUM_TEMP_FILE_AGE will be removed during a cron run.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -2230,10 +2230,47 @@ function system_update_7028() {
 }
 
 /**
- * Create the {file} with the unique key on the filepath.
+ * Add the block_node_type table.
  */
 function system_update_7029() {
   $ret = array();
+
+  $schema['block_node_type'] = array(
+    'description' => 'Sets up display criteria for blocks based on content types',
+    'fields' => array(
+      'module' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => "The block's origin module, from {block}.module.",
+      ),
+      'delta' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => "The block's unique delta within module, from {block}.delta.",
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => "The machine-readable name of this type from {node_type}.type.",
+      ),
+    ),
+    'primary key' => array('module', 'delta', 'type'),
+    'indexes' => array(
+      'type' => array('type'),
+    ),
+  );
+
+  db_create_table($ret, 'block_node_type', $schema['block_node_type']);
+  return $ret;
+}
+
+/**
+ * Create the {file} with the unique key on the filepath.
+ */
+function system_update_7030() {
 
   /*
     TODO Update the update record when removing the status column
