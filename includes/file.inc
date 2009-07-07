@@ -577,8 +577,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     return FALSE;
   }
 
-  // If the destination file is not specified then use the filename of the 
-  // source file.
+  // If the destination file is not specified then use the filename of the source file.
   $basename    = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
   DrupalStreamWrapperRegistry::normalizeUri($destination);
