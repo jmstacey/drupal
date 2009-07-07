@@ -86,7 +86,8 @@ class UploadTestCase extends DrupalWebTestCase {
       $this->assertRaw(t('Page %title has been updated.', array('%title' => $node->title)), 'File deleted successfully.');
 
       $this->assertNoText($new_name, $new_name . ' not found on node.');
-      $this->drupalGet('public://' . $upload->description, array('external' => TRUE));
+      $external_uri = DrupalStreamWrapperRegistry::getInstanceByUri('public://' . $upload->description)->getExternalUrl('public://' . $upload->description);
+      $this->drupalGet($external_uri, array('external' => TRUE));
       $this->assertResponse(array(404), 'Uploaded ' . $upload->description . ' is not accessible.');
     }
     else {
