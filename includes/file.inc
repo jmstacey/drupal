@@ -1,5 +1,5 @@
 <?php
-// $Id: file.inc,v 1.171 2009-06-09 21:33:12 dries Exp $
+// $Id: file.inc,v 1.172 2009-07-07 08:59:07 dries Exp $
 
 /**
  * @file
@@ -549,36 +549,42 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
 
-  $stream    = TRUE;  // Should we handle this operation as a stream or normal path?
+  $stream = TRUE;  // Should we handle this operation as a stream or normal path?
+
+  $original_source      = $source;
+  $original_destination = $destination;
+
+  $source = realpath($source);
 
   if (!file_exists($source)) {
-    drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $source)), 'error');
+    drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
     return FALSE;
   }
 
   // If $source and $destination do not contain a scheme we're dealing with a normal path.
   if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) &&
       !DrupalStreamWrapperRegistry::getValidStreamScheme($destination)) {
-    $stream    = FALSE;
+    $stream = FALSE;
   }
 
-  $destination = file_create_path($destination, $stream);
-  $directory   = $destination;
-  $basename    = file_check_path($directory);
+  $proposed_destination = file_create_path($destination, $stream);
+  $directory = $proposed_destination;
+  $basename  = file_check_path($directory);
 
   // Make sure we at least have a valid directory.
   if ($basename === FALSE) {
-    drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured.', array('%file' => $source, '%directory' => $destination)), 'error');
+    drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => empty($original_destination) ? $proposed_destination : $original_destination)), 'error');
     return FALSE;
   }
 
-  // If the destination file is not specified then use the filename of the source file.
+  // If the destination file is not specified then use the filename of the 
+  // source file.
   $basename    = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
   DrupalStreamWrapperRegistry::normalizeUri($destination);
 
   if ($destination === FALSE) {
-    drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination.', array('%file' => $source)), 'error');
+    drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $proposed_destination)), 'error');
     return FALSE;
   }
   // Make sure source and destination filenames are not the same, makes no

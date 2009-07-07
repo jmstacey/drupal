@@ -1,5 +1,5 @@
 <?php
-// $Id: drupal_web_test_case.php,v 1.118 2009-07-01 12:47:30 dries Exp $
+// $Id: drupal_web_test_case.php,v 1.122 2009-07-07 08:07:24 dries Exp $
 
 /**
  * Base class for Drupal tests.
@@ -135,6 +135,39 @@ abstract class DrupalTestCase {
     else {
       return FALSE;
     }
+  }
+
+  /**
+   * Make assertions from outside the test case.
+   *
+   * @see DrupalTestCase::assert()
+   */
+  public static function assertStatic($test_id, $test_class, $status, $message = '', $group = 'Other', array $caller = NULL) {
+    // Convert boolean status to string status.
+    if (is_bool($status)) {
+      $status = $status ? 'pass' : 'fail';
+    }
+
+    $caller += array(
+      'function' => t('N/A'),
+      'line' => -1,
+      'file' => t('N/A'),
+    );
+
+    $assertion = array(
+      'test_id' => $test_id,
+      'test_class' => $test_class,
+      'status' => $status,
+      'message' => $message,
+      'message_group' => $group,
+      'function' => $caller['function'],
+      'line' => $caller['line'],
+      'file' => $caller['file'],
+    );
+
+    db_insert('simpletest')
+      ->fields($assertion)
+      ->execute();
   }
 
   /**
@@ -345,7 +378,11 @@ abstract class DrupalTestCase {
   public function run() {
     // HTTP auth settings (<username>:<password>) for the simpletest browser
     // when sending requests to the test site.
-    $this->httpauth_credentials = variable_get('simpletest_httpauth_credentials', NULL);
+    $username = variable_get('simpletest_username', NULL);
+    $password = variable_get('simpletest_password', NULL);
+    if ($username && $password) {
+      $this->httpauth_credentials = $username . ':' . $password;
+    }
 
     set_error_handler(array($this, 'errorHandler'));
     $methods = array();
@@ -890,7 +927,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     static $available;
 
     if (!isset($available) || $reset) {
-      $available = array_keys(module_invoke_all('perm'));
+      $available = array_keys(module_invoke_all('permission'));
     }
 
     $valid = TRUE;
@@ -1001,7 +1038,12 @@ class DrupalWebTestCase extends DrupalTestCase {
     $clean_url_original = variable_get('clean_url', 0);
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
-    $db_prefix = Database::getConnection()->prefixTables('{simpletest' . mt_rand(1000, 1000000) . '}');
+    $db_prefix_new = Database::getConnection()->prefixTables('{simpletest' . mt_rand(1000, 1000000) . '}');
+    db_update('simpletest_test_id')
+      ->fields(array('last_prefix' => $db_prefix_new))
+      ->condition('test_id', $this->testId)
+      ->execute();
+    $db_prefix = $db_prefix_new;
 
     include_once DRUPAL_ROOT . '/includes/install.inc';
     drupal_install_system();
@@ -1060,8 +1102,13 @@ class DrupalWebTestCase extends DrupalTestCase {
     // Use temporary files directory with the same prefix as database.
     variable_set('stream_public_path', $this->originalFileDirectory . '/' . $db_prefix);
     $directory = file_directory_path('public');
+
     // Create the files directory.
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+
+    // Log fatal errors.
+    ini_set('log_errors', 1);
+    ini_set('error_log', $directory . '/error.log');
 
     set_time_limit($this->timeLimit);
   }
