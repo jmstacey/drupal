@@ -102,7 +102,7 @@ class DrupalStreamWrapperRegistry {
     $data = explode('://', $uri, 2);
     // $data[0]://$data[1]
     // scheme://target
-    
+
     return count($data) == 2 ? $data[0] : FALSE;
   }
 

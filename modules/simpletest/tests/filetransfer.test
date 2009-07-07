@@ -35,7 +35,8 @@ class FileTranferTest extends DrupalWebTestCase {
   }
 
   function _buildFakeModule() {
-    $location = file_directory_temp() . '/fake';
+    $location = file_directory_path('temp') . '/fake';
+    DrupalStreamWrapperRegistry::normalizeUri($location);
     if (is_dir($location)) {
       $ret = 0;
       $output = array();
