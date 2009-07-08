@@ -225,7 +225,8 @@ function simpletest_log_read($test_id) {
   $last_prefix = substr($last_prefix, 10);
 
   $test_class = db_result(db_query('SELECT test_class FROM {simpletest} WHERE test_id = :test_id ORDER BY message_id', array(':test_id' => $test_id)));
-  $log = file_directory_path() . "/simpletest/$last_prefix/error.log";
+  $log = SCHEME_PUBLIC . "/simpletest/$last_prefix/error.log";
+  DrupalStreamWrapperRegistry::normalizeUri($log);
   if (file_exists($log)) {
     foreach (file($log) as $line) {
       if (preg_match('/PHP Fatal error: (.*?) in (.*) on line (\d+)/', $line, $match)) {
@@ -372,12 +373,12 @@ function simpletest_clean_database() {
  * Find all leftover temporary directories and remove them.
  */
 function simpletest_clean_temporary_directories() {
-  $directory = file_directory_path('simpletest');
+  $directory = file_directory_path('public');
   $files = scandir($directory);
   $count = 0;
   foreach ($files as $file) {
-    $path = "$directory/$file";
-    if (is_dir($path) && is_numeric($file)) {
+    $path = file_directory_path('public') . '/' . $file;
+    if (is_dir($path) && preg_match('/^simpletest\d+/', $file)) {
       file_unmanaged_delete_recursive($path);
       $count++;
     }

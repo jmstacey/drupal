@@ -1633,7 +1633,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  *   is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme) {
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme))
+  if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme))
     return $wrapper->getDirectoryPath();
   else
     return FALSE;

@@ -80,7 +80,9 @@ class FileTranferTest extends DrupalWebTestCase {
 
     $gotit = TRUE;
     try {
-      $this->testConnection->copyDirectory($source, DRUPAL_ROOT . '/'. file_directory_path());
+      $proposed_destination = DRUPAL_ROOT . '/'. file_directory_path(SCHEME_PUBLIC);
+      DrupalStreamWrapperRegistry::normalizeUri($proposed_destination);
+      $this->testConnection->copyDirectory($source, $proposed_destination);
     }
     catch (FileTransferException $e) {
       $gotit = FALSE;
@@ -106,7 +108,7 @@ class FileTranferTest extends DrupalWebTestCase {
 
     $received_commands = $this->testConnection->connection->flushCommands();
     $this->assertEqual($received_commands, $expected_commands, 'Expected copy files operations made to sites/all/modules');
-    
+
     $this->testConnection->shouldIsDirectoryReturnTrue = FALSE;
     $this->testConnection->copyDirectory($directory, "{$drupal_root}/sites/all/modules/fake");
     $expected_commands = array(
@@ -120,11 +122,11 @@ class FileTranferTest extends DrupalWebTestCase {
     );
 
     $received_commands = $this->testConnection->connection->flushCommands();
-    dd($expected_commands);
-    dd($received_commands);
+    // What is dd()?
+    //dd($expected_commands);
+    //dd($received_commands);
     $this->assertEqual($received_commands, $expected_commands, 'Expected copy files operations made to sites/all/modules/fake');
-    
-    
+
   }
 }
 
@@ -136,7 +138,7 @@ class TestFileTransfer extends FileTransfer {
   protected $username = NULL;
   protected $password = NULL;
   protected $port = NULL;
-  
+
   /**
    * This is for testing the CopyRecursive logic.
    */
@@ -174,7 +176,7 @@ class TestFileTransfer extends FileTransfer {
       throw new FileTransferException('Unable to remove to file @file.', NULL, array('@file' => $item));
     }
   }
-  
+
   function isDirectory($path) {
     return $this->shouldIsDirectoryReturnTrue;
   }

@@ -881,7 +881,7 @@ function st($string, $args = array()) {
     $filename = 'profiles/' . $profile . '/translations/' . $install_locale . '.po';
     if (file_exists(DRUPAL_ROOT . '/' . $filename)) {
       require_once DRUPAL_ROOT . '/includes/locale.inc';
-      $file = (object) array('filepath' => $filename);
+      $file = (object) array('uri' => $filename);
       _locale_import_read_po('mem-store', $file);
       $locale_strings = _locale_import_one_string('mem-report');
     }

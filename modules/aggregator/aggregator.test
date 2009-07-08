@@ -217,7 +217,8 @@ EOF;
 </opml>
 EOF;
 
-    $path = file_directory_path('public') . '/invalid-opml.xml';
+    $path = SCHEME_PUBLIC . 'invalid-opml.xml';
+    DrupalStreamWrapperRegistry::normalizeUri($path);
     return file_unmanaged_save_data($opml, $path);
   }
 
@@ -228,7 +229,8 @@ EOF;
    *   Path to empty OPML file.
    */
   function getEmptyOpml() {
-    $opml = <<<EOF
+    // Avoding the <<<EOF trick here because it breaks the Aptana debugger.    
+    $opml = '
 <?xml version="1.0" encoding="utf-8"?>
 <opml version="1.0">
   <head></head>
@@ -236,10 +238,10 @@ EOF;
     <outline text="Sample text" />
     <outline text="Sample text" url="Sample URL" />
   </body>
-</opml>
-EOF;
+</opml>';
 
-    $path = file_directory_path('public') . '/empty-opml.xml';
+    $path = SCHEME_PUBLIC . '/empty-opml.xml';
+    DrupalStreamWrapperRegistry::normalizeUri($path);
     return file_unmanaged_save_data($opml, $path);
   }
 
