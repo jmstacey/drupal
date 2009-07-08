@@ -478,7 +478,10 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
   drupal_write_record('blogapi_files', $row);
 
   // Return the successful result.
-  return array('url' => file_create_url($file), 'struct');
+  // TODO: Don't assume public.
+  $uri = SCHEME_PUBLIC . "/$file";
+  DrupalStreamWrapperRegistry::normalizeUri($uri);
+  return array('url' => file_create_url($uri), 'struct');
 }
 /**
  * Blogging API callback. Returns a list of the taxonomy terms that can be
