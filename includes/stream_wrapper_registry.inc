@@ -160,10 +160,15 @@ class DrupalStreamWrapperRegistry {
    *   String reference containing the URI to normalize.
    */
   public static function normalizeUri(&$uri) {
-    if ($scheme = DrupalStreamWrapperRegistry::getStreamScheme($uri)) {
+    if ($scheme = self::getStreamScheme($uri)) {
+      $target = self::getStreamTarget($uri);
 
-      $target = DrupalStreamWrapperRegistry::getStreamTarget($uri);
-      $uri    = $scheme . '://' . rtrim($target, '/\\');
+      // Remove all occurrences of the wrapper's directory path.
+      $directory_path = self::getInstanceByScheme($scheme)->getDirectoryPath();
+      $target         = str_replace($directory_path, '', $target);
+
+      // Trim erroneous leading slashes from target.
+      $uri = $scheme . '://' . ereg_replace('^[/\\]*', '', $target);
     }
   }
 
