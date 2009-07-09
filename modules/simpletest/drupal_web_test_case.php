@@ -1102,12 +1102,18 @@ class DrupalWebTestCase extends DrupalTestCase {
     // default mail handler.
     variable_set('smtp_library', drupal_get_path('module', 'simpletest') . '/drupal_web_test_case.php');
 
-    // Use temporary files directory with the same prefix as database.
-    variable_set('stream_public_path', $this->originalFileDirectory . '/' . $db_prefix);
-    $directory = file_directory_path('public');
+    // Use temporary directories
+    $public_files_directory  = $this->originalFileDirectory . '/' . $db_prefix;
+    $private_files_directory = $public_files_directory . '/private';
 
-    // Create the files directory.
+    // Set path variables
+    variable_set('stream_public_path', $public_files_directory);
+    variable_set('stream_private_path', $private_files_directory);
+
+    // Create the directories
+    $directory = file_directory_path('public');
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    file_check_directory($private_files_directory, FILE_CREATE_DIRECTORY);
 
     // Log fatal errors.
     ini_set('log_errors', 1);
