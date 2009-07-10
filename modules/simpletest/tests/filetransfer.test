@@ -122,9 +122,6 @@ class FileTranferTest extends DrupalWebTestCase {
     );
 
     $received_commands = $this->testConnection->connection->flushCommands();
-    // What is dd()?
-    //dd($expected_commands);
-    //dd($received_commands);
     $this->assertEqual($received_commands, $expected_commands, 'Expected copy files operations made to sites/all/modules/fake');
 
   }
