@@ -56,7 +56,7 @@ class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return a dummy path for testing.
    */
-  function getInternalUri($uri) {
+  function getInternalUri() {
     return '/dummy/example.txt';
   }
 
@@ -65,7 +65,7 @@ class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
    *
    * Return the HTML URI of a public file.
    */
-  function getExternalUrl($uri) {
+  function getExternalUrl() {
     return '/dummy/example.txt';
   }
 
@@ -1937,7 +1937,6 @@ class FileDownloadTest extends FileTestCase {
    */
   function testPrivateFileTransfer() {
     // Set file downloads to private so handler functions get called.
-//    variable_set('file_downloads', FILE_DOWNLOADS_PRIVATE);
 
     // Create a file.
     $file = $this->createFile(NULL, NULL, 'private://');

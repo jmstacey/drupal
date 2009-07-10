@@ -114,8 +114,8 @@ define('FILE_STATUS_PERMANENT', 1);
  */
 function file_create_url($uri) {
 
-  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    return DrupalStreamWrapperRegistry::getInstanceByUri($uri)->getExternalUrl($uri);
+  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+    return $wrapper->getExternalUrl();
   }
   else {
     return FALSE;
@@ -1633,10 +1633,12 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  *   is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme) {
-  if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme))
+  if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)) {
     return $wrapper->getDirectoryPath();
-  else
+  }
+  else {
     return FALSE;
+  }
 }
 
 /**
@@ -1677,8 +1679,9 @@ function file_upload_max_size() {
  *   'application/octet-stream' for unkown extensions.
  */
 function file_get_mimetype($uri, $mapping = NULL) {
-  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    return DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->getMimeType($uri, $mapping);
+
+  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+    return $wrapper->getMimeType($mapping);
   }
   else {
     return 'application/octet-stream';
@@ -1728,8 +1731,8 @@ function drupal_chmod($uri, $mode = NULL) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    if (DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)->chmod($uri, $mode)) {
+  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+    if ($wrapper->chmod($mode)) {
       return TRUE;
     }
   }
@@ -1769,10 +1772,8 @@ function drupal_realpath($uri) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
-  if (DrupalStreamWrapperRegistry::getStreamScheme($uri) &&
-      $wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
-
-    return $wrapper->realpath($uri);
+  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+    return $wrapper->realpath();
   }
   else {
     return realpath($uri);

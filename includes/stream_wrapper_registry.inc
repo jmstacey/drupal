@@ -63,6 +63,15 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
+   * Returns the entire Drupal stream wrapper registry.
+   *
+   * @return array
+   */
+  public function wrappers() {
+    return self::$wrappers;
+  }
+
+  /**
    * Returns the stream wrapper class name for a given scheme.
    *
    * @param string $scheme
@@ -76,15 +85,6 @@ class DrupalStreamWrapperRegistry {
     }
 
     return self::$wrappers[$scheme];
-  }
-
-  /**
-   * Returns the entire Drupal stream wrapper registry.
-   *
-   * @return array
-   */
-  function wrappers() {
-    return self::$wrappers;
   }
 
   /**
@@ -118,10 +118,10 @@ class DrupalStreamWrapperRegistry {
    *
    * @code
    *   // Return 'public'
-   *   DrupalStreamWrapperRegistry::getStreamValidate('public://example.txt');
+   *   DrupalStreamWrapperRegistry::getValidStreamScheme('public://example.txt');
    *
    *   // Return FALSE unless there is a registered wrapper for 'foobar'
-   *   DrupalStreamWrapperRegistry::getStreamValidate('foobar://exampl.txt');
+   *   DrupalStreamWrapperRegistry::getValidStreamScheme('foobar://example.txt');
    *
    * @param $uri
    *   A stream, referenced as scheme://target.
@@ -148,6 +148,84 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
+   * Gets the targat of a URI (stream).
+   *
+   * A stream is referenced as scheme://target.
+   *
+   * @param $uri
+   *   A stream, referenced as scheme://target
+   * @return mixed
+   *   A string containing the target (path), or FALSE if none.
+   *   For example, the URI public://sample/test.txt would return 
+   *   sample/test.txt
+   */
+  public static function getStreamTarget($uri) {
+    $data = explode('://', $uri, 2);
+    // $data[0]://$data[1]
+    // scheme://target
+
+    if (count($data) != 2) {
+      return FALSE;
+    }
+
+    // Remove erroneous beginning forward slash
+    $data[1] = ltrim($data[1], '\/');
+
+    return $data[1];
+  }
+
+  /**
+   * Gets reference to stream wrapper class responsible for given URI (stream).
+   *
+   * The scheme determines the stream wrapper class that should be
+   * used by consulting the stream wrapper registry.
+   *
+   * @param $uri
+   *   A stream, referenced as scheme://target
+   * @return mixed
+   *   Returns a new stream wrapper object appropriate for the given URI.
+   *   For example, a URI of public://example.txt would return a new
+   *   private stream wrapper object (DrupalPrivateStreamWrapper).
+   *   FALSE is returned if no registered handler could be found.
+   */
+  public static function getInstanceByUri($uri) {
+
+    $class = self::getClassName(self::getStreamScheme($uri));
+    if (class_exists($class)) {
+      $instance = new $class;
+      $instance->__set('uri', $uri);
+      return $instance;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Gets reference to stream wrapper class responsible for given scheme.
+   *
+   * This helper method returns a stream instance using a scheme. That is, the
+   * passed string does not container a '://'. For example, 'public' is a scheme 
+   * but 'public://' is a URI (stream). This is because the later contains both 
+   * a scheme and target despite target being empty.
+   *
+   * Note: the instance URI will be initialized to 'scheme://' so that you can
+   * make the customary method calls as if you had retrieved an instance by URI.
+   *
+   * @param $scheme
+   *   If the stream was 'public://target', 'public' would be the scheme.
+   * @return mixed
+   *   Returns a new stream wrapper object appropriate for the given $scheme.
+   *   For example, for the public scheme a stream wrapper object
+   *   (DrupalPublicStreamWrapper).
+   *   FALSE is returned if no registered handler could be found.
+   */
+  public static function getInstanceByScheme($scheme) {
+
+    return self::getInstanceByUri($scheme . '://');
+  }
+
+  /**
    * Normalizes URI by making it syntactically correct.
    *
    * A stream is referenced as scheme://target.
@@ -169,72 +247,6 @@ class DrupalStreamWrapperRegistry {
 
       // Trim erroneous leading slashes from target.
       $uri = $scheme . '://' . ereg_replace('^[/\\]*', '', $target);
-    }
-  }
-
-  /**
-   * Gets the targat of a URI (stream).
-   *
-   * A stream is referenced as scheme://target.
-   *
-   * @param $uri
-   *   A stream, referenced as scheme://target
-   * @return mixed
-   *   A string containing the target (path), or FALSE if none.
-   *   For example, the URI public://sample/test.txt would return 
-   *   sample/test.txt
-   */
-  public static function getStreamTarget($uri) {
-    $data = explode('://', $uri, 2);
-    // $data[0]://$data[1]
-    // scheme://target
-
-    // Remove erroneous beginning forward slash
-    $data[1] = ltrim($data[1], '\/');
-
-    return count($data) == 2 ? $data[1] : FALSE;
-  }
-
-  /**
-   * Gets reference to stream wrapper class responsible for given URI (stream).
-   *
-   * The scheme determines the stream wrapper class that should be
-   * used by consulting the stream wrapper registry.
-   *
-   * @param $uri
-   *   A stream, referenced as scheme://target
-   * @return mixed
-   *   Returns a new stream wrapper object appropriate for the given URI.
-   *   For example, a URI of public://example.txt would return a new
-   *   private stream wrapper object (DrupalPrivateStreamWrapper).
-   *   FALSE is returned if no registered handler could be found.
-   */
-  public static function getInstanceByUri($uri) {
-
-    return self::getInstanceByScheme(self::getStreamScheme($uri));
-  }
-
-  /**
-   * Gets reference to stream wrapper class responsible for given scheme.
-   *
-   * The scheme determines the stream wrapper class that should be
-   * used by consulting the stream wrapper registry.
-   *
-   * @param $scheme
-   * @return mixed
-   *   Returns a new stream wrapper object appropriate for the given $scheme.
-   *   For example, for the public scheme a stream wrapper object
-   *   (DrupalPublicStreamWrapper).
-   *   FALSE is returned if no registered handler could be found.
-   */
-  public static function getInstanceByScheme($scheme) {
-
-    $class = self::getClassName($scheme);
-    if (class_exists($class)) {
-      return new $class;
-    }
-    else {
-      return FALSE;
     }
   }
 

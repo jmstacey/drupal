@@ -1163,7 +1163,7 @@ function template_preprocess_user_picture(&$variables) {
     }
     if (isset($filepath)) {
       $alt = t("@user's picture", array('@user' => $account->name ? $account->name : variable_get('anonymous', t('Anonymous'))));
-      $variables['picture'] = theme('image', DrupalStreamWrapperRegistry::getInstanceByUri($filepath)->getExternalUrl($filepath), $alt, $alt, '', FALSE);
+      $variables['picture'] = theme('image', DrupalStreamWrapperRegistry::getInstanceByUri($filepath)->getExternalUrl(), $alt, $alt, '', FALSE);
       if (!empty($account->uid) && user_access('access user profiles')) {
         $attributes = array('attributes' => array('title' => t('View user profile.')), 'html' => TRUE);
         $variables['picture'] = l($variables['picture'], "user/$account->uid", $attributes);
