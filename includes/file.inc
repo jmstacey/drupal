@@ -9,7 +9,7 @@
 /**
  * Stream wrapper initialization is included here because there are cases where
  * File API is needed before a bootstrap, or in an alternate order (e.g. maintenance theme).
- * This method of initialization doesn't break anything and requires less changes
+ * This method of initialization doesn't break anything and requires fewer changes
  * to core.
  */
 // Stream wrapper interface and base class implementation
@@ -102,8 +102,7 @@ define('FILE_STATUS_PERMANENT', 1);
  * Creates the web accessible URL to a stream.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
@@ -127,8 +126,7 @@ function file_create_url($uri) {
  * filesystem directory.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
@@ -185,8 +183,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  * FTP servers, etc.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string &$directory
  *   A string reference containing the name of a directory path.
@@ -267,8 +264,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
  * Determines whether a path is a directory, or a directory/file.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string &$path
  *   A string reference containing a file path. This will be set to the
@@ -310,8 +306,7 @@ function file_check_path(&$path) {
  * @endcode
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $source
  *   A string set to the file to check. May be a literal path or a stream wrapper URI.
@@ -454,8 +449,7 @@ function file_save($file) {
  *   @see file_save_upload() for details on temporary files.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param object $source
  *   A file object.
@@ -527,8 +521,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  *   replace the file or rename the file based on the $replace parameter.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $source
  *   A string specifying the file location of the original file.
@@ -609,8 +602,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
  * existing files should be handled.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $destination
  *   A string specifying the desired path.
@@ -657,8 +649,7 @@ function file_destination($destination, $replace) {
  * - Adds the new file to the files database.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param object $source
  *   A file object.
@@ -726,8 +717,7 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * changes to the database.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $source
  *   A string specifying the file location of the original file.
@@ -819,8 +809,7 @@ function file_unmunge_filename($filename) {
  * used.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $basename
  *   The filename.
@@ -914,8 +903,7 @@ function file_delete($file, $force = FALSE) {
  * entry recorded in the files table.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string$path
  *   A string containing a file path.
@@ -959,8 +947,7 @@ function file_unmanaged_delete($path) {
  * Note that this only deletes visible files with write permission.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $path
  *   A string containing a file or directory path.
@@ -1019,8 +1006,7 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  *
  * Compatibility: source may be a normal path or stream, but the destination must
  *           always be a stream.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $source
  *   A string specifying the name of the upload field to save.
@@ -1367,8 +1353,7 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
  * Saves a string to the specified destination and creates a database file entry.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $data
  *   A string containing the contents of the file.
@@ -1499,8 +1484,7 @@ function file_transfer($source, $headers) {
  * returned headers the download will start with the returned headers. If no
  * modules respond drupal_not_found() will be returned.
  *
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @see hook_file_download()
  */
@@ -1536,8 +1520,7 @@ function file_download() {
  * from being scanned.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $dir
  *   The base directory for the scan, without trailing slash.
@@ -1622,8 +1605,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  * or temp might return /tmp.
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $scheme
  *   A string representing the scheme of a stream.
@@ -1663,8 +1645,7 @@ function file_upload_max_size() {
  * Determines an Internet Media Type, or MIME type from a filename.
  *
  * Compatibility: only stream wrappers
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
@@ -1705,8 +1686,7 @@ function file_get_mimetype($uri, $mapping = NULL) {
  * @see http://php.net/manual/en/function.chmod.php
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
@@ -1758,8 +1738,7 @@ function drupal_chmod($uri, $mode = NULL) {
  * @see http://php.net/manual/en/function.realpath.php
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $uri
  *   A string containing the URI to verify. If this value is omitted,
@@ -1788,8 +1767,7 @@ function drupal_realpath($uri) {
  * PHP's dirname() as a fallback.
  *
  * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * PHP's dirname doesn't parse a stream as expected. This will fallback to
  * dirname if it's not a valid stream.
@@ -1828,8 +1806,7 @@ function drupal_dirname($uri) {
  * @see http://php.net/manual/en/function.tempnam.php
  *
  * Compatibility: only stream wrappers.
- * @see http://drupal.org/example/stream-wrappers
- * TODO: Stream wrapper introduction documentation.
+ * @see http://drupal.org/node/515192
  *
  * @param string $prefix
  *   The prefix of the generated temporary filename. Note: Windows uses only

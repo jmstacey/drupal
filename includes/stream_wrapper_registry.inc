@@ -33,7 +33,7 @@ class DrupalStreamWrapperRegistry {
   /**
    * Registers a stream wrapper scheme.
    *
-   * @see: http://php.net/manual/en/function.stream-wrapper-register.php
+   * @see http://php.net/manual/en/function.stream-wrapper-register.php
    *
    * @param string $scheme
    *   URI scheme.
@@ -50,7 +50,7 @@ class DrupalStreamWrapperRegistry {
   /**
    * Unregisters a stream wrapper.
    *
-   * @see: http://php.net/manual/en/function.stream-wrapper-unregister.php
+   * @see http://php.net/manual/en/function.stream-wrapper-unregister.php
    *
    * @param string $scheme
    *   URI scheme.

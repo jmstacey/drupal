@@ -27,7 +27,7 @@ define('SCHEME_TEMP', 'temp://');
 /**
  * Generic PHP stream wrapper interface.
  *
- * @see: http://www.php.net/manual/en/class.streamwrapper.php
+ * @see http://www.php.net/manual/en/class.streamwrapper.php
  */
 interface StreamWrapperInterface {
   public function stream_open($uri, $mode, $options, &$opened_url);
