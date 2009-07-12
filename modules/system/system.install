@@ -1,5 +1,5 @@
 <?php
-// $Id: system.install,v 1.353 2009-07-04 14:45:36 dries Exp $
+// $Id: system.install,v 1.354 2009-07-10 04:28:15 webchick Exp $
 
 /**
  * @file
@@ -407,7 +407,7 @@ function system_install() {
   ));
 
   // Authenticated role permissions.
-  foreach (array('access comments', 'access content', 'post comments', 'post comments without approval') as $permission) {
+  foreach (array('access comments', 'access content', 'post comments', 'post comments without approval', 'view own unpublished content') as $permission) {
     $query->values(array(
       'rid' => DRUPAL_AUTHENTICATED_RID,
       'permission' => $permission,
@@ -2232,40 +2232,17 @@ function system_update_7028() {
 }
 
 /**
- * Add the block_node_type table.
+ * Add new 'view own unpublished content' permission for authenticated users.
+ * Preserves legacy behavior from Drupal 6.x.
  */
 function system_update_7029() {
   $ret = array();
-
-  $schema['block_node_type'] = array(
-    'description' => 'Sets up display criteria for blocks based on content types',
-    'fields' => array(
-      'module' => array(
-        'type' => 'varchar',
-        'length' => 64,
-        'not null' => TRUE,
-        'description' => "The block's origin module, from {block}.module.",
-      ),
-      'delta' => array(
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-        'description' => "The block's unique delta within module, from {block}.delta.",
-      ),
-      'type' => array(
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-        'description' => "The machine-readable name of this type from {node_type}.type.",
-      ),
-    ),
-    'primary key' => array('module', 'delta', 'type'),
-    'indexes' => array(
-      'type' => array('type'),
-    ),
-  );
-
-  db_create_table($ret, 'block_node_type', $schema['block_node_type']);
+  db_insert('role_permission')
+    ->fields(array(
+      'rid' => DRUPAL_AUTHENTICATED_RID,
+      'permission' => 'view own unpublished content',
+    ))
+    ->execute();
   return $ret;
 }
 
