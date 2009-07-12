@@ -1,5 +1,5 @@
 <?php
-// $Id: file.inc,v 1.174 2009-07-10 04:08:20 webchick Exp $
+// $Id: file.inc,v 1.175 2009-07-12 08:36:34 dries Exp $
 
 /**
  * @file
@@ -1621,6 +1621,23 @@ function file_directory_path($scheme) {
   else {
     return FALSE;
   }
+}
+
+/**
+ * Remove a possible leading file directory path from the given path.
+ *
+ * @param $path
+ *   Path to a file that may be in Drupal's files directory.
+ * @return
+ *   String with Drupal's files directory removed from it.
+ */
+function file_directory_strip($path) {
+  // Strip file_directory_path from $path. We only include relative paths in
+  // URLs.
+  if (strpos($path, file_directory_path() . '/') === 0) {
+    $path = trim(substr($path, strlen(file_directory_path())), '\\/');
+  }
+  return $path;
 }
 
 /**
