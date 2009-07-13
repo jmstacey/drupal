@@ -91,9 +91,18 @@ define('FILE_STATUS_PERMANENT', 1);
  *   Drupal's public files directory will be used [public://].
  * @return mixed
  *   Returns a string containing a URL that may be used to access the stream.
- *   If the stream scheme is not valid, FALSE will be returned.
+ *   If the provided string already contains a preceding 'http', nothing is done
+ *   and the same string is returned. If a Valid stream wrapper could not be found
+ *   to generate an external Url, then FALSE will be returned.
  */
 function file_create_url($uri) {
+
+  // Flat out check for http so that we don't have to actually implement getExternalUrl()
+  // for the http wrapper.
+  if (DrupalStreamWrapperRegistry::getStreamScheme($uri) == 'http') {
+    // This is already a somewhat properly formatted URL, so do nothing and return.
+    return $uri;
+  }
 
   if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
     return $wrapper->getExternalUrl();
