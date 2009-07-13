@@ -7,6 +7,23 @@
  */
 
 /**
+ * Stream wrapper initialization is included here because there are cases where
+ * File API is needed before a bootstrap, or in an alternate order (e.g. maintenance theme).
+ * This method of initialization doesn't break anything and requires fewer changes
+ * to core.
+ */
+// Stream wrapper interface and base class implementation
+require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
+
+// Stream wrapper registry
+require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
+
+// Register core wrappers
+DrupalStreamWrapperRegistry::register('public',  'DrupalPublicStreamWrapper');
+DrupalStreamWrapperRegistry::register('private', 'DrupalPrivateStreamWrapper');
+DrupalStreamWrapperRegistry::register('temp',    'DrupalTempStreamWrapper');
+
+/**
  * @defgroup file File interface
  * @{
  * Common file handling functions.

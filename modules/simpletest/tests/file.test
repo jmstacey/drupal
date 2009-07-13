@@ -44,6 +44,37 @@ function file_test_file_scan_callback_reset() {
 }
 
 /**
+ * Helper class for testing the stream wrapper registry.
+ *
+ * Dummy stream wrapper implementation (dummy://).
+ */
+class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
+  // TODO figure out what this should really return.
+  function getDirectoryPath() {
+    return variable_get('stream_public_path', 'sites/default/files');
+  }
+
+  /**
+   * Override getInternalUri().
+   *
+   * Return a dummy path for testing.
+   */
+  function getInternalUri() {
+    return '/dummy/example.txt';
+  }
+
+  /**
+   * Override getExternalUrl().
+   *
+   * Return the HTML URI of a public file.
+   */
+  function getExternalUrl() {
+    return '/dummy/example.txt';
+  }
+
+}
+
+/**
  * Base class for file tests that adds some additional file specific
  * assertions and helper functions.
  */
@@ -2029,5 +2060,104 @@ class FileMimeTypeTest extends DrupalWebTestCase {
       $output = file_get_mimetype($prefix . $input);
       $this->assertIdentical($output, $expected, t('Mimetype for %input is %output (expected: %expected).', array('%input' => $input, '%output' => $output, '%expected' => $expected)));
     }
+  }
+}
+
+/**
+ * Tests stream wrapper registry.
+ */
+class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
+
+  protected $scheme = 'dummy';
+  protected $classname = 'DrupalDummyStreamWrapper';
+
+  public static function getInfo() {
+    return array(
+      'name' => t('Stream Wrapper Registry'),
+      'description' => t('Tests stream wrapper registry.'),
+      'group' => t('File'),
+    );
+  }
+
+  function setUp() {
+    parent::setUp();
+    DrupalStreamWrapperRegistry::register($this->scheme, $this->classname);
+  }
+
+  function tearDown() {
+    parent::tearDown();
+    // Unregister the test handler.
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    if (isset($wrappers[$this->scheme])) {
+      DrupalStreamWrapperRegistry::unregister($this->scheme);
+    }
+  }
+
+  /**
+   * Test the register(), unregister() and wrappers() functions.
+   */
+  function testRegisterUnregisterWrappers() {
+    // Make sure it's not already registered.
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    if (isset($wrappers[$this->scheme])) {
+      DrupalStreamWrapperRegistry::unregister($this->scheme);
+    }
+
+    // Register the wrapper.
+    $this->assertTrue(DrupalStreamWrapperRegistry::register($this->scheme, $this->classname), t('The stream wrapper registered'));
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    $this->assertTrue(isset($wrappers[$this->scheme]), t('The stream wrapper has actually been registered.'));
+
+    // Unregister the wrapper.
+    $this->assertTrue(DrupalStreamWrapperRegistry::unregister($this->scheme), t('Stream wrapper unregistered.'));
+    $wrappers = DrupalStreamWrapperRegistry::wrappers();
+    $this->assertFalse(isset($wrappers[$this->scheme]), t('The stream wrapper has actually been unregistered.'));
+  }
+
+  /**
+   * Test the getClassName() function.
+   */
+  function testGetClassName() {
+    // Check the dummy scheme.
+    $this->assertEqual($this->classname, DrupalStreamWrapperRegistry::getClassName($this->scheme), t('Got correct class name for dummy scheme.'));
+    // Check core's scheme.
+    $this->assertEqual('DrupalPublicStreamWrapper', DrupalStreamWrapperRegistry::getClassName('public'), t('Got correct class name for public scheme.'));
+  }
+
+  /**
+   * Test the getInstanceByScheme() functions.
+   */
+  function testGetInstanceByScheme() {
+    $instance = DrupalStreamWrapperRegistry::getInstanceByScheme($this->scheme);
+    $this->assertEqual($this->classname, get_class($instance), t('Got correct class type for dummy scheme.'));
+
+    $instance = DrupalStreamWrapperRegistry::getInstanceByScheme('public');
+    $this->assertEqual('DrupalPublicStreamWrapper', get_class($instance), t('Got correct class type for public scheme.'));
+  }
+
+  /**
+   * Test the getInstanceByUri() function.
+   */
+  function testGetInstanceByUri() {
+    $instance = DrupalStreamWrapperRegistry::getInstanceByUri($this->scheme . '://foo');
+    $this->assertEqual($this->classname, get_class($instance), t('Got correct class type for dummy URI.'));
+
+    $instance = DrupalStreamWrapperRegistry::getInstanceByUri('public://foo');
+    $this->assertEqual('DrupalPublicStreamWrapper', get_class($instance), t('Got correct class type for public URI.'));
+  }
+
+  /**
+   * Test the getStreamScheme() function.
+   */
+  function testGetStreamScheme() {
+    $this->assertEqual('foo', DrupalStreamWrapperRegistry::getStreamScheme('foo://pork//chops'), t('Got the correct scheme from foo://asdf'));
+  }
+
+  /**
+   * Test the getValidStreamScheme() function.
+   */
+  function testGetValidStreamScheme() {
+    $this->assertEqual('public', DrupalStreamWrapperRegistry::getValidStreamScheme('public://asdf'), t('Got a valid stream scheme from public://asdf'));
+    $this->assertFalse(DrupalStreamWrapperRegistry::getValidStreamScheme('foo://asdf'), t('Did not get a valid stream scheme from foo://asdf'));
   }
 }
