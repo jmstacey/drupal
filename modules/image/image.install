@@ -13,7 +13,7 @@ function image_install() {
   drupal_install_schema('image');
 
   // Create the styles directory and ensure it's writable.
-  $path = file_directory_path() . '/styles';
+  $path = file_directory_path(SCHEME_PUBLIC) . '/styles';
   file_check_directory($path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 }
 
@@ -24,7 +24,7 @@ function image_uninstall() {
   drupal_uninstall_schema('image');
 
   // Remove the styles directory and generated images.
-  $path = file_directory_path() . '/styles';
+  $path = file_directory_path(SCHEME_PUBLIC) . '/styles';
   file_unmanaged_delete_recursive($path);
 }
 

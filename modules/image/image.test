@@ -49,17 +49,17 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     $this->style_name = 'style_foo';
 
     // Create the directories for the styles.
-    $status = file_check_directory($d = file_directory_path() .'/styles/' . $this->style_name, FILE_CREATE_DIRECTORY);
+    $status = file_check_directory($d = file_directory_path(SCHEME_PUBLIC) .'/styles/' . $this->style_name, FILE_CREATE_DIRECTORY);
     $this->assertNotIdentical(FALSE, $status, t('Created the directory for the generated images for the test style.' ));
 
     // Make two copies of the file...
     $file = reset($this->drupalGetTestFiles('image'));
-    $this->image_without_generated = file_unmanaged_copy($file->filepath, NULL, FILE_EXISTS_RENAME);
+    $this->image_without_generated = file_unmanaged_copy($file->uri, NULL, FILE_EXISTS_RENAME);
     $this->assertNotIdentical(FALSE, $this->image_without_generated, t('Created the without generated image file.'));
-    $this->image_with_generated = file_unmanaged_copy($file->filepath, NULL, FILE_EXISTS_RENAME);
+    $this->image_with_generated = file_unmanaged_copy($file->uri, NULL, FILE_EXISTS_RENAME);
     $this->assertNotIdentical(FALSE, $this->image_with_generated, t('Created the with generated image file.'));
     // and create a "generated" file for the one.
-    $status = file_unmanaged_copy($file->filepath, image_style_path($this->style_name, $this->image_with_generated), FILE_EXISTS_REPLACE);
+    $status = file_unmanaged_copy($file->uri, image_style_path($this->style_name, $this->image_with_generated), FILE_EXISTS_REPLACE);
     $this->assertNotIdentical(FALSE, $status, t('Created a file where the generated image should be.'));
   }
 
@@ -68,7 +68,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
    */
   function testImageStylePath() {
     $actual = image_style_path($this->style_name, $this->image_without_generated);
-    $expected = file_directory_path() . '/styles/' . $this->style_name . '/' . basename($this->image_without_generated);
+    $expected = file_directory_path(SCHEME_PUBLIC) . '/styles/' . $this->style_name . '/' . basename($this->image_without_generated);
     $this->assertEqual($actual, $expected, t('Got the path for a file.'));
   }
 

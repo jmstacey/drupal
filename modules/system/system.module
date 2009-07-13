@@ -3024,7 +3024,7 @@ function system_retrieve_file($url, $destination = NULL, $overwrite = TRUE) {
     $destination = file_directory_path('temp');
   }
   $parsed_url = parse_url($url);
-  $local = is_dir(file_directory_path() . '/' . $destination) ? $destination . '/' . basename($parsed_url['path']) : $destination;
+  $local = is_dir(file_directory_path(SCHEME_PUBLIC) . '/' . $destination) ? $destination . '/' . basename($parsed_url['path']) : $destination;
 
   if (!$overwrite && file_exists($local)) {
     drupal_set_message(t('@remote could not be saved. @local already exists', array('@remote' => $url, '@local' => $local)), 'error');

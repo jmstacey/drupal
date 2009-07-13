@@ -238,7 +238,7 @@ class DrupalStreamWrapperRegistry {
    *   String reference containing the URI to normalize.
    */
   public static function normalizeUri(&$uri) {
-    if ($scheme = self::getStreamScheme($uri)) {
+    if ($scheme = self::getValidStreamScheme($uri)) {
       $target = self::getStreamTarget($uri);
 
       // Remove all occurrences of the wrapper's directory path.

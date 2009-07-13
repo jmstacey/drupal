@@ -1626,6 +1626,10 @@ function file_directory_path($scheme) {
 /**
  * Remove a possible leading file directory path from the given path.
  *
+ * NOTE!!! This was committed while we were still working on stream wrappers.
+ * Calls to this function should be replaced with DrupalStreamWrapperRegistry::normalizeUri();
+ * This function should be removed, or deprecated.
+ *
  * @param $path
  *   Path to a file that may be in Drupal's files directory.
  * @return
@@ -1634,9 +1638,12 @@ function file_directory_path($scheme) {
 function file_directory_strip($path) {
   // Strip file_directory_path from $path. We only include relative paths in
   // URLs.
-  if (strpos($path, file_directory_path() . '/') === 0) {
+
+  // Todo: Don't assume public
+  if (strpos($path, file_directory_path(SCHEME_PUBLIC) . '/') === 0) {
     $path = trim(substr($path, strlen(file_directory_path())), '\\/');
   }
+
   return $path;
 }
 
