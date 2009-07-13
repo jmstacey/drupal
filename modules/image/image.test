@@ -47,6 +47,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     parent::setUp();
 
     $this->style_name = 'style_foo';
+    $this->scheme     = 'public';
 
     // Create the directories for the styles.
     $status = file_check_directory($d = file_directory_path(SCHEME_PUBLIC) .'/styles/' . $this->style_name, FILE_CREATE_DIRECTORY);
@@ -68,7 +69,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
    */
   function testImageStylePath() {
     $actual = image_style_path($this->style_name, $this->image_without_generated);
-    $expected = file_directory_path(SCHEME_PUBLIC) . '/styles/' . $this->style_name . '/' . basename($this->image_without_generated);
+    $expected = $this->scheme . '://styles/' . $this->style_name . '/' . basename($this->image_without_generated);
     $this->assertEqual($actual, $expected, t('Got the path for a file.'));
   }
 
@@ -78,7 +79,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
   function testImageStyleUrl() {
     // Test it with no generated file.
     $actual = image_style_url($this->style_name, $this->image_without_generated);
-    $expected = url('image/generate/' . $this->style_name . '/' . $this->image_without_generated, array('absolute' => TRUE));
+    $expected = url('image/generate/' . $this->style_name . '/' . $this->scheme . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->image_without_generated), array('absolute' => TRUE));
     $this->assertEqual($actual, $expected, t('Got the generate URL for a non-existent file.'));
 
     // Now test it with a generated file.
@@ -93,7 +94,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
   function testImageStyleGenerateUrl() {
     // Test it with no generated file.
     $actual = image_style_generate_url($this->style_name, $this->image_without_generated);
-    $expected = url('image/generate/' . $this->style_name . '/' . $this->image_without_generated, array('absolute' => TRUE));
+    $expected = url('image/generate/' . $this->style_name . '/' . $this->scheme . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->image_without_generated), array('absolute' => TRUE));
     $this->assertEqual($actual, $expected, t('Got the generate URL for a non-existent file.'));
 
     // Now test it with a generated file.
