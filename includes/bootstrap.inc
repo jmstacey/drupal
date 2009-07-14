@@ -141,7 +141,7 @@ define('DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE', 6);
 define('DRUPAL_BOOTSTRAP_LANGUAGE', 7);
 
 /**
- * Nineth bootstrap phase: set $_GET['q'] to Drupal path of request.
+ * Ninth bootstrap phase: set $_GET['q'] to Drupal path of request.
  */
 define('DRUPAL_BOOTSTRAP_PATH', 8);
 
