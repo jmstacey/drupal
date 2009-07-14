@@ -249,7 +249,7 @@ function upload_form_alter(&$form, $form_state, $form_id) {
         TODO: Add private stream wrapper functionality
       */
       $path = file_directory_path('public');
-      $temp = file_directory_path('temp');
+      $temp = file_directory_temp();
       // Note: pass by reference
       if (!file_check_directory($path, FILE_CREATE_DIRECTORY) || !file_check_directory($temp, FILE_CREATE_DIRECTORY)) {
         $form['attachments']['#description'] =  t('File attachments are disabled. The file directories have not been properly configured.');

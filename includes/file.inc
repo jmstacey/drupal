@@ -1088,7 +1088,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   // If the destination is not provided, or is not writable, then use the
   // temporary directory.
   if (empty($destination) || file_check_path($destination) === FALSE) {
-    $destination = file_directory_path('temp');
+    $destination = file_directory_temp();
   }
 
   $file->source = $source;
@@ -1423,7 +1423,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  */
 function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   // Write the data to a temporary file.
-  $temp_name = tempnam(file_directory_path('temp'), 'file');
+  $temp_name = tempnam(file_directory_temp(), 'file');
   if (file_put_contents($temp_name, $data) === FALSE) {
     drupal_set_message(t('The file could not be created.'), 'error');
     return FALSE;
@@ -1585,6 +1585,19 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
   }
 
   return $files;
+}
+
+/**
+ * Determine the default temporary directory.
+ *
+ * Warning! This function will be deprecated in the near future.
+ * Please use file_directory_path('temp') when possible.
+ *
+ * @return
+ *   A string containing a temp directory.
+ */
+function file_directory_temp() {
+  return file_directory_path('temp');
 }
 
 /**

@@ -1624,7 +1624,7 @@ function system_theme_select_form($description = '', $default_value = '', $weigh
 /**
  * Checks the existence of the directory specified in $form_element. This
  * function is called from the system_settings form to check both the
- * file_directory_path and file_directory_path('temp') directories. If validation
+ * file_directory_path and file_directory_temp directories. If validation
  * fails, the form element is flagged with an error from within the
  * file_check_directory function.
  *
@@ -3021,7 +3021,7 @@ function system_image_toolkits() {
  */
 function system_retrieve_file($url, $destination = NULL, $overwrite = TRUE) {
   if (!$destination) {
-    $destination = file_directory_path('temp');
+    $destination = file_directory_temp();
   }
   $parsed_url = parse_url($url);
   $local = is_dir(file_directory_path(SCHEME_PUBLIC) . '/' . $destination) ? $destination . '/' . basename($parsed_url['path']) : $destination;
