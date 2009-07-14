@@ -435,7 +435,7 @@ class FileValidatorTest extends DrupalWebTestCase {
     if (image_get_toolkit()) {
       // Copy the image so that the original doesn't get resized.
       $temp_dir = file_directory_temp();
-      copy(realpath('misc/druplicon.png'), realpath($temp_dir) . '/druplicon.png');
+      copy(drupal_realpath('misc/druplicon.png'), drupal_realpath($temp_dir) . '/druplicon.png');
       $this->image->filepath = $temp_dir . '/druplicon.png';
 
       $errors = file_validate_image_resolution($this->image, '10x5');
@@ -445,7 +445,7 @@ class FileValidatorTest extends DrupalWebTestCase {
       $this->assertTrue($info['width'] <= 10, t('Image scaled to correct width.'), 'File');
       $this->assertTrue($info['height'] <= 5, t('Image scaled to correct height.'), 'File');
 
-      unlink(realpath($temp_dir . '/druplicon.png'));
+      unlink(drupal_realpath($temp_dir . '/druplicon.png'));
     }
     else {
       // TODO: should check that the error is returned if no toolkit is available.
@@ -539,14 +539,14 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     $filepath = file_unmanaged_save_data($contents);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
     $this->assertEqual(file_directory_path(), dirname($filepath), t("File was placed in Drupal's files directory."));
-    $this->assertEqual($contents, file_get_contents(realpath($filepath)), t('Contents of the file are correct.'));
+    $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
     $filepath = file_unmanaged_save_data($contents, 'asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path(), dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path(), drupal_dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
-    $this->assertEqual($contents, file_get_contents(realpath($filepath)), t('Contents of the file are correct.'));
+    $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));
   }
 }
@@ -586,7 +586,7 @@ class FileSaveUploadTest extends FileHookTestCase {
     // Upload with replace to gurantee there's something there.
     $edit = array(
       'file_test_replace' => FILE_EXISTS_REPLACE,
-      'files[file_test_upload]' => realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -613,7 +613,7 @@ class FileSaveUploadTest extends FileHookTestCase {
     // Upload a second file.
     $max_fid_before = db_query('SELECT MAX(fid) AS fid FROM {files}')->fetchField();
     $image2 = current($this->drupalGetTestFiles('image'));
-    $edit = array('files[file_test_upload]' => realpath($image2->filepath));
+    $edit = array('files[file_test_upload]' => drupal_realpath($image2->filepath));
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
     $this->assertRaw(t('You WIN!'));
@@ -638,7 +638,7 @@ class FileSaveUploadTest extends FileHookTestCase {
   function testExistingRename() {
     $edit = array(
       'file_test_replace' => FILE_EXISTS_RENAME,
-      'files[file_test_upload]' => realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -654,7 +654,7 @@ class FileSaveUploadTest extends FileHookTestCase {
   function testExistingReplace() {
     $edit = array(
       'file_test_replace' => FILE_EXISTS_REPLACE,
-      'files[file_test_upload]' => realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));
@@ -670,7 +670,7 @@ class FileSaveUploadTest extends FileHookTestCase {
   function testExistingError() {
     $edit = array(
       'file_test_replace' => FILE_EXISTS_ERROR,
-      'files[file_test_upload]' => realpath($this->image->filepath)
+      'files[file_test_upload]' => drupal_realpath($this->image->filepath)
     );
     $this->drupalPost('file-test/upload', $edit, t('Submit'));
     $this->assertResponse(200, t('Received a 200 response for posted test file.'));

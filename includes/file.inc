@@ -230,7 +230,7 @@ function file_check_path(&$path) {
 
   // Check if path is a possible dir/file.
   $filename = basename($path);
-  $path = dirname($path);
+  $path     = drupal_dirname($path);
   if (file_check_directory($path)) {
     return $filename;
   }
@@ -259,15 +259,15 @@ function file_check_path(&$path) {
  *   path of the source.
  */
 function file_check_location($source, $directory = '') {
-  $check = realpath($source);
+  $check = drupal_realpath($source);
   if ($check) {
     $source = $check;
   }
   else {
     // This file does not yet exist.
-    $source = realpath(dirname($source)) . '/' . basename($source);
+    $source = drupal_realpath(drupal_dirname($source)) . '/' . basename($source);
   }
-  $directory = realpath($directory);
+  $directory = drupal_realpath($directory);
   if ($directory && strpos($source, $directory) !== 0) {
     return FALSE;
   }
@@ -465,7 +465,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   $original_source = $source;
   $original_destination = $destination;
 
-  $source = realpath($source);
+  $source = drupal_realpath($source);
   if (!file_exists($source)) {
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
     return FALSE;
@@ -493,7 +493,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // Make sure source and destination filenames are not the same, makes no
   // sense to copy it if they are. In fact copying the file will most likely
   // result in a 0 byte file. Which is bad. Real bad.
-  if ($source == realpath($destination)) {
+  if ($source == drupal_realpath($destination)) {
     drupal_set_message(t('The specified file %file was not copied because it would overwrite itself.', array('%file' => $source)), 'error');
     return FALSE;
   }
@@ -533,7 +533,7 @@ function file_destination($destination, $replace) {
 
       case FILE_EXISTS_RENAME:
         $basename = basename($destination);
-        $directory = dirname($destination);
+        $directory = drupal_dirname($destination);
         $destination = file_create_filename($basename, $directory);
         break;
 

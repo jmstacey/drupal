@@ -706,7 +706,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
   }
 
   function saveUserPicture($image) {
-    $edit = array('files[picture_upload]' => realpath($image->filepath));
+    $edit = array('files[picture_upload]' => drupal_realpath($image->filepath));
     $this->drupalPost('user/' . $this->user->uid . '/edit', $edit, t('Save'));
 
     $img_info = image_get_info($image->filepath);
