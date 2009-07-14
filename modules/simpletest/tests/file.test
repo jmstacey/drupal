@@ -2015,14 +2015,14 @@ class FileMimeTypeTest extends DrupalWebTestCase {
     $prefix = 'simpletest://';
 
     $test_case = array(
-      'simpltest.jar' => 'application/java-archive',
-      'test.jpeg'     => 'image/jpeg',
-      'test.jpg'      => 'image/jpeg',
-      'test.jar.jpg'  => 'image/jpeg',
-      'test.jpg.jar'  => 'application/java-archive',
-      'test.pcf.Z'    => 'application/x-font',
-      'pcf.Z'         => 'application/octet-stream',
-      'jar'           => 'application/octet-stream',
+      'test.jar' => 'application/java-archive',
+      'test.jpeg' => 'image/jpeg',
+      'test.jpg' => 'image/jpeg',
+      'test.jar.jpg' => 'image/jpeg',
+      'test.jpg.jar' => 'application/java-archive',
+      'test.pcf.Z' => 'application/x-font',
+      'pcf.Z' => 'application/octet-stream',
+      'jar' => 'application/octet-stream',
     );
 
     foreach ($test_case as $input => $expected) {
