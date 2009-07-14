@@ -182,7 +182,7 @@ function upload_node_form_submit(&$form, &$form_state) {
   );
 
   // Save new file uploads.
-  if (user_access('upload files') && ($file = file_save_upload('upload', $validators, 'public://'))) {
+  if (user_access('upload files') && ($file = file_save_upload('upload', $validators, SCHEME_PUBLIC))) {
     $file->list = variable_get('upload_list_default', 1);
     $file->description = $file->filename;
     $file->weight = 0;
@@ -244,12 +244,9 @@ function upload_form_alter(&$form, $form_state, $form_id) {
 
       // Make sure necessary directories for upload.module exist and are
       // writable before displaying the attachment form.
-
-      /*
-        TODO: Add private stream wrapper functionality
-      */
-      $path = file_directory_path('public');
-      $temp = file_directory_path('temp');
+      // TODO: Add private stream wrapper functionality
+      $path = file_directory_path();
+      $temp = file_directory_temp();
       // Note: pass by reference
       if (!file_check_directory($path, FILE_CREATE_DIRECTORY) || !file_check_directory($temp, FILE_CREATE_DIRECTORY)) {
         $form['attachments']['#description'] =  t('File attachments are disabled. The file directories have not been properly configured.');

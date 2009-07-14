@@ -169,7 +169,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
      * stream wrapper for security reasons. We'll assume public:// for now.
      * TODO: Search all registered wrapper paths for a valid match.
      */
-    $file_path = file_directory_path('public');
+    $file_path = file_directory_path(SCHEME_PUBLIC);
   }
 
   // Check if the destination is inside the specified path.
@@ -1105,7 +1105,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   // If the destination is not provided, or is not writable, then use the
   // temporary directory.
   if (empty($destination) || file_check_path($destination) === FALSE) {
-    $destination = file_directory_path('temp');
+    $destination = file_directory_temp();
   }
 
   $file->source = $source;
@@ -1440,7 +1440,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  */
 function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   // Write the data to a temporary file.
-  $temp_name = tempnam(file_directory_path('temp'), 'file');
+  $temp_name = tempnam(file_directory_temp(), 'file');
   if (file_put_contents($temp_name, $data) === FALSE) {
     drupal_set_message(t('The file could not be created.'), 'error');
     return FALSE;
@@ -1605,6 +1605,19 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 }
 
 /**
+ * Determine the default temporary directory.
+ *
+ * Warning! This function will be deprecated in the near future.
+ * Please use file_directory_path('temp') when possible.
+ *
+ * @return
+ *   A string containing a temp directory.
+ */
+function file_directory_temp() {
+  return file_directory_path('temp');
+}
+
+/**
  * Determines the base path of a given wrapper.
  *
  * This function will return the base path of a stream by providing a scheme.
@@ -1616,13 +1629,14 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  * @see http://drupal.org/node/515192
  *
  * @param string $scheme
- *   A string representing the scheme of a stream.
+ *   A string representing the scheme of a stream. For legacy code, the public
+ *   wrapper is assumed if this is not provided.
  *   A stream is referenced as: scheme://target.
  * @return
  *   A string containing the base path of a stream. FALSE is returned if the scheme
  *   is invalid or a wrapper could not be instantiated.
  */
-function file_directory_path($scheme) {
+function file_directory_path($scheme = SCHEME_PUBLIC) {
   if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }
@@ -1646,12 +1660,9 @@ function file_directory_path($scheme) {
 function file_directory_strip($path) {
   // Strip file_directory_path from $path. We only include relative paths in
   // URLs.
-
-  // Todo: Don't assume public
-  if (strpos($path, file_directory_path(SCHEME_PUBLIC) . '/') === 0) {
+  if (strpos($path, file_directory_path() . '/') === 0) {
     $path = trim(substr($path, strlen(file_directory_path())), '\\/');
   }
-
   return $path;
 }
 
