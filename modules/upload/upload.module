@@ -60,7 +60,7 @@ function upload_permission() {
  */
 function upload_node_links($node, $build_mode) {
   $links = array();
-    
+
   // Display a link with the number of attachments
   $num_files = 0;
   foreach ($node->files as $file) {

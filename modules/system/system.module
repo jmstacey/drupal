@@ -1200,7 +1200,7 @@ function system_filetransfer_backends() {
       'weight' => 0,
     );
   }
-  
+
   if (ini_get('allow_url_fopen')) {
     $backends['ftp_wrapper'] = array(
       'title' => t('FTP using file streams'),
@@ -1209,7 +1209,7 @@ function system_filetransfer_backends() {
       'weight' => 10,
     );
   }
-  
+
   // SSH2 lib connection is only available if the proper PHP extension is
   // installed.
   if (function_exists('ssh2_connect')) {
@@ -1235,7 +1235,7 @@ function system_filetransfer_backends() {
 function system_get_filetransfer_settings_form($filetransfer_backend_name, $defaults) {
   $available_backends = module_invoke_all('filetransfer_backends');
   $form = call_user_func($available_backends[$filetransfer_backend_name]['settings_form']);
-  
+
   foreach ($form as $name => &$element) {
     if (isset($defaults[$name])) {
       $element['#default_value'] = $defaults[$name];
@@ -3025,17 +3025,17 @@ function system_retrieve_file($url, $destination = NULL, $overwrite = TRUE) {
   }
   $parsed_url = parse_url($url);
   $local = is_dir(file_directory_path() . '/' . $destination) ? $destination . '/' . basename($parsed_url['path']) : $destination;
-  
+
   if (!$overwrite && file_exists($local)) {
     drupal_set_message(t('@remote could not be saved. @local already exists', array('@remote' => $url, '@local' => $local)), 'error');
     return FALSE;
   }
-  
+
   $result = drupal_http_request($url);
   if ($result->code != 200 || !file_save_data($result->data, $local)) {
     drupal_set_message(t('@remote could not be saved.', array('@remote' => $url)), 'error');
     return FALSE;
   }
-  
+
   return $local;
 }

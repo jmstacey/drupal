@@ -30,7 +30,7 @@ function file_test_file_scan_callback($filepath = NULL) {
   $files = &drupal_static(__FUNCTION__, array());
   if (isset($filepath)) {
     $files[] = $filepath;
-  } 
+  }
   else {
     return $files;
   }
