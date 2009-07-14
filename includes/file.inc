@@ -858,9 +858,9 @@ function file_create_filename($basename, $directory) {
  *   Boolean indicating that the file should be deleted even if
  *   hook_file_references() reports that the file is in use.
  * @return mixed
- *   Returns TRUE for success, FALSE in the event of an error, or an array if
- *   the file is being used by another module. The array keys are the module's
- *   name and the values are the number of references.
+ *   Returns TRUE for success, FALSE in the event of an error, or an array if the file
+ *   is being used by another module. The array keys are the module's name and
+ *   the values are the number of references.
  *
  * @see file_unmanaged_delete()
  * @see hook_file_references()
@@ -901,7 +901,7 @@ function file_delete($file, $force = FALSE) {
  * @param string$path
  *   A string containing a file path.
  * @return bool
- *   REturns TRUE for success or the path does not exists, or FALSE in the
+ *   Returns TRUE for success or the path does not exists, or FALSE in the
  *   event of an error.
  *
  * @see file_delete()
@@ -1631,10 +1631,6 @@ function file_directory_path($scheme = SCHEME_PUBLIC) {
 /**
  * Remove a possible leading file directory path from the given path.
  *
- * NOTE!!! This was committed while we were still working on stream wrappers.
- * Calls to this function should be replaced with DrupalStreamWrapperRegistry::normalizeUri();
- * This function should be removed, or deprecated.
- *
  * @param $path
  *   Path to a file that may be in Drupal's files directory.
  * @return
@@ -1720,8 +1716,8 @@ function file_get_mimetype($uri, $mapping = NULL) {
  * @param int $mode
  *   Integer value for the permissions. Consult PHP chmod() documentation for
  *   more information.
- * @return
- *   TRUE for success, FALSE in the event of an error. Errors are logged by watchdog.
+ * @return bool
+ *   TRUE for success, FALSE in the event of an error.
  */
 function drupal_chmod($uri, $mode = NULL) {
 
@@ -1814,38 +1810,6 @@ function drupal_dirname($uri) {
     return dirname($uri);
   }
 
-}
-
-/**
- * Creates a file with unique file name.
- *
- * Stream wrapper friendly PHP tempnam() replacement. Creates a file with a unique
- * filename, with access permission set to 0600, in the predeclared temp directory.
- * Drupal will perform garbage collection on these files during cron runs based on
- * DRUPAL_MAXIMUM_TEMP_FILE_AGE.
- *
- * Note the absense of param $dir, unlike PHP's tempnam. $dir is determined by the
- * temp stream wrapper. It first tries the temp directory specified in
- * admin/settings/file-system and if that directory does not exist it will fall back
- * to a system default tmp directory.
- *
- * @see http://php.net/manual/en/function.tempnam.php
- *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
- *
- * @param string $prefix
- *   The prefix of the generated temporary filename. Note: Windows uses only
- *   the first three characters of prefix.
- * @return mixed
- *   Returns the new temporary filename, or FALSE on failure.
- */
-function drupal_tempnam($prefix) {
-
-  /*
-    TODO: This function has not been tested and probably needs a little modification.
-  */
-  return tempnam(DrupalStreamWrapperRegistry::getInstanceByScheme('temp')->getInternalUri(''), $prefix);
 }
 
 /**
