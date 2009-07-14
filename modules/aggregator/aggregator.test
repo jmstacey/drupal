@@ -228,7 +228,7 @@ EOF;
    *   Path to empty OPML file.
    */
   function getEmptyOpml() {
-    // Avoding the <<<EOF trick here because it breaks the Aptana debugger.    
+    // Avoiding the <<<EOF trick here because it breaks the Aptana debugger.    
     $opml = '
 <?xml version="1.0" encoding="utf-8"?>
 <opml version="1.0">
