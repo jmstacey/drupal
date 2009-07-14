@@ -272,7 +272,7 @@ function simpletest_script_init($server_software) {
   $_SERVER['PHP_SELF'] = $path .'/index.php';
   $_SERVER['HTTP_USER_AGENT'] = 'Drupal command line';
 
-  chdir(realpath(dirname(__FILE__) . '/..'));
+  chdir(drupal_realpath(dirname(__FILE__) . '/..'));
   define('DRUPAL_ROOT', getcwd());
   require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 }
@@ -396,7 +396,7 @@ function simpletest_script_get_test_list() {
     elseif ($args['file']) {
       $files = array();
       foreach ($args['test_names'] as $file) {
-        $files[realpath($file)] = 1;
+        $files[drupal_realpath($file)] = 1;
       }
 
       // Check for valid class names.
