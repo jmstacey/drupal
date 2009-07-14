@@ -985,8 +985,6 @@ class FileScanDirectoryTest extends FileTestCase {
     $files = file_scan_directory($this->path, '/^javascript-/', array('min_depth' => 1));
     $this->assertTrue(empty($files), t("Minimum-depth of 1 successfully excludes files from current directory."));
   }
-
-  // TODO: Incorporate stream tests.
 }
 
 
@@ -1225,7 +1223,7 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $this->assertFilePermissions($newer_filepath, variable_get('file_chmod_file', 0664));
 
     // TODO: test copying to a directory (rather than full directory/file path)
-    // TODO: test copying normal files (rather than only streams)
+    // TODO: test copying normal files using normal paths (rather than only streams)
   }
 
   /**
