@@ -377,7 +377,7 @@ abstract class DrupalTestCase {
    */
   public function run() {
     // Initialize verbose debugging.
-    simpletest_verbose(NULL, file_directory_path(SCHEME_PUBLIC));
+    simpletest_verbose(NULL, file_directory_path());
 
     // HTTP auth settings (<username>:<password>) for the simpletest browser
     // when sending requests to the test site.
@@ -537,7 +537,7 @@ class DrupalUnitTestCase extends DrupalTestCase {
 
     // Store necessary current values before switching to prefixed database.
     $this->originalPrefix = $db_prefix;
-    $this->originalFileDirectory = file_directory_path('public');
+    $this->originalFileDirectory = file_directory_path();
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
     $db_prefix = Database::getConnection()->prefixTables('{simpletest' . mt_rand(1000, 1000000) . '}');
@@ -1031,7 +1031,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     $this->originalLanguage = $language;
     $this->originalLanguageDefault = variable_get('language_default');
     $this->originalPrefix = $db_prefix;
-    $this->originalFileDirectory = file_directory_path('public');
+    $this->originalFileDirectory = file_directory_path();
 
     $simpletest_stream_wrapper_path = $this->originalFileDirectory .'/simpletest';
 
@@ -1111,7 +1111,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     variable_set('stream_private_path', $private_files_directory);
 
     // Create the directories
-    $directory = file_directory_path('public');
+    $directory = file_directory_path(SCHEME_PUBLIC);
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     file_check_directory($private_files_directory, FILE_CREATE_DIRECTORY);
 
@@ -1170,7 +1170,7 @@ class DrupalWebTestCase extends DrupalTestCase {
       unset($simpletest_stream_wrapper_path);
 
       // Delete temporary files directory and reset files directory path.
-      file_unmanaged_delete_recursive(file_directory_path('public'));
+      file_unmanaged_delete_recursive(file_directory_path());
       variable_set('stream_public_path', $this->originalFileDirectory);
 
       // Remove all prefixed tables (all the tables in the schema).

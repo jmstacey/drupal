@@ -318,7 +318,7 @@ function system_themes_form_submit($form, &$form_state) {
  * @see system_theme_settings_submit()
  */
 function system_theme_settings(&$form_state, $key = '') {
-  $directory_path = file_directory_path('public');
+  $directory_path = file_directory_path();
   file_check_directory($directory_path, FILE_CREATE_DIRECTORY, 'stream_public_path');
 
   // Default settings are defined in theme_get_settings() in includes/theme.inc
@@ -1339,7 +1339,7 @@ function system_performance_settings() {
     '#description' => '<p>' . t('Drupal can automatically optimize external resources like CSS and JavaScript, which can reduce both the size and number of requests made to your website. CSS files can be aggregated and compressed into a single file, while JavaScript files are aggregated (but not compressed). These optional optimizations may reduce server load, bandwidth requirements, and page loading times.') . '</p><p>' . t('These options are disabled if you have not set up your files directory, or if your download method is set to private.') . '</p>'
   );
 
-  $directory = file_directory_path('public');
+  $directory = file_directory_path();
   $is_writable = is_dir($directory) && is_writable($directory) && (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC);
   $form['bandwidth_optimizations']['preprocess_css'] = array(
     '#type' => 'radios',
@@ -1397,7 +1397,7 @@ function system_file_system_settings() {
   $form['stream_public_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Public file system path'),
-    '#default_value' => file_directory_path('public'),
+    '#default_value' => file_directory_path(),
     '#maxlength' => 255,
     '#description' => t('A local file system path where public files will be stored. This directory must exist and be writable by Drupal. This directory must be relative to the Drupal installation directory and be accessible over the web.'),
     '#after_build' => array('system_check_directory'),

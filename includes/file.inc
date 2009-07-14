@@ -152,7 +152,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
      * stream wrapper for security reasons. We'll assume public:// for now.
      * TODO: Search all registered wrapper paths for a valid match.
      */
-    $file_path = file_directory_path('public');
+    $file_path = file_directory_path(SCHEME_PUBLIC);
   }
 
   // Check if the destination is inside the specified path.
@@ -1612,13 +1612,14 @@ function file_directory_temp() {
  * @see http://drupal.org/node/515192
  *
  * @param string $scheme
- *   A string representing the scheme of a stream.
+ *   A string representing the scheme of a stream. For legacy code, the public
+ *   wrapper is assumed if this is not provided.
  *   A stream is referenced as: scheme://target.
  * @return
  *   A string containing the base path of a stream. FALSE is returned if the scheme
  *   is invalid or a wrapper could not be instantiated.
  */
-function file_directory_path($scheme) {
+function file_directory_path($scheme = SCHEME_PUBLIC) {
   if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }
@@ -1642,12 +1643,9 @@ function file_directory_path($scheme) {
 function file_directory_strip($path) {
   // Strip file_directory_path from $path. We only include relative paths in
   // URLs.
-
-  // Todo: Don't assume public
-  if (strpos($path, file_directory_path(SCHEME_PUBLIC) . '/') === 0) {
+  if (strpos($path, file_directory_path() . '/') === 0) {
     $path = trim(substr($path, strlen(file_directory_path())), '\\/');
   }
-
   return $path;
 }
 

@@ -517,7 +517,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
     $this->user = $this->drupalCreateUser();
 
     // Test if directories specified in settings exist in filesystem.
-    $file_dir = 'public://';
+    $file_dir = SCHEME_PUBLIC;
     $file_check = file_check_directory($file_dir, FILE_CREATE_DIRECTORY, 'stream_public_path');
 
     /*
@@ -560,7 +560,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
         $test_dim = ($info['width'] - 10) . 'x' . ($info['height'] - 10);
         variable_set('user_picture_dimensions', $test_dim);
         variable_set('user_picture_file_size', 0);
-        
+
         $pic_path = $this->saveUserPicture($image);
         // Check that the image was resized and is being displayed on the
         // user's profile page.
@@ -715,7 +715,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
 
     $img_info    = image_get_info($image->uri);
     $picture_dir = variable_get('user_picture_path', 'pictures');
-    $pic_path    = 'public://' . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
+    $pic_path    = SCHEME_PUBLIC . $picture_dir . '/picture-' . $this->user->uid . '.' . $img_info['extension'];
 
     return $pic_path;
   }
