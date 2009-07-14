@@ -1,11 +1,11 @@
 <?php
-// $Id: node.tpl.php,v 1.11 2009-06-18 21:19:02 webchick Exp $
+// $Id: node.tpl.php,v 1.13 2009-07-14 10:29:10 dries Exp $
 ?>
 <div id="node-<?php print $node->nid; ?>" class="<?php print $classes ?>">
 
 <?php print $picture ?>
 <?php if ($page == 0): ?>
-  <h2><a href="<?php print $node_url ?>" title="<?php print $title ?>"><?php print $title ?></a></h2>
+  <h2><a href="<?php print $node_url ?>"><?php print $title ?></a></h2>
 <?php endif; ?>
 
   <?php if ($submitted): ?>
@@ -13,21 +13,21 @@
   <?php endif; ?>
 
   <div class="content clearfix">
-    <?php hide($content['links']); hide($content['comments']); render($content); ?>
+    <?php hide($content['links']); hide($content['comments']); print render($content); ?>
   </div>
 
   <div class="clearfix">
     <div class="meta">
     <?php if (!empty($content['links']['terms'])): ?>
-      <div class="terms"><?php render($content['links']['terms']) ?></div>
+      <div class="terms"><?php print render($content['links']['terms']) ?></div>
     <?php endif;?>
     </div>
 
     <?php if (!empty($content['links'])): ?>
-      <div class="links"><?php render($content['links']) ?></div>
+      <div class="links"><?php print render($content['links']) ?></div>
     <?php endif; ?>
 
-    <?php render($content['comments']); ?>
+    <?php print render($content['comments']); ?>
 
   </div>
 

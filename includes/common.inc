@@ -1,5 +1,5 @@
 <?php
-// $Id: common.inc,v 1.932 2009-07-10 05:45:56 webchick Exp $
+// $Id: common.inc,v 1.934 2009-07-14 10:22:15 dries Exp $
 
 /**
  * @file
@@ -798,7 +798,7 @@ function _drupal_decode_exception($exception) {
  */
 function _drupal_log_error($error, $fatal = FALSE) {
   // Initialize a maintenance theme if the boostrap was not complete.
-  // Do it early because drupal_set_message() triggers an init_theme().
+  // Do it early because drupal_set_message() triggers a drupal_theme_initialize().
   if ($fatal && (drupal_get_bootstrap_phase() != DRUPAL_BOOTSTRAP_FULL)) {
     unset($GLOBALS['theme']);
     if (!defined('MAINTENANCE_MODE')) {
@@ -3838,7 +3838,7 @@ function drupal_render(&$elements) {
       }
     }
   }
-  
+
   // Add additional CSS and JavaScript files associated with this element.
   foreach (array('css', 'js') as $kind) {
     if (!empty($elements['#attached_' . $kind]) && is_array($elements['#attached_' . $kind])) {
@@ -3894,13 +3894,11 @@ function drupal_render_children(&$element, $children_keys = NULL) {
 /**
  * Render and print an element.
  *
- * This function renders an element using drupal_render() and then prints out
- * the rendered output. The top level element is always rendered and printed
- * even if hide() had been previously used on it.
+ * This function renders an element using drupal_render(). The top level
+ * element is always rendered even if hide() had been previously used on it.
  *
- * Any nested elements are only printed if they haven't been printed before or
- * if they have been re-enabled with show(). If the element is a string instead
- * of a renderable array it is also printed.
+ * Any nested elements are only rendered if they haven't been rendered before
+ * or if they have been re-enabled with show().
  *
  * @see drupal_render()
  * @see show()
@@ -3909,10 +3907,12 @@ function drupal_render_children(&$element, $children_keys = NULL) {
 function render(&$element) {
   if (is_array($element)) {
     show($element);
-    print drupal_render($element);
+    return drupal_render($element);
   }
   else {
-    print $element;
+    // Safe-guard for inappropriate use of render() on flat variables: return
+    // the variable as-is.
+    return $element;
   }
 }
 
@@ -3931,7 +3931,7 @@ function hide(&$element) {
  * Show a hidden or already printed element from later rendering.
  *
  * Alternatively, render($element) could be used which automatically shows the
- * element while rendering and printing it.
+ * element while rendering it.
  *
  * @see render()
  * @see hide()
@@ -4274,7 +4274,7 @@ function drupal_common_theme() {
  */
 function drupal_install_schema($module) {
   $schema = drupal_get_schema_unprocessed($module);
-  _drupal_initialize_schema($module, $schema);
+  _drupal_schema_initialize($module, $schema);
 
   $ret = array();
   foreach ($schema as $name => $table) {
@@ -4299,7 +4299,7 @@ function drupal_install_schema($module) {
  */
 function drupal_uninstall_schema($module) {
   $schema = drupal_get_schema_unprocessed($module);
-  _drupal_initialize_schema($module, $schema);
+  _drupal_schema_initialize($module, $schema);
 
   $ret = array();
   foreach ($schema as $table) {
@@ -4356,7 +4356,7 @@ function drupal_get_schema_unprocessed($module, $table = NULL) {
  *   The schema definition array as it was returned by the module's
  *   hook_schema().
  */
-function _drupal_initialize_schema($module, &$schema) {
+function _drupal_schema_initialize($module, &$schema) {
   // Set the name and module key for all tables.
   foreach ($schema as $name => $table) {
     if (empty($table['module'])) {
