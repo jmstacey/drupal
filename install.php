@@ -454,7 +454,7 @@ function install_select_profile_form(&$form_state, $profile_files) {
 
   foreach ($profile_files as $profile) {
     include_once DRUPAL_ROOT . '/' . $profile->filepath;
-    
+
     $details = install_profile_info($profile->name);
     $profiles[$profile->name] = $details;
 
