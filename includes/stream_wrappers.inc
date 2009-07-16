@@ -64,15 +64,25 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * Returns an absolute stream resource URL for internal purposes. 
    *
    * In the case of the three local wrappers (public, private, temp)
-   * realpath() should be used for security reasons.
+   * drupal_realpath() should be used for security reasons.
+   *
+   * For example, the internal path of public://foobar.txt might be
+   * sites/default/files/foobar.txt. Following this call with
+   * drupal_realpath() will return an absolute path such as
+   * /Users/foo/Sites/drupal/sites/default/files/foobar.txt.
    *
    * @return string
    *   Returns cononcialized absolute pathname for internal purposes.
+   * @see drupal_realpath()
    */
   public function getInternalUri();
 
   /**
-   * Return the HTML accessible URL for a resource.
+   * Return the web accessible URL for a resource.
+   *
+   * This function should return a URL that can be embedded in a web page
+   * and accessed from a browser. For example, the external URL of
+   * youtube://xIpLd0WQKCY might be http://www.youtube.com/watch?v=xIpLd0WQKCY.
    *
    * @return string
    */
