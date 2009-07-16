@@ -1636,7 +1636,7 @@ function drupal_chmod($uri, $mode = NULL) {
 }
 
 /**
- * Gets canonicalized absolute path of a file or directory
+ * Returns the absolute path of a file or directory
  *
  * PHP's realpath() does not properly support streams, so this function
  * fills that gap. If a stream wrapped URI is provided, it will be passed
