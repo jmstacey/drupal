@@ -61,9 +61,10 @@ interface StreamWrapperInterface {
 interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 
   /**
-   * Return an absolute stream resource URL for internal purposes. In the case
-   * of the three local wrappers (public, private, temp) realpath should be
-   * used for security reasons.
+   * Returns an absolute stream resource URL for internal purposes. 
+   *
+   * In the case of the three local wrappers (public, private, temp)
+   * realpath() should be used for security reasons.
    *
    * @return string
    *   Returns cononcialized absolute pathname for internal purposes.
@@ -105,7 +106,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   /**
    * Returns canonicalized absolute pathname.
    *
-   * Implementation placeholder. PHP's realpath does not support
+   * Implementation placeholder. PHP's realpath() does not support
    * stream wrappers. We provide this as a default so that
    * individual wrappers may implement their own solutions.
    * The base class will always return FALSE.
@@ -122,9 +123,9 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 /**
  * Drupal stream wrapper base class for local files.
  *
- * This class provides a complete stream wrapper implementation. It passes
- * incoming URI's through an interpolation method and then recursively calls
- * the invoking PHP filesystem function.
+ * This class provides a complete stream wrapper implementation. URIs such as
+ * public://example.txt are expanded to a normal filesystem path such as
+ * sites/default/files/example.txt and then PHP filesystem functions are invoked.
  *
  * DrupalLocalStreamWrapper implementations need to override at least the
  * getInternalUri() method to rewrite the URI before is it passed back to the
@@ -192,7 +193,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   abstract function getDirectoryPath();
 
   /**
-   * Interpolate the URI path, adding the base path from $this->getDirectoryPath().
+    * Returns an absolute stream resource URL by adding the base path from $this->getDirectoryPath().
    */
   function getInternalUri() {
     return $this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->uri);
