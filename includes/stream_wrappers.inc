@@ -78,7 +78,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function getInternalUri();
 
   /**
-   * Return the web accessible URL for a resource.
+   * Returns a web accessible URL for the resource.
    *
    * This function should return a URL that can be embedded in a web page
    * and accessed from a browser. For example, the external URL of
@@ -89,7 +89,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function getExternalUrl();
 
   /**
-   * Returns the MIME type of a resource.
+   * Returns the MIME type of the resource.
    *
    * @param array $mapping
    *   An optional map of extensions to their mimetypes, in the form:
@@ -101,7 +101,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function getMimeType($mapping = NULL);
 
   /**
-   * Change permissions of stream.
+   * Changes permissions of the resource.
    *
    * PHP lacks this functionality and it is not part of the official
    * stream wrapper interface. This is a custom implementation for
@@ -114,7 +114,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function chmod($mode);
 
   /**
-   * Returns canonical, absolute path.
+   * Returns canonical, absolute path of the resource.
    *
    * Implementation placeholder. PHP's realpath() does not support
    * stream wrappers. We provide this as a default so that
@@ -175,16 +175,22 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   abstract function getDirectoryPath();
 
   /**
-    * Returns an absolute stream resource URL by adding the base path from $this->getDirectoryPath().
+   * Base implementation of getInternalUri().
    */
   function getInternalUri() {
     return $this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->uri);
   }
 
+  /**
+   * Base implementation of getExternalUrl().
+   */
   function getExternalUrl() {
     return $this->uri;
   }
 
+  /**
+   * Base implementation of getMimeType().
+   */
   function getMimeType($mapping = NULL) {
     if (!isset($mapping)) {
       $mapping = variable_get('mime_extension_mapping', NULL);
@@ -216,10 +222,16 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     return 'application/octet-stream';
   }
 
+  /**
+   * Base implementation of chmod().
+   */
   function chmod($mode) {
     return @chmod($this->realpath(), $mode);
   }
 
+  /**
+   * Base implementaiton of realpath().
+   */
   function realpath() {
     return @realpath($this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->uri));
   }
@@ -529,7 +541,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
   }
 
   /**
-   * Override getExternalUrl().
+   * Overrides getExternalUrl().
    *
    * Return the HTML URI of a public file.
    */
@@ -558,7 +570,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
   }
 
   /**
-   * Override getExternalUrl().
+   * Overrides getExternalUrl().
    *
    * Return the HTML URI of a private file.
    */
@@ -608,7 +620,7 @@ class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
         }
       }
 
-      // if a directory has been found, use it, otherwise default to 'files/tmp'
+      // If a directory has been found, use it, otherwise default to 'files/tmp'
       $temporary_directory = $temporary_directory ? $temporary_directory : file_directory_path('public') . '/tmp';
       variable_set('stream_temp_path', $temporary_directory);
       return $temporary_directory;

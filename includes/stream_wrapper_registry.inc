@@ -143,7 +143,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets the targat of a URI (stream).
+   * Returns the target of a stream [URI].
    *
    * A stream is referenced as scheme://target.
    *
@@ -170,7 +170,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets reference to stream wrapper class responsible for given URI (stream).
+   * Returns a reference to the stream wrapper class responsible for a given URI (stream).
    *
    * The scheme determines the stream wrapper class that should be
    * used by consulting the stream wrapper registry.
@@ -196,7 +196,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets reference to stream wrapper class responsible for given scheme.
+   * Returns a reference to the stream wrapper class responsible for a given scheme.
    *
    * This helper method returns a stream instance using a scheme. That is, the
    * passed string does not container a '://'. For example, 'public' is a scheme 
