@@ -1683,7 +1683,7 @@ function file_upload_max_size() {
 /**
  * Determines an Internet Media Type, or MIME type from a filename.
  *
- * Compatibility: only stream wrappers
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
  * @param string $uri
@@ -1699,11 +1699,12 @@ function file_upload_max_size() {
  *   'application/octet-stream' for unkown extensions.
  */
 function file_get_mimetype($uri, $mapping = NULL) {
-
   if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
     return $wrapper->getMimeType($uri, $mapping);
   }
   else {
+    // getMimeType() is not implementation specific, so we can directly
+    // call it without any kind of instance.
     return DrupalLocalStreamWrapper::getMimeType($uri);
   }
 }
