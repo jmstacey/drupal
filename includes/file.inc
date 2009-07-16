@@ -1559,8 +1559,7 @@ function file_upload_max_size() {
  * @see http://drupal.org/node/515192
  *
  * @param string $uri
- *   A string containing the URI to verify. If this value is omitted,
- *   Drupal's public files directory will be used [public://].
+ *   A string containing the URI, path, or filename.
  * @param array $mapping
  *   An optional map of extensions to their mimetypes, in the form:
  *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
