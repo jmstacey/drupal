@@ -88,7 +88,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets the scheme of a URI (stream).
+   * Returns the scheme of a stream [URI].
    *
    * A stream is referenced as scheme://target.
    *
@@ -100,9 +100,7 @@ class DrupalStreamWrapperRegistry {
    */
   public static function getStreamScheme($uri) {
     $data = explode('://', $uri, 2);
-    // $data[0]://$data[1]
-    // scheme://target
-
+    
     return count($data) == 2 ? $data[0] : FALSE;
   }
 
