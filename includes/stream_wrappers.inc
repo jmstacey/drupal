@@ -92,6 +92,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   /**
    * Returns the MIME type of the resource.
    *
+   * @param $uri
+   *   The URI, path, or filename.
    * @param $mapping
    *   An optional map of extensions to their mimetypes, in the form:
    *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
@@ -100,7 +102,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * @return
    *   Returns a string containing the MIME type of the resource.
    */
-  public function getMimeType($mapping = NULL);
+  public static function getMimeType($uri, $mapping = NULL);
 
   /**
    * Changes permissions of the resource.
@@ -193,7 +195,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   /**
    * Base implementation of getMimeType().
    */
-  function getMimeType($mapping = NULL) {
+  static function getMimeType($uri, $mapping = NULL) {
     if (!isset($mapping)) {
       $mapping = variable_get('mime_extension_mapping', NULL);
       if (!isset($mapping) && drupal_function_exists('file_default_mimetype_mapping')) {
@@ -204,7 +206,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     }
 
     $extension = '';
-    $file_parts = explode('.', basename($this->uri));
+    $file_parts = explode('.', basename($uri));
 
     // Remove the first part: a full filename should not match an extension.
     array_shift($file_parts);
