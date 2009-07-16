@@ -1701,10 +1701,10 @@ function file_upload_max_size() {
 function file_get_mimetype($uri, $mapping = NULL) {
 
   if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
-    return $wrapper->getMimeType($mapping);
+    return $wrapper->getMimeType($uri, $mapping);
   }
   else {
-    return 'application/octet-stream';
+    return DrupalLocalStreamWrapper::getMimeType($uri);
   }
 }
 

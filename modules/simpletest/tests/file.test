@@ -2054,8 +2054,15 @@ class FileMimeTypeTest extends DrupalWebTestCase {
       'jar' => 'application/octet-stream',
     );
 
+    // Test streams.
     foreach ($test_case as $input => $expected) {
       $output = file_get_mimetype($prefix . $input);
+      $this->assertIdentical($output, $expected, t('Mimetype for %input is %output (expected: %expected).', array('%input' => $input, '%output' => $output, '%expected' => $expected)));
+    }
+    
+    // Test normal paths.
+    foreach ($test_case as $input => $expected) {
+      $output = file_get_mimetype($input);
       $this->assertIdentical($output, $expected, t('Mimetype for %input is %output (expected: %expected).', array('%input' => $input, '%output' => $output, '%expected' => $expected)));
     }
   }
