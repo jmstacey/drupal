@@ -33,14 +33,13 @@ class DrupalStreamWrapperRegistry {
   /**
    * Registers a stream wrapper scheme.
    *
-   * @see http://php.net/manual/en/function.stream-wrapper-register.php
-   *
    * @param string $scheme
    *   URI scheme.
    * @param string $class
    *   Class name for the stream wrapper.
    * @return bool
    *   result of stream_wrapper_register()
+   * @see http://php.net/manual/en/function.stream-wrapper-register.php
    */
   public static function register($scheme, $class_name) {
     self::$wrappers[$scheme] = $class_name;
@@ -50,12 +49,11 @@ class DrupalStreamWrapperRegistry {
   /**
    * Unregisters a stream wrapper.
    *
-   * @see http://php.net/manual/en/function.stream-wrapper-unregister.php
-   *
    * @param string $scheme
    *   URI scheme.
    * @return bool
    *   result of stream_wrapper_unregister()
+   * @see http://php.net/manual/en/function.stream-wrapper-unregister.php
    */
   public static function unregister($scheme) {
     unset(self::$wrappers[$scheme]);
@@ -145,7 +143,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets the targat of a URI (stream).
+   * Returns the target of a stream [URI].
    *
    * A stream is referenced as scheme://target.
    *
@@ -172,7 +170,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets reference to stream wrapper class responsible for given URI (stream).
+   * Returns a reference to the stream wrapper class responsible for a given URI (stream).
    *
    * The scheme determines the stream wrapper class that should be
    * used by consulting the stream wrapper registry.
@@ -198,7 +196,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets reference to stream wrapper class responsible for given scheme.
+   * Returns a reference to the stream wrapper class responsible for a given scheme.
    *
    * This helper method returns a stream instance using a scheme. That is, the
    * passed string does not container a '://'. For example, 'public' is a scheme 
