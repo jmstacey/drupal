@@ -33,11 +33,11 @@ class DrupalStreamWrapperRegistry {
   /**
    * Registers a stream wrapper scheme.
    *
-   * @param string $scheme
+   * @param $scheme
    *   URI scheme.
-   * @param string $class
+   * @param $class
    *   Class name for the stream wrapper.
-   * @return bool
+   * @return
    *   result of stream_wrapper_register()
    * @see http://php.net/manual/en/function.stream-wrapper-register.php
    */
@@ -49,9 +49,9 @@ class DrupalStreamWrapperRegistry {
   /**
    * Unregisters a stream wrapper.
    *
-   * @param string $scheme
+   * @param$scheme
    *   URI scheme.
-   * @return bool
+   * @return
    *   result of stream_wrapper_unregister()
    * @see http://php.net/manual/en/function.stream-wrapper-unregister.php
    */
@@ -72,9 +72,9 @@ class DrupalStreamWrapperRegistry {
   /**
    * Returns the stream wrapper class name for a given scheme.
    *
-   * @param string $scheme
+   * @param $scheme
    *   Stream scheme.
-   * @return mixed
+   * @return
    *   Return string if a scheme has a registered handler, or FALSE.
    */
   public static function getClassName($scheme) {
@@ -92,7 +92,7 @@ class DrupalStreamWrapperRegistry {
    *
    * @param $uri
    *   A stream, referenced as scheme://target.
-   * @return mixed
+   * @return
    *   A string containing the name of the scheme, or FALSE if none.
    *   For example, the URI public://example.txt would return public.
    */
@@ -121,7 +121,7 @@ class DrupalStreamWrapperRegistry {
    *
    * @param $uri
    *   A stream, referenced as scheme://target.
-   * @return mixed
+   * @return
    *   Returns a string containing the name of a validated stream.
    *   Returns false if the URI does not contain a scheme or the scheme
    *   does not have a registered handler.
@@ -149,7 +149,7 @@ class DrupalStreamWrapperRegistry {
    *
    * @param $uri
    *   A stream, referenced as scheme://target
-   * @return mixed
+   * @return
    *   A string containing the target (path), or FALSE if none.
    *   For example, the URI public://sample/test.txt would return 
    *   sample/test.txt
@@ -177,7 +177,7 @@ class DrupalStreamWrapperRegistry {
    *
    * @param $uri
    *   A stream, referenced as scheme://target
-   * @return mixed
+   * @return
    *   Returns a new stream wrapper object appropriate for the given URI.
    *   For example, a URI of public://example.txt would return a new
    *   private stream wrapper object (DrupalPrivateStreamWrapper).
@@ -208,7 +208,7 @@ class DrupalStreamWrapperRegistry {
    *
    * @param $scheme
    *   If the stream was 'public://target', 'public' would be the scheme.
-   * @return mixed
+   * @return
    *   Returns a new stream wrapper object appropriate for the given $scheme.
    *   For example, for the public scheme a stream wrapper object
    *   (DrupalPublicStreamWrapper).
@@ -227,7 +227,7 @@ class DrupalStreamWrapperRegistry {
    * - Replace ':///' with '://'
    * - Remove trailing slashes on target.
    *
-   * @param string &$uri
+   * @param &$uri
    *   String reference containing the URI to normalize.
    */
   public static function normalizeUri(&$uri) {

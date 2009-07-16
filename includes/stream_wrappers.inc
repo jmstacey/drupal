@@ -71,8 +71,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * realpath() will return an absolute path such as
    * /Users/foo/Sites/drupal/sites/default/files/foobar.txt.
    *
-   * @return string
-   *   Returns cononcialized absolute pathname for internal purposes.
+   * @return
+   *   Returns a string containing the canonical, absolute path.
    * @see realpath()
    */
   public function getInternalUri();
@@ -84,19 +84,21 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * and accessed from a browser. For example, the external URL of
    * youtube://xIpLd0WQKCY might be http://www.youtube.com/watch?v=xIpLd0WQKCY.
    *
-   * @return string
+   * @return
+   *   Returns a string containing a web accessible URL for the resource.
    */
   public function getExternalUrl();
 
   /**
    * Returns the MIME type of the resource.
    *
-   * @param array $mapping
+   * @param $mapping
    *   An optional map of extensions to their mimetypes, in the form:
    *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
    *    - 'extensions': the mapping itself, an associative array in which
    *      the key is the extension and the value is the mimetype identifier.
-   * @return string
+   * @return
+   *   Returns a string containing the MIME type of the resource.
    */
   public function getMimeType($mapping = NULL);
 
@@ -107,8 +109,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * stream wrapper interface. This is a custom implementation for
    * Drupal.
    *
-   * @param mixed $mode
-   * @return bool
+   * @param $mode
+   * @return
    *   Returns TRUE on success or FALSE on failure.
    */
   public function chmod($mode);
@@ -121,9 +123,9 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * individual wrappers may implement their own solutions.
    * The base class will always return FALSE.
    *
-   * @return mixed
-   *   A string with absolute pathname on success (implemented
-   *   by core wrappers), or FALSE on failure or the registered
+   * @return
+   *   Returns a string with absolute pathname on success (implemented
+   *   by core wrappers), or FALSE on failure or if the registered
    *   wrapper does not provide an implementation.
    */
   public function realpath();
@@ -247,8 +249,8 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   A bit mask of STREAM_USE_PATH and STREAM_REPORT_ERRORS.
    * @param &$opened_path
    *   A string containing the path actually opened.
-   * @return bool
-   *   TRUE if file was opened successfully.
+   * @return
+   *   Returns TRUE if file was opened successfully.
    * @see http://php.net/manual/en/streamwrapper.stream-open.php
    */
   public function stream_open($uri, $mode, $options, &$opened_url) {
@@ -266,9 +268,9 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   /**
    * Support for flock().
    *
-   * @param int $operation
-   * @return bool
-   *   Always returns TRUE.
+   * @param $operation
+   * @return
+   *   Always returns TRUE at the present time.
    * @see http://php.net/manual/en/streamwrapper.stream-lock.php
    */
   public function stream_lock($operation) {
@@ -297,8 +299,8 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *
    * @param $data
    *   The string to be written.
-   * @return int
-   *   The number of bytes written.
+   * @return
+   *   The number of bytes written (integer).
    * @see http://php.net/manual/en/streamwrapper.stream-write.php
    */
   public function stream_write($data) {
@@ -308,7 +310,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   /**
    * Support for feof().
    *
-   * @return bool
+   * @return
    *   TRUE if end-of-file has been reached.
    * @see http://php.net/manual/en/streamwrapper.stream-eof.php
    */
@@ -324,7 +326,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @param $whence
    *   SEEK_SET, SEEK_CUR, or SEEK_END.
    * @return
-   *   TRUE on success
+   *   TRUE on success.
    * @see http://php.net/manual/en/streamwrapper.stream-seek.php
    */
   public function stream_seek($offset, $whence) {
