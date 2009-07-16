@@ -1704,7 +1704,7 @@ function file_get_mimetype($uri, $mapping = NULL) {
   }
   else {
     // getMimeType() is not implementation specific, so we can directly
-    // call it without any kind of instance.
+    // call it without an instance.
     return DrupalLocalStreamWrapper::getMimeType($uri);
   }
 }
