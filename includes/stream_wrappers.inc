@@ -104,7 +104,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function chmod($mode);
 
   /**
-   * Returns canonicalized absolute pathname.
+   * Returns canonical, absolute path.
    *
    * Implementation placeholder. PHP's realpath() does not support
    * stream wrappers. We provide this as a default so that
