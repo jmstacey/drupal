@@ -68,12 +68,12 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *
    * For example, the internal path of public://foobar.txt might be
    * sites/default/files/foobar.txt. Following this call with
-   * drupal_realpath() will return an absolute path such as
+   * realpath() will return an absolute path such as
    * /Users/foo/Sites/drupal/sites/default/files/foobar.txt.
    *
    * @return string
    *   Returns cononcialized absolute pathname for internal purposes.
-   * @see drupal_realpath()
+   * @see realpath()
    */
   public function getInternalUri();
 
