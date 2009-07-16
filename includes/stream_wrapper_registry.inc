@@ -88,7 +88,7 @@ class DrupalStreamWrapperRegistry {
   }
 
   /**
-   * Gets the scheme of a URI (stream).
+   * Returns the scheme of a stream [URI].
    *
    * A stream is referenced as scheme://target.
    *
@@ -100,9 +100,7 @@ class DrupalStreamWrapperRegistry {
    */
   public static function getStreamScheme($uri) {
     $data = explode('://', $uri, 2);
-    // $data[0]://$data[1]
-    // scheme://target
-
+    
     return count($data) == 2 ? $data[0] : FALSE;
   }
 
@@ -131,7 +129,6 @@ class DrupalStreamWrapperRegistry {
    *   does not have a registered handler.
    */
   public static function getValidStreamScheme($uri) {
-
     if (!$scheme = self::getStreamScheme($uri)) {
       // URI doesn't even contain a scheme
       return FALSE;
@@ -189,7 +186,6 @@ class DrupalStreamWrapperRegistry {
    *   FALSE is returned if no registered handler could be found.
    */
   public static function getInstanceByUri($uri) {
-
     $class = self::getClassName(self::getStreamScheme($uri));
     if (class_exists($class)) {
       $instance = new $class;
@@ -221,7 +217,6 @@ class DrupalStreamWrapperRegistry {
    *   FALSE is returned if no registered handler could be found.
    */
   public static function getInstanceByScheme($scheme) {
-
     return self::getInstanceByUri($scheme . '://');
   }
 

@@ -61,24 +61,35 @@ interface StreamWrapperInterface {
 interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 
   /**
-   * Return an absolute stream resource URL for internal purposes. In the case
-   * of the three local wrappers (public, private, temp) realpath should be
-   * used for security reasons.
+   * Returns an absolute stream resource URL for internal purposes. 
+   *
+   * In the case of the three local wrappers (public, private, temp)
+   * drupal_realpath() should be used for security reasons.
+   *
+   * For example, the internal path of public://foobar.txt might be
+   * sites/default/files/foobar.txt. Following this call with
+   * realpath() will return an absolute path such as
+   * /Users/foo/Sites/drupal/sites/default/files/foobar.txt.
    *
    * @return string
    *   Returns cononcialized absolute pathname for internal purposes.
+   * @see realpath()
    */
   public function getInternalUri();
 
   /**
-   * Return the HTML accessible URL for a resource.
+   * Return the web accessible URL for a resource.
+   *
+   * This function should return a URL that can be embedded in a web page
+   * and accessed from a browser. For example, the external URL of
+   * youtube://xIpLd0WQKCY might be http://www.youtube.com/watch?v=xIpLd0WQKCY.
    *
    * @return string
    */
   public function getExternalUrl();
 
   /**
-   * Return the mime type of a resource.
+   * Returns the MIME type of a resource.
    *
    * @param array $mapping
    *   An optional map of extensions to their mimetypes, in the form:
@@ -103,9 +114,9 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function chmod($mode);
 
   /**
-   * Returns canonicalized absolute pathname.
+   * Returns canonical, absolute path.
    *
-   * Implementation placeholder. PHP's realpath does not support
+   * Implementation placeholder. PHP's realpath() does not support
    * stream wrappers. We provide this as a default so that
    * individual wrappers may implement their own solutions.
    * The base class will always return FALSE.
@@ -122,9 +133,9 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 /**
  * Drupal stream wrapper base class for local files.
  *
- * This class provides a complete stream wrapper implementation. It passes
- * incoming URI's through an interpolation method and then recursively calls
- * the invoking PHP filesystem function.
+ * This class provides a complete stream wrapper implementation. URIs such as
+ * public://example.txt are expanded to a normal filesystem path such as
+ * sites/default/files/example.txt and then PHP filesystem functions are invoked.
  *
  * DrupalLocalStreamWrapper implementations need to override at least the
  * getInternalUri() method to rewrite the URI before is it passed back to the
@@ -133,11 +144,18 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface {
 
   /**
+   * Stream context resource.
+   *
+   * @var Resource
+   */
+  public $context;
+
+  /**
    * A generic resource handle.
    *
    * @var Resource
    */
-  private $handle = NULL;
+  protected $handle = NULL;
 
   /**
    * Instance URI (stream).
@@ -146,42 +164,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *
    * @var String
    */
-  private $uri;
-
-  /**
-   * Stream context resource.
-   *
-   * @var Resource
-   */
-  private $context;
-
-  /**
-   * Sets private variables.
-   *
-   * This is a generic setter.
-   *
-   * @param string $key
-   *   The variable to change.
-   * @param mixed $value
-   *   $key is set to this value.
-   */
-  public function __set($key, $value) {
-    $this->$key = $value;
-  }
-
-  /**
-   * Gets private variables.
-   *
-   * This is a generic getter.
-   *
-   * @param string $key
-   *   The variable to retrieve.
-   * @return mixed
-   *   Returns the variable requested.
-   */
-  public function __get($key) {
-    return $this->$key;
-  }
+  protected $uri;
 
   /**
    * Gets the path that the wrapper is responsible for.
@@ -192,7 +175,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   abstract function getDirectoryPath();
 
   /**
-   * Interpolate the URI path, adding the base path from $this->getDirectoryPath().
+    * Returns an absolute stream resource URL by adding the base path from $this->getDirectoryPath().
    */
   function getInternalUri() {
     return $this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->uri);
