@@ -1553,48 +1553,32 @@ function file_upload_max_size() {
 }
 
 /**
- * Determine an Internet Media Type, or MIME type from a filename.
+ * Determines an Internet Media Type, or MIME type from a filename.
  *
- * @param $filename
- *   Name of the file, including extension.
- * @param $mapping
+ * Compatibility: normal paths and stream wrappers.
+ * @see http://drupal.org/node/515192
+ *
+ * @param string $uri
+ *   A string containing the URI to verify. If this value is omitted,
+ *   Drupal's public files directory will be used [public://].
+ * @param array $mapping
  *   An optional map of extensions to their mimetypes, in the form:
  *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
  *    - 'extensions': the mapping itself, an associative array in which
  *      the key is the extension and the value is the mimetype identifier.
- *
- * @return
- *   The internet media type registered for the extension or application/octet-stream for unknown extensions.
+ * @return string
+ *   Returns the MIME type registered for the extension, or
+ *   'application/octet-stream' for unkown extensions.
  */
-function file_get_mimetype($filename, $mapping = NULL) {
-  if (!isset($mapping)) {
-    $mapping = variable_get('mime_extension_mapping', NULL);
-    if (!isset($mapping) && drupal_function_exists('file_default_mimetype_mapping')) {
-      // The default file map, defined in file.mimetypes.inc is quite big.
-      // We only load it when necessary.
-      $mapping = file_default_mimetype_mapping();
-    }
+function file_get_mimetype($uri, $mapping = NULL) {
+  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+    return $wrapper->getMimeType($uri, $mapping);
   }
-
-  $extension = '';
-  $file_parts = explode('.', $filename);
-
-  // Remove the first part: a full filename should not match an extension.
-  array_shift($file_parts);
-
-  // Iterate over the file parts, trying to find a match.
-  // For my.awesome.image.jpeg, we try:
-  //   - jpeg
-  //   - image.jpeg, and
-  //   - awesome.image.jpeg
-  while ($additional_part = array_pop($file_parts)) {
-    $extension = $additional_part . ($extension ? '.' . $extension : '');
-    if (isset($mapping['extensions'][$extension])) {
-      return $mapping['mimetypes'][$mapping['extensions'][$extension]];
-    }
+  else {
+    // getMimeType() is not implementation specific, so we can directly
+    // call it without an instance.
+    return DrupalLocalStreamWrapper::getMimeType($uri);
   }
-
-  return 'application/octet-stream';
 }
 
 /**
