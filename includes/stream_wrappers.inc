@@ -79,7 +79,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   public function getExternalUrl();
 
   /**
-   * Return the mime type of a resource.
+   * Returns the MIME type of a resource.
    *
    * @param array $mapping
    *   An optional map of extensions to their mimetypes, in the form:
