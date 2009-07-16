@@ -1558,14 +1558,14 @@ function file_upload_max_size() {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $uri
+ * @param $uri
  *   A string containing the URI, path, or filename.
- * @param array $mapping
+ * @param $mapping
  *   An optional map of extensions to their mimetypes, in the form:
  *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
  *    - 'extensions': the mapping itself, an associative array in which
  *      the key is the extension and the value is the mimetype identifier.
- * @return string
+ * @return
  *   Returns the MIME type registered for the extension, or
  *   'application/octet-stream' for unkown extensions.
  */
@@ -1597,13 +1597,13 @@ function file_get_mimetype($uri, $mapping = NULL) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $uri
+ * @param $uri
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
- * @param int $mode
+ * @param $mode
  *   Integer value for the permissions. Consult PHP chmod() documentation for
  *   more information.
- * @return bool
+ * @return
  *   TRUE for success, FALSE in the event of an error.
  * @see chmod()
  */
@@ -1649,11 +1649,12 @@ function drupal_chmod($uri, $mode = NULL) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $uri
+ * @param $uri
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
- * @return mixed
+ * @return
  *   Returns the absolute pathname, or FALSE on failure.
+ * @see realpath()
  */
 function drupal_realpath($uri) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
@@ -1677,8 +1678,11 @@ function drupal_realpath($uri) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * PHP's dirname doesn't parse a stream as expected. This will fallback to
- * dirname if it's not a valid stream.
+ * @param $uri
+ *   A URI or path.
+ * @return
+ *   Returns a string containing the directory name.
+ * @see dirname()
  */
 function drupal_dirname($uri) {
   if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
@@ -1694,7 +1698,6 @@ function drupal_dirname($uri) {
   else {
     return dirname($uri);
   }
-
 }
 
 /**
