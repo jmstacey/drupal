@@ -134,11 +134,18 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
 abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface {
 
   /**
+   * Stream context resource.
+   *
+   * @var Resource
+   */
+  public $context;
+
+  /**
    * A generic resource handle.
    *
    * @var Resource
    */
-  private $handle = NULL;
+  protected $handle = NULL;
 
   /**
    * Instance URI (stream).
@@ -147,42 +154,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *
    * @var String
    */
-  private $uri;
-
-  /**
-   * Stream context resource.
-   *
-   * @var Resource
-   */
-  private $context;
-
-  /**
-   * Sets private variables.
-   *
-   * This is a generic setter.
-   *
-   * @param string $key
-   *   The variable to change.
-   * @param mixed $value
-   *   $key is set to this value.
-   */
-  public function __set($key, $value) {
-    $this->$key = $value;
-  }
-
-  /**
-   * Gets private variables.
-   *
-   * This is a generic getter.
-   *
-   * @param string $key
-   *   The variable to retrieve.
-   * @return mixed
-   *   Returns the variable requested.
-   */
-  public function __get($key) {
-    return $this->$key;
-  }
+  protected $uri;
 
   /**
    * Gets the path that the wrapper is responsible for.
