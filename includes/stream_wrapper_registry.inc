@@ -187,7 +187,7 @@ class DrupalStreamWrapperRegistry {
     $class = self::getClassName(self::getStreamScheme($uri));
     if (class_exists($class)) {
       $instance = new $class;
-      $instance->__set('uri', $uri);
+      $instance->uri = $uri;
       return $instance;
     }
     else {
