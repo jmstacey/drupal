@@ -1582,7 +1582,7 @@ function file_get_mimetype($uri, $mapping = NULL) {
 }
 
 /**
- * Sets the permissions on a stream (URI).
+ * Sets the permissions on a file or directory.
  *
  * This function will use the 'file_chmod_directory' and 'file_chmod_file'
  * variables for the default modes for directories and uploaded/generated files.
@@ -1595,8 +1595,6 @@ function file_get_mimetype($uri, $mapping = NULL) {
  * which interfaces with chmod() by default. Contrib wrappers may override this
  * bahavior in their implementations as needed.
  *
- * @see http://php.net/manual/en/function.chmod.php
- *
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
@@ -1608,9 +1606,9 @@ function file_get_mimetype($uri, $mapping = NULL) {
  *   more information.
  * @return bool
  *   TRUE for success, FALSE in the event of an error.
+ * @see chmod()
  */
 function drupal_chmod($uri, $mode = NULL) {
-
   if (!isset($mode)) {
     if (is_dir($uri)) {
       $mode = variable_get('file_chmod_directory', 0775);
@@ -1659,7 +1657,6 @@ function drupal_chmod($uri, $mode = NULL) {
  *   Returns the absolute pathname, or FALSE on failure.
  */
 function drupal_realpath($uri) {
-
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
@@ -1685,7 +1682,6 @@ function drupal_realpath($uri) {
  * dirname if it's not a valid stream.
  */
 function drupal_dirname($uri) {
-
   if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
     $target  = DrupalStreamWrapperRegistry::getStreamTarget($uri);
     $dirname = dirname($target);
