@@ -74,6 +74,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * @return string
    *   Returns cononcialized absolute pathname for internal purposes.
    * @see realpath()
+   * @see drupal_realpath()
    */
   public function getInternalUri();
 
