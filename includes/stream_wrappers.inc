@@ -156,7 +156,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *
    * @var Resource
    */
-  protected $handle = NULL;
+  public $handle = NULL;
 
   /**
    * Instance URI (stream).
@@ -165,7 +165,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *
    * @var String
    */
-  protected $uri;
+  public $uri;
 
   /**
    * Gets the path that the wrapper is responsible for.
