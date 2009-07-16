@@ -33,14 +33,13 @@ class DrupalStreamWrapperRegistry {
   /**
    * Registers a stream wrapper scheme.
    *
-   * @see http://php.net/manual/en/function.stream-wrapper-register.php
-   *
    * @param string $scheme
    *   URI scheme.
    * @param string $class
    *   Class name for the stream wrapper.
    * @return bool
    *   result of stream_wrapper_register()
+   * @see http://php.net/manual/en/function.stream-wrapper-register.php
    */
   public static function register($scheme, $class_name) {
     self::$wrappers[$scheme] = $class_name;
@@ -50,12 +49,11 @@ class DrupalStreamWrapperRegistry {
   /**
    * Unregisters a stream wrapper.
    *
-   * @see http://php.net/manual/en/function.stream-wrapper-unregister.php
-   *
    * @param string $scheme
    *   URI scheme.
    * @return bool
    *   result of stream_wrapper_unregister()
+   * @see http://php.net/manual/en/function.stream-wrapper-unregister.php
    */
   public static function unregister($scheme) {
     unset(self::$wrappers[$scheme]);
