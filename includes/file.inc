@@ -1,5 +1,5 @@
 <?php
-// $Id: file.inc,v 1.176 2009-07-16 10:46:46 dries Exp $
+// $Id: file.inc,v 1.177 2009-07-20 19:02:38 dries Exp $
 
 /**
  * @file
@@ -1564,10 +1564,13 @@ function file_upload_max_size() {
  *   An optional map of extensions to their mimetypes, in the form:
  *    - 'mimetypes': a list of mimetypes, keyed by an identifier,
  *    - 'extensions': the mapping itself, an associative array in which
- *      the key is the extension and the value is the mimetype identifier.
+ *      the key is the extension (lowercase) and the value is the mimetype identifier.
+ *   If $mapping is omitted, the drupal variable mime_extension_mapping is checked
+ *   for a value and if that fails then file_default_mimetype_mapping() is called.
  * @return
- *   Returns the MIME type registered for the extension, or
- *   'application/octet-stream' for unkown extensions.
+ *   The internet media type registered for the extension or application/octet-stream for unknown extensions.
+ * @see
+ *   file_default_mimetype_mapping()
  */
 function file_get_mimetype($uri, $mapping = NULL) {
   if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {

@@ -1,5 +1,5 @@
 <?php
-// $Id: image.test,v 1.1 2009-07-12 08:36:34 dries Exp $
+// $Id: image.test,v 1.3 2009-07-19 15:05:30 dries Exp $
 
 /**
  * @file
@@ -35,11 +35,11 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
   protected $image_with_generated;
   protected $image_without_generated;
 
-  function getInfo() {
+  public static function getInfo() {
     return array(
-      'name' => t('Image styles path and URL functions'),
-      'description' => t('Tests functions for generating paths and URLs to image styles.'),
-      'group' => t('Image')
+      'name' => 'Image styles path and URL functions',
+      'description' => 'Tests functions for generating paths and URLs to image styles.',
+      'group' => 'Image',
     );
   }
 
@@ -86,21 +86,6 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     $expected = file_create_url(image_style_path($this->style_name, $this->image_with_generated));
     $this->assertEqual($actual, $expected, t('Got the download URL for an existing file.'));
   }
-
-  /**
-   * Test image_style_generate_url().
-   */
-  function testImageStyleGenerateUrl() {
-    // Test it with no generated file.
-    $actual = image_style_generate_url($this->style_name, $this->image_without_generated);
-    $expected = url('image/generate/' . $this->style_name . '/' . $this->image_without_generated, array('absolute' => TRUE));
-    $this->assertEqual($actual, $expected, t('Got the generate URL for a non-existent file.'));
-
-    // Now test it with a generated file.
-    $actual = image_style_generate_url($this->style_name, $this->image_with_generated);
-    $expected = file_create_url(image_style_path($this->style_name, $this->image_with_generated));
-    $this->assertEqual($actual, $expected, t('Got the download URL for an existing file.'));
-  }
 }
 
 /**
@@ -108,11 +93,11 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
  * properly passing parameters to the image toolkit.
  */
 class ImageEffectsUnitTest extends ImageToolkitTestCase {
-  function getInfo() {
+  public static function getInfo() {
     return array(
-      'name' => t('Image effects'),
-      'description' => t('Test that the image effects pass parameters to the toolkit correctly.'),
-      'group' => t('Image')
+      'name' => 'Image effects',
+      'description' => 'Test that the image effects pass parameters to the toolkit correctly.',
+      'group' => 'Image',
     );
   }
 
