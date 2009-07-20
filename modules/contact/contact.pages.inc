@@ -1,5 +1,5 @@
 <?php
-// $Id: contact.pages.inc,v 1.21 2009-05-10 05:06:50 dries Exp $
+// $Id: contact.pages.inc,v 1.23 2009-07-20 18:51:33 dries Exp $
 
 /**
  * @file
@@ -16,7 +16,7 @@ function contact_site_page() {
   }
   elseif (!db_query("SELECT COUNT(cid) FROM {contact}")->fetchField()) {
     if (user_access('administer site-wide contact form')) {
-      $output = t('The contact form has not been configured. <a href="@add">Add one or more categories</a> to the form.', array('@add' => url('admin/build/contact/add')));
+      $output = t('The contact form has not been configured. <a href="@add">Add one or more categories</a> to the form.', array('@add' => url('admin/structure/contact/add')));
     }
     else {
       return drupal_not_found();
@@ -29,7 +29,7 @@ function contact_site_page() {
   return $output;
 }
 
-/*
+/**
  * Form builder; the site-wide contact form.
  */
 function contact_site_form() {
@@ -168,7 +168,7 @@ function contact_personal_page($account) {
   return $output;
 }
 
-/*
+/**
  * Form builder; the personal contact form.
  */
 function contact_personal_form(&$form_state, $recipient) {
