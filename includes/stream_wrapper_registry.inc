@@ -156,8 +156,6 @@ class DrupalStreamWrapperRegistry {
    */
   public static function getStreamTarget($uri) {
     $data = explode('://', $uri, 2);
-    // $data[0]://$data[1]
-    // scheme://target
 
     if (count($data) != 2) {
       return FALSE;
@@ -187,7 +185,7 @@ class DrupalStreamWrapperRegistry {
     $class = self::getClassName(self::getStreamScheme($uri));
     if (class_exists($class)) {
       $instance = new $class;
-      $instance->__set('uri', $uri);
+      $instance->uri = $uri;
       return $instance;
     }
     else {
