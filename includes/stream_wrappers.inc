@@ -217,7 +217,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     //   - image.jpeg, and
     //   - awesome.image.jpeg
     while ($additional_part = array_pop($file_parts)) {
-      $extension = $additional_part . ($extension ? '.' . $extension : '');
+      $extension = strtolower($additional_part . ($extension ? '.' . $extension : ''));
       if (isset($mapping['extensions'][$extension])) {
         return $mapping['mimetypes'][$mapping['extensions'][$extension]];
       }
