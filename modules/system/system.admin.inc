@@ -1,5 +1,5 @@
 <?php
-// $Id: system.admin.inc,v 1.161 2009-07-16 10:44:20 dries Exp $
+// $Id: system.admin.inc,v 1.163 2009-07-20 18:51:34 dries Exp $
 
 /**
  * @file
@@ -63,7 +63,7 @@ function system_main_admin_page($arg = NULL) {
 /**
  * Provide a single block from the administration menu as a page.
  * This function is often a destination for these blocks.
- * For example, 'admin/build/types' needs to have a destination to be valid
+ * For example, 'admin/structure/types' needs to have a destination to be valid
  * in the Drupal menu system, but too much information there might be
  * hidden, so we supply the contents of the block.
  *
@@ -167,7 +167,7 @@ function system_themes_form() {
     $options[$theme->name] = $theme->info['name'];
 
     if (!empty($theme->status) || $theme->name == variable_get('admin_theme', 0)) {
-      $form[$theme->name]['operations'] = array('#markup' => l(t('configure'), 'admin/build/themes/settings/' . $theme->name) );
+      $form[$theme->name]['operations'] = array('#markup' => l(t('configure'), 'admin/structure/themes/settings/' . $theme->name) );
     }
     else {
       // Dummy element for drupal_render. Cleaner than adding a check in the theme function.
@@ -293,7 +293,7 @@ function system_themes_form_submit($form, &$form_state) {
   menu_rebuild();
   drupal_theme_rebuild();
   drupal_set_message(t('The configuration options have been saved.'));
-  $form_state['redirect'] = 'admin/build/themes';
+  $form_state['redirect'] = 'admin/structure/themes';
 
   // Notify locale module about new themes being enabled, so translations can
   // be imported. This might start a batch, and only return to the redirect
@@ -652,7 +652,7 @@ function system_modules($form_state = array()) {
     '#type' => 'submit',
     '#value' => t('Save configuration'),
   );
-  $form['#action'] = url('admin/build/modules/list/confirm');
+  $form['#action'] = url('admin/structure/modules/list/confirm');
 
   return $form;
 }
@@ -774,7 +774,7 @@ function system_modules_confirm_form($modules, $storage) {
     $form = confirm_form(
       $form,
       t('Some required modules must be enabled'),
-      'admin/build/modules',
+      'admin/structure/modules',
       t('Would you like to continue with enabling the above?'),
       t('Continue'),
       t('Cancel'));
@@ -924,7 +924,7 @@ function system_modules_submit($form, &$form_state) {
   drupal_clear_css_cache();
   drupal_clear_js_cache();
 
-  $form_state['redirect'] = 'admin/build/modules';
+  $form_state['redirect'] = 'admin/structure/modules';
 
   // Notify locale module about module changes, so translations can be
   // imported. This might start a batch, and only return to the redirect
@@ -990,7 +990,7 @@ function system_modules_uninstall($form_state = NULL) {
       '#type' => 'submit',
       '#value' => t('Uninstall'),
     );
-    $form['#action'] = url('admin/build/modules/uninstall/confirm');
+    $form['#action'] = url('admin/structure/modules/uninstall/confirm');
   }
   else {
     $form['modules'] = array();
@@ -1031,7 +1031,7 @@ function system_modules_uninstall_confirm_form($storage) {
     $form = confirm_form(
       $form,
       t('Confirm uninstall'),
-      'admin/build/modules/uninstall',
+      'admin/structure/modules/uninstall',
       t('Would you like to continue with uninstalling the above?'),
       t('Uninstall'),
       t('Cancel'));
@@ -1046,7 +1046,7 @@ function system_modules_uninstall_validate($form, &$form_state) {
   // Form submitted, but no modules selected.
   if (!count(array_filter($form_state['values']['uninstall']))) {
     drupal_set_message(t('No modules selected.'), 'error');
-    drupal_goto('admin/build/modules/uninstall');
+    drupal_goto('admin/structure/modules/uninstall');
   }
 }
 
@@ -1064,7 +1064,7 @@ function system_modules_uninstall_submit($form, &$form_state) {
     drupal_set_message(t('The selected modules have been uninstalled.'));
 
     unset($form_state['storage']);
-    $form_state['redirect'] = 'admin/build/modules/uninstall';
+    $form_state['redirect'] = 'admin/structure/modules/uninstall';
   }
   else {
     $form_state['storage'] = $form_state['values'];
@@ -1176,9 +1176,8 @@ function system_ip_blocking_delete_submit($form, &$form_state) {
 function system_site_information_settings() {
   $form['site_name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name'),
+    '#title' => t('Site name'),
     '#default_value' => 'Drupal',
-    '#description' => t('The name of this website.'),
     '#required' => TRUE
   );
   $form['site_mail'] = array(
@@ -1192,7 +1191,6 @@ function system_site_information_settings() {
     '#type' => 'textfield',
     '#title' => t('Slogan'),
     '#default_value' => '',
-    '#description' => t("Your site's motto, tag line, or catchphrase (often displayed alongside the title of the site).")
   );
   $form['site_frontpage'] = array(
     '#type' => 'textfield',
@@ -1207,7 +1205,7 @@ function system_site_information_settings() {
     '#type' => 'select', '#title' => t('Number of posts on front page'),
     '#default_value' => 10,
     '#options' => drupal_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30)),
-    '#description' => t('The maximum number of posts per page to display on overview pages like the front page above.')
+    '#description' => t('The maximum number of posts displayed on overview pages like the frontpage.')
   );
   $form['site_403'] = array(
     '#type' => 'textfield',
