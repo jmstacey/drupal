@@ -49,7 +49,6 @@ function file_test_file_scan_callback_reset() {
  * Dummy stream wrapper implementation (dummy://).
  */
 class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
-  // TODO figure out what this should really return.
   function getDirectoryPath() {
     return variable_get('stream_public_path', 'sites/default/files');
   }
@@ -71,7 +70,6 @@ class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
   function getExternalUrl() {
     return '/dummy/example.txt';
   }
-
 }
 
 /**
@@ -2204,4 +2202,22 @@ class StreamWrapperRegistryUnitTest extends DrupalWebTestCase {
     $this->assertEqual('public', DrupalStreamWrapperRegistry::getValidStreamScheme('public://asdf'), t('Got a valid stream scheme from public://asdf'));
     $this->assertFalse(DrupalStreamWrapperRegistry::getValidStreamScheme('foo://asdf'), t('Did not get a valid stream scheme from foo://asdf'));
   }
+  
+  /**
+   * Test the getStreamTarget() function.
+   */
+   function testGetStreamTarget() {
+     $this->assertEqual('foo/bar.txt', DrupalStreamWrapperRegistry::getStreamTarget('public://foo/bar.txt'), t('Got a valid stream target from public://foo/bar.txt'));
+     $this->assertFalse(DrupalStreamWrapperRegistry::getStreamTarget('foo/bar.txt'), t('foo/bar.txt is not a valid stream.'));
+   }
+   
+   /**
+    * Test the normalizeUri() function.
+    */
+    function testNormalizeUri() {
+      $uri = 'public:///' . $this->originalFileDirectory . '/foo/bar/';
+      DrupalStreamWrapperRegistry::normalizeUri($uri);
+      
+      $this->assertEqual('public://foo/bar', $uri, t('Got a properly normalized URI'));
+    }
 }

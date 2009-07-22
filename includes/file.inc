@@ -103,17 +103,16 @@ define('FILE_STATUS_PERMANENT', 1);
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $uri
+ * @param $uri
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
- * @return mixed
+ * @return
  *   Returns a string containing a URL that may be used to access the stream.
  *   If the provided string already contains a preceding 'http', nothing is done
  *   and the same string is returned. If a Valid stream wrapper could not be found
  *   to generate an external Url, then FALSE will be returned.
  */
 function file_create_url($uri) {
-
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
   // for the http wrapper.
   if (DrupalStreamWrapperRegistry::getStreamScheme($uri) == 'http') {
@@ -136,14 +135,14 @@ function file_create_url($uri) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $uri
+ * @param $uri
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
- * @param bool $stream
+ * @param $stream
  *   TRUE indicates that $uri should be a stream and a valid scheme is
  *   required. FALSE indicates that $uri should be treated as a normal
  *   path.
- * @return mixed
+ * @return
  *   Returns a string containing the path to the stream. If the URI is
  *   invalid (i.e. outside a valid filesystem directory), FALSE will be
  *   returned.
@@ -193,7 +192,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string &$directory
+ * @param &$directory
  *   A string reference containing the name of a directory path.
  * @param $mode
  *   A bitmask to indicate if the directory should be created if it does
@@ -204,12 +203,11 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  *   attached to this item making it useful for settings forms that require the
  *   user to specify a writable directory. If it can't be made to work, a form
  *   error will be set preventing them from saving the settings.
- * @return bool
- *   Returns TRUE if the directory exists and is wriable. Otherwise, FALSE
+ * @return
+ *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
 function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
-
   if (!DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
@@ -276,15 +274,13 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string &$path
- *   A string reference containing a file path. This will be set to the
- *   directory's path.
- * @return mixed
+ * @param $path
+ *   A string containing a file path. This will be set to the directory's path.
+ * @return
  *   Returns the basename of the path. If the directory is not in a Drupal
  *   writable directory FALSE is returned.
  */
 function file_check_path(&$path) {
-
   // Check if path is a directory.
   if (file_check_directory($path)) {
     return '';
@@ -303,7 +299,7 @@ function file_check_path(&$path) {
 /**
  * Assert that a file is located inside the specified directory.
  *
- * This should be used to make sure that a file is really located within
+ * This should be used to make sure a file specified is really located within
  * the directory to prevent exploits. Note that the file or path being checked
  * does not actually need to exist yet.
  *
@@ -318,11 +314,11 @@ function file_check_path(&$path) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $source
+ * @param $source
  *   A string set to the file to check. May be a literal path or a stream wrapper URI.
- * @param string $directory
+ * @param $directory
  *   A string where the file should be located.
- * @return mixed
+ * @return
  *   Returns FALSE if the path does not exist in the directory. Otherwise,
  *   returns the real path of the source.
  */
@@ -361,7 +357,7 @@ function file_check_location($source, $directory = '') {
  *   An array of conditions to match against the {file} table. These
  *   should be supplied in the form array('field_name' => 'field_value').
  * @return
- *  Returns an array of file objects, indexed by fid.
+ *   Returns an array of file objects, indexed by fid.
  *
  * @see hook_file_load()
  * @see file_load()
@@ -396,7 +392,7 @@ function file_load_multiple($fids = array(), $conditions = array()) {
 /**
  * Loads a file object from the database.
  *
- * @param int $fid
+ * @param $fid
  *  A file ID.
  * @return
  *   A file object.
@@ -460,9 +456,9 @@ function file_save($file) {
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param object $source
+ * @param $source
  *   A file object.
- * @param string $destination
+ * @param $destination
  *   A string containing the destination that $source should be copied to. This should
  *   be a stream wrapper URI. If this value is omitted, Drupal's public files directory
  *   will be used [public://].
@@ -476,7 +472,7 @@ function file_save($file) {
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns file object if the copy is successful, or FALSE in the event of an
  *   error.
  *
@@ -532,9 +528,9 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $source
+ * @param $source
  *   A string specifying the file location of the original file.
- * @param string $destination
+ * @param $destination
  *   A string containing the destination that $source should be copied to. This
  *   can be a complete file path, a directory path or, if this value is omitted,
  *   Drupal's 'files' directory will be used.
@@ -544,14 +540,13 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns the path to the new file, or FALSE in the event of an error.
  *
  * @see file_copy()
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
-
-  $stream = TRUE;  // Should we handle this operation as a stream or normal path?
+  $stream = TRUE; // TRUE: Handle this operation as a stream. FALSE: as a normal path
 
   $original_source      = $source;
   $original_destination = $destination;
@@ -578,8 +573,9 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     return FALSE;
   }
 
-  // If the destination file is not specified then use the filename of the source file.
-  $basename    = $basename ? $basename : basename($source);
+  // If the destination file is not specified then use the filename of the
+  // source file.
+  $basename = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
   DrupalStreamWrapperRegistry::normalizeUri($destination);
 
@@ -612,7 +608,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $destination
+ * @param $destination
  *   A string specifying the desired path.
  * @param $replace
  *   Replace behavior when the destination file already exists.
@@ -620,7 +616,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns the destination file path, or FALSE if the file already exists
  *   and FILE_EXISTS_ERROR is speciefied.
  */
@@ -659,9 +655,9 @@ function file_destination($destination, $replace) {
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param object $source
+ * @param $source
  *   A file object.
- * @param string $destination
+ * @param $destination
  *   A string containing the destination that $source should be moved to. This
  *   can be a complete file path, a directory path or, if this value is omitted,
  *   Drupal's 'files' directory will be used.
@@ -675,7 +671,7 @@ function file_destination($destination, $replace) {
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns the resulting file object for success, or FALSE in the event of an
  *   error.
  *
@@ -727,9 +723,9 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $source
+ * @param $source
  *   A string specifying the file location of the original file.
- * @param string $destination
+ * @param $destination
  *   A string containing the destination that $source should be moved to. This
  *   can be a complete file path, a directory name or, if this value is omitted,
  *   Drupal's 'files' directory will be used.
@@ -739,7 +735,7 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns the file path of the moved file, or FALSE in the event of an error.
  *
  * @see file_move()
@@ -757,13 +753,13 @@ function file_unmanaged_move($source, $destination = NULL, $replace = FILE_EXIST
  *
  * For example, the file name "exploit.php.pps" would become "exploit.php_.pps".
  *
- * @param string $filename
+ * @param $filename
  *   The name of a file to modify.
- * @param string $extensions
+ * @param $extensions
  *   A space separated list of extensions that should not be altered.
- * @param bool $alerts
+ * @param $alerts
  *   Whether alerts (watchdog, drupal_set_message()) should be displayed.
- * @return string
+ * @return
  *   Returns the potentially modified file name.
  */
 function file_munge_filename($filename, $extensions, $alerts = TRUE) {
@@ -801,9 +797,9 @@ function file_munge_filename($filename, $extensions, $alerts = TRUE) {
 /**
  * Reverses the effect of file_munge_filename().
  *
- * @param string $filename
+ * @param $filename
  *   String with the filename to be unmunged.
- * @return string
+ * @return
  *   Returns the unmunged file name.
  */
 function file_unmunge_filename($filename) {
@@ -819,16 +815,15 @@ function file_unmunge_filename($filename) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $basename
- *   The filename.
- * @param string $directory
- *   The directory.
- * @return string
+ * @param $basename
+ *   String containing the filename.
+ * @param $directory
+ *   String containing the directory.
+ * @return
  *   Returns the filepath consisting of $directory and a unique filename
  *   based off of $basename.
  */
 function file_create_filename($basename, $directory) {
-
   // Are we dealing with a stream?
   if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
     $separator = '';
@@ -867,12 +862,12 @@ function file_create_filename($basename, $directory) {
  * to determine if the file is being used by any modules. If the file is being
  * used is the delete will be canceled.
  *
- * @param object $file
+ * @param $file
  *   A file object.
- * @param bool $force
+ * @param $force
  *   Boolean indicating that the file should be deleted even if
  *   hook_file_references() reports that the file is in use.
- * @return mixed
+ * @return
  *   Returns TRUE for success, FALSE in the event of an error, or an array if the file
  *   is being used by another module. The array keys are the module's name and
  *   the values are the number of references.
@@ -913,9 +908,9 @@ function file_delete($file, $force = FALSE) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string$path
+ * @param $path
  *   A string containing a file path.
- * @return bool
+ * @return
  *   Returns TRUE for success or the path does not exists, or FALSE in the
  *   event of an error.
  *
@@ -957,9 +952,9 @@ function file_unmanaged_delete($path) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $path
+ * @param $path
  *   A string containing a file or directory path.
- * @return bool
+ * @return
  *   Returns TRUE for success or path does not exist, or FALSE in the event
  *   of an error.
  *
@@ -984,13 +979,13 @@ function file_unmanaged_delete_recursive($path) {
 /**
  * Determines total disk space used by a single user or the whole filesystem.
  *
- * @param int $uid
+ * @param $uid
  *   Optional. A user id, specifying NULL returns the total space used by all
  *   non-temporary files.
  * @param $status
  *   Optional. File Status to return. Combine with a bitwise OR(|) to return
  *   multiple statuses. The default status is FILE_STATUS_PERMANENT.
- * @return int
+ * @return
  *   Returns an integer containing the number of bytes used.
  */
 function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
@@ -1013,24 +1008,24 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * the status and use file_save() to save the changes.
  *
  * Compatibility: source may be a normal path or stream, but the destination must
- *           always be a stream.
+ * always be a stream.
  * @see http://drupal.org/node/515192
  *
- * @param string $source
+ * @param $source
  *   A string specifying the name of the upload field to save.
  * @param $validators
  *   An optional, associative array of callback functions used to validate the
  *   file. See file_validate() for a full discussion of the array format.
- * @param string $destination
+ * @param $destination
  *   A string containing the location $source should be copied to within the temp directory.
  *   $destination can be a directory or directory and filename within the temp directory.
  *   If not provided, the temporary directory will be used, and the $replace flag will
  *   will be honored.
- * @param bool $replace
+ * @param $replace
  *   A boolean indicating whether an existing file of the same name in the
  *   destination directory should overwritten. A false value will generate a
  *   new, unique filename in the destination directory.
- * @return mixed
+ * @return
  *   Returns an object containing the file information if the upload succeeded,
  *   or FALSE in the event of an error, or NULL if no file was upload.
  */
@@ -1089,7 +1084,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   $file->uid      = $user->uid;
   $file->status   = 0;
   $file->filename = file_munge_filename(trim(basename($_FILES['files']['name'][$source]), '.'), $extensions);
-  $file->uri = $_FILES['files']['tmp_name'][$source];
+  $file->uri      = $_FILES['files']['tmp_name'][$source];
   $file->filemime = file_get_mimetype($file->filename);
   $file->filesize = $_FILES['files']['size'][$source];
 
@@ -1170,16 +1165,16 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
  * After executing the validator callbacks specified hook_file_validate() will
  * also be called to allow other modules to report errors about the file.
  *
- * @param object $file
+ * @param $file
  *   A Drupal file object.
- * @param array $validators
+ * @param $validators
  *   An optional, associative array of callback functions used to validate the
  *   file. The keys are function names and the values arrays of callback
  *   parameters which will be passed in after the file object. The
  *   functions should return an array of error messages; an empty array
  *   indicates that the file passed validation. The functions will be called in
  *   the order specified.
- * @return string
+ * @return
  *   Returns an array containing validation error messages.
  *
  * @see hook_file_validate()
@@ -1201,9 +1196,9 @@ function file_validate(&$file, $validators = array()) {
 /**
  * Asserts that a filename is short enough to store in the database.
  *
- * @param object $file
+ * @param $file
  *   A Drupal file object.
- * @return array
+ * @return
  *   Returns an array containing an error message if the filename is too long.
  */
 function file_validate_name_length($file) {
@@ -1221,11 +1216,11 @@ function file_validate_name_length($file) {
 /**
  * Asserts that the filename ends with an allowed extension.
  *
- * @param object $file
+ * @param $file
  *   A Drupal file object.
- * @param string $extensions
+ * @param $extensions
  *   A string with a space separated list of allowed extensions.
- * @return array
+ * @return
  *   Returns an array containing an error message if the file extension
  *   is not allowed.
  *
@@ -1246,15 +1241,15 @@ function file_validate_extensions($file, $extensions) {
  *
  * This check is not enforced for the user #1.
  *
- * @param object $file
+ * @param $file
  *   A Drupal file object.
- * @param int $file_limit
+ * @param $file_limit
  *   An integer specifying the maximum file size in bytes. Zero indicates that
  *   no limit should be enforced.
- * @param int $user_limit
+ * @param $user_limit
  *   An integer specifying the maximum number of bytes the user is allowed.
  *   Zero indicates that no limit should be enforced.
- * @return array
+ * @return
  *   Returns an array containing an error message if the file size exceeds
  *   limits.
  *
@@ -1282,9 +1277,9 @@ function file_validate_size($file, $file_limit = 0, $user_limit = 0) {
 /**
  * Checks that the file is recognized by image_get_info() as an image.
  *
- * @param object $file
+ * @param $file
  *   A Drupal file object.
- * @return array
+ * @return
  *   Returns an array containing an error message if the file is not an image.
  *
  * @see hook_file_validate()
@@ -1306,18 +1301,18 @@ function file_validate_is_image($file) {
  * Non-image files will be ignored. If an image toolkit is available the image
  * will be scalled to fit within the desired maximum dimensions.
  *
- * @param object $file
+ * @param $file
  *   A Drupal file object. This function may resize the file affecting its
  *   size.
- * @param string $maximum_dimensions
+ * @param $maximum_dimensions
  *   An optional string in the form WIDTHxHEIGHT e.g. '640x480' or '85x85'. If
  *   an image toolkit is installed the image will be resized down to these
  *   dimensions. A value of 0 indicates no restriction on size, so resizing
  *   will be attempted.
- * @param string $minimum_dimensions
+ * @param $minimum_dimensions
  *   An optional string in the form WIDTHxHEIGHT. This will check that the
  *   image meets a minimum size. A value of 0 indicates no restriction.
- * @return array
+ * @return
  *   Returns an array containing an error message if the file is an image and
  *   exceeded the specified paramaters.
  *
@@ -1363,9 +1358,9 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $data
+ * @param $data
  *   A string containing the contents of the file.
- * @param string $destination
+ * @param $destination
  *   A string containing the destination location. If no value is provided
  *   then a randomly name will be generated and the file saved in Drupal's
  *   files directory.
@@ -1377,7 +1372,7 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns a file object, or FALSE on error.
  *
  * @see file_unmanaged_save_data()
@@ -1421,9 +1416,9 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  * This function is identical to file_save_data() except the file will not be
  * saved to the {file} table and none of the file_* hooks will be called.
  *
- * @param string $data
+ * @param $data
  *   A string containing the contents of the file.
- * @param string $destination
+ * @param $destination
  *   A string containing the destination location. If no value is provided
  *   then a randomly name will be generated and the file saved in Drupal's
  *   files directory.
@@ -1433,7 +1428,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  *   - FILE_EXISTS_RENAME - Append _{incrementing number} until the filename is
  *                          unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
- * @return mixed
+ * @return
  *   Returns a string with the path of the resulting file, or FALSE on error.
  *
  * @see file_save_data()
@@ -1453,9 +1448,9 @@ function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EX
 /**
  * Pipes a file through Drupal to the client using HTTP.
  *
- * @param string $source
+ * @param $source
  *   String specifying the file path to transfer.
- * @param array
+ * @param
  *   Returns an array of HTTP headers to send along with the file.
  */
 function file_transfer($source, $headers) {
@@ -1530,11 +1525,11 @@ function file_download() {
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $dir
+ * @param $dir
  *   The base directory for the scan, without trailing slash.
  * @param $mask
  *   The preg_match() regular expression of the files to find.
- * @param array $options
+ * @param $options
  *   An associative array of additional options, with the following keys:
  *   - 'nomask'
  *     The preg_match() regular expression of the files to ignore. Defaults to
@@ -1552,10 +1547,10 @@ function file_download() {
  *     extension. Defaults to 'filepath'.
  *   - 'min_depth'
  *     Minimum depth of directories to return files from. Defaults to 0.
- * @param int $depth
+ * @param $depth
  *   Current depth of recursion. This parameter is only used internally and
  *   should not be passed.
- * @return array
+ * @return
  *   Returns an associative array (keyed on the provided key) of objects with
  *   'filepath', 'filename', and 'name' members corresponding to the
  *   matching files.
@@ -1607,9 +1602,6 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 /**
  * Determine the default temporary directory.
  *
- * Warning! This function will be deprecated in the near future.
- * Please use file_directory_path('temp') when possible.
- *
  * @return
  *   A string containing a temp directory.
  */
@@ -1628,7 +1620,7 @@ function file_directory_temp() {
  * Compatibility: only stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param string $scheme
+ * @param $scheme
  *   A string representing the scheme of a stream. For legacy code, the public
  *   wrapper is assumed if this is not provided.
  *   A stream is referenced as: scheme://target.
@@ -1665,7 +1657,7 @@ function file_directory_strip($path) {
 /**
  * Determines the maximum file upload size by querying the PHP settings.
  *
- * @return int
+ * @return
  *   Returns file size limit in bytes based on the PHP upload_max_filesize
  *   and post_max_size directives.
  */
@@ -1736,6 +1728,7 @@ function file_get_mimetype($uri, $mapping = NULL) {
  *   more information.
  * @return
  *   TRUE for success, FALSE in the event of an error.
+ *
  * @see chmod()
  */
 function drupal_chmod($uri, $mode = NULL) {
@@ -1785,6 +1778,7 @@ function drupal_chmod($uri, $mode = NULL) {
  *   Drupal's public files directory will be used [public://].
  * @return
  *   Returns the absolute pathname, or FALSE on failure.
+ *
  * @see realpath()
  */
 function drupal_realpath($uri) {
@@ -1813,6 +1807,7 @@ function drupal_realpath($uri) {
  *   A URI or path.
  * @return
  *   Returns a string containing the directory name.
+ *
  * @see dirname()
  */
 function drupal_dirname($uri) {

@@ -156,8 +156,6 @@ class DrupalStreamWrapperRegistry {
    */
   public static function getStreamTarget($uri) {
     $data = explode('://', $uri, 2);
-    // $data[0]://$data[1]
-    // scheme://target
 
     if (count($data) != 2) {
       return FALSE;
@@ -224,8 +222,9 @@ class DrupalStreamWrapperRegistry {
    * A stream is referenced as scheme://target.
    *
    * The following actions are taken:
-   * - Replace ':///' with '://'
-   * - Remove trailing slashes on target.
+   * - Remove all occurrences of the wrapper's directory path
+   * - Remove trailing slashes from target
+   * - Trim erroneous leading slashes from target. e.g. ':///' becomes '://'
    *
    * @param &$uri
    *   String reference containing the URI to normalize.
@@ -237,6 +236,9 @@ class DrupalStreamWrapperRegistry {
       // Remove all occurrences of the wrapper's directory path.
       $directory_path = self::getInstanceByScheme($scheme)->getDirectoryPath();
       $target         = str_replace($directory_path, '', $target);
+
+      // Trim trailing slashes from target
+      $target = rtrim($target, '/');
 
       // Trim erroneous leading slashes from target.
       $uri = $scheme . '://' . ereg_replace('^[/\\]*', '', $target);
