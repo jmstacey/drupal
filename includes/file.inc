@@ -1608,6 +1608,7 @@ function file_get_mimetype($uri, $mapping = NULL) {
  *   more information.
  * @return
  *   TRUE for success, FALSE in the event of an error.
+ *
  * @see chmod()
  */
 function drupal_chmod($uri, $mode = NULL) {
@@ -1657,6 +1658,7 @@ function drupal_chmod($uri, $mode = NULL) {
  *   Drupal's public files directory will be used [public://].
  * @return
  *   Returns the absolute pathname, or FALSE on failure.
+ *
  * @see realpath()
  */
 function drupal_realpath($uri) {
@@ -1685,6 +1687,7 @@ function drupal_realpath($uri) {
  *   A URI or path.
  * @return
  *   Returns a string containing the directory name.
+ *
  * @see dirname()
  */
 function drupal_dirname($uri) {
