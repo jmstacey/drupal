@@ -104,13 +104,9 @@ define('FILE_STATUS_PERMANENT', 1);
  * @see http://drupal.org/node/515192
  *
  * @param $uri
- *   A string containing the URI to verify. If this value is omitted,
- *   Drupal's public files directory will be used [public://].
+ *   A string containing the URI of the file to generate a URL for.
  * @return
- *   Returns a string containing a URL that may be used to access the stream.
- *   If the provided string already contains a preceding 'http', nothing is done
- *   and the same string is returned. If a Valid stream wrapper could not be found
- *   to generate an external Url, then FALSE will be returned.
+ *   A string containing a URL that can be used to download the file.
  */
 function file_create_url($uri) {
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
@@ -204,7 +200,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  *   user to specify a writable directory. If it can't be made to work, a form
  *   error will be set preventing them from saving the settings.
  * @return
- *   Returns TRUE if the directory exists and is wriable. Otherwise, FALSE
+ *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
 function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
@@ -352,9 +348,9 @@ function file_check_location($source, $directory = '') {
 /**
  * Loads multiple file objects from the database.
  *
- * @param array $fids
+ * @param $fids
  *   An array of file IDs.
- * @param array $conditions
+ * @param $conditions
  *   An array of conditions to match against the {file} table. These
  *   should be supplied in the form array('field_name' => 'field_value').
  * @return
@@ -412,7 +408,7 @@ function file_load($fid) {
  * If the $file->fid is not set a new record will be added. Re-saving an
  * existing file will not change its status.
  *
- * @param object $file
+ * @param $file
  *   A file object returned by file_load().
  * @return
  *   The updated file object.
@@ -460,11 +456,9 @@ function file_save($file) {
  * @param $source
  *   A file object.
  * @param $destination
- *   A string containing the destination that $source should be copied to. This should
- *   be a stream wrapper URI. If this value is omitted, Drupal's public files directory
- *   will be used [public://].
- *   can be a complete file path, a directory path or, if this value is omitted,
- *   Drupal's 'files' directory will be used.
+ *   A string containing the destination that $source should be copied to. This 
+ *   should a stream wrapped URI. If this value is omitted, Drupal's public files
+ *   directory will be used [public://].
  * @param $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE - Replace the existing file. If a managed file with
@@ -816,9 +810,9 @@ function file_unmunge_filename($filename) {
  * @see http://drupal.org/node/515192
  *
  * @param $basename
- *   The filename.
+ *   String containing the filename.
  * @param $directory
- *   The directory.
+ *   String containing the directory.
  * @return
  *   Returns the filepath consisting of $directory and a unique filename
  *   based off of $basename.
@@ -1017,10 +1011,8 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  *   An optional, associative array of callback functions used to validate the
  *   file. See file_validate() for a full discussion of the array format.
  * @param $destination
- *   A string containing the location $source should be copied to within the temp directory.
- *   $destination can be a directory or directory and filename within the temp directory.
- *   If not provided, the temporary directory will be used, and the $replace flag will
- *   will be honored.
+ *   A string containing the directory $source should be copied to. If this is
+ *   not provided or is not writable, the temporary directory will be used.
  * @param $replace
  *   A boolean indicating whether an existing file of the same name in the
  *   destination directory should overwritten. A false value will generate a
@@ -1450,8 +1442,8 @@ function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EX
  *
  * @param $source
  *   String specifying the file path to transfer.
- * @param
- *   Returns an array of HTTP headers to send along with the file.
+ * @param $headers
+ *   An array of HTTP headers to send along with file.
  */
 function file_transfer($source, $headers) {
   if (ob_get_level()) {
