@@ -959,7 +959,7 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * the status and use file_save() to save the changes.
  *
  * Compatibility: source may be a normal path or stream, but the destination must
- *           always be a stream.
+ * always be a stream.
  * @see http://drupal.org/node/515192
  *
  * @param $source
