@@ -824,7 +824,6 @@ function file_unmunge_filename($filename) {
  *   based off of $basename.
  */
 function file_create_filename($basename, $directory) {
-
   // Are we dealing with a stream?
   if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
     $separator = '';
