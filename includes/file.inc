@@ -258,9 +258,8 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
 /**
  * Checks path to see if it is a directory, or a directory/file.
  *
- * @param &$path
- *   A string reference containing a file path. This will be set to the
- *   directory's path.
+ * @param $path
+ *   A string containing a file path. This will be set to the directory's path.
  * @return
  *   If the directory is not in a Drupal writable directory, FALSE is returned.
  *   Otherwise, the base name of the path is returned.
@@ -284,7 +283,7 @@ function file_check_path(&$path) {
 /**
  * Check if a file is really located inside $directory.
  *
- * This should be used to make sure that a file is really located within
+ * This should be used to make sure a file specified is really located within
  * the directory to prevent exploits. Note that the file or path being checked
  * does not actually need to exist yet.
  *
@@ -544,8 +543,9 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     return FALSE;
   }
 
-  // If the destination file is not specified then use the filename of the source file.
-  $basename    = $basename ? $basename : basename($source);
+  // If the destination file is not specified then use the filename of the
+  // source file.
+  $basename = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
   DrupalStreamWrapperRegistry::normalizeUri($destination);
 
@@ -957,10 +957,6 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * The file will be added to the {file} table as a temporary file. Temporary
  * files are periodically cleaned. To make the file a permanent file, assign
  * the status and use file_save() to save the changes.
- *
- * Compatibility: source may be a normal path or stream, but the destination must
- *           always be a stream.
- * @see http://drupal.org/node/515192
  *
  * @param $source
  *   A string specifying the name of the upload field to save.
