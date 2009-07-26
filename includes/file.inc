@@ -7,11 +7,10 @@
  */
 
 /**
- * Stream wrapper initialization is included here because there are cases where
+ * Stream wrapper code is included here because there are cases where
  * File API is needed before a bootstrap, or in an alternate order (e.g.
  * maintenance theme).
  */
-// Stream wrapper interface and base class implementation
 require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
 
 /**
@@ -92,14 +91,20 @@ define('FILE_STATUS_PERMANENT', 1);
  * Drupal stream wrapper registry.
  *
  * Provide a facility for managing and querying user-defined stream wrappers
- * in PHP. PHP's internal stream_get_wrappers doesn't return the class
+ * in PHP. PHP's internal stream_get_wrappers() doesn't return the class
  * registered to handle a stream, which we need to be able to find the handler
  * for class instantiation.
+ *
+ * If a module registers a scheme that is already registered with PHP, it will
+ * be unregistered and replaced with the specified class.
  *
  * A stream is referenced as: scheme://target
  *
  * Returns the entire Drupal stream wrapper registry.
  * @return array
+ *
+ * @see hook_stream_wrappers()
+ * @see hook_stream_wrappers_alter()
  */
 
 function file_get_stream_wrappers() {
@@ -112,7 +117,7 @@ function file_get_stream_wrappers() {
     foreach ($wrappers as $scheme => $info) {
       // We only register classes that implement our interface.
       if (in_array('DrupalStreamWrapperInterface', class_implements($info['class']), TRUE)) {
-        // Record whether we are overriding an existing scheme
+        // Record whether we are overriding an existing scheme.
         if (in_array($scheme, $existing, TRUE)) {
           $wrappers[$scheme]['override'] = TRUE;
           stream_wrapper_unregister($scheme);
@@ -135,13 +140,13 @@ function file_get_stream_wrappers() {
  * @return
  *   Return string if a scheme has a registered handler, or FALSE.
  */
-function file_stream_wrapper_get_class($scheme)
+function file_stream_wrapper_get_class($scheme) {
   $wrappers = file_get_stream_wrappers();
-   return empty($wrappers[$scheme]) ? FALSE : $wrappers[$scheme]['class'];
+  return empty($wrappers[$scheme]) ? FALSE : $wrappers[$scheme]['class'];
 }
 
 /**
- * Returns the scheme of a stream [URI].
+ * Returns the scheme of a URI (e.g. a stream).
  *
  * A stream is referenced as scheme://target.
  *
@@ -158,7 +163,7 @@ function file_uri_scheme($uri) {
 }
 
 /**
- * Check that the scheme of a stream uri is valid.
+ * Check that the scheme of a stream URI is valid.
  *
  * Confirms that there is a registered stream handler for the
  * provided scheme and that it is callable. This is usefule if
@@ -166,22 +171,18 @@ function file_uri_scheme($uri) {
  * of the registered handler.
  *
  *
- * @param $uri
- *   A stream, referenced as scheme://target.
+ * @param $scheme
+ *   A URI scheme, a stream is referenced as scheme://target.
  * @return
- *   Returns a string containing the name of a validated stream.
- *   Returns false if the URI does not contain a scheme or the scheme
+ *   Returns a string containing the name of a validated stream,
+ *   or FALSE if the URI does not contain a scheme or the scheme
  *   does not have a registered handler.
  */
-function file_uri_valid_scheme($uri) {
-  if (!$scheme = file_uri_scheme($uri)) {
-    // URI doesn't even contain a scheme
-    return FALSE;
-  }
+function file_stream_wrapper_valid_scheme($scheme) {
 
   // Does the scheme have a registered handler that is callable?
   $class = file_stream_wrapper_get_class($scheme);
-  return class_exists($class)) {
+  if (class_exists($class)) {
     return $scheme;
   }
   else {
@@ -190,7 +191,7 @@ function file_uri_valid_scheme($uri) {
 }
 
 /**
- * Returns the target of a stream [URI].
+ * Returns the target of a URI (e.g. a stream).
  *
  * A stream is referenced as scheme://target.
  *
@@ -215,7 +216,7 @@ function file_uri_target($uri) {
 }
 
 /**
- * Normalizes URI by making it syntactically correct.
+ * Normalizes a URI by making it syntactically correct.
  *
  * A stream is referenced as scheme://target.
  *
@@ -224,11 +225,13 @@ function file_uri_target($uri) {
  * - Remove trailing slashes from target
  * - Trim erroneous leading slashes from target. e.g. ':///' becomes '://'
  *
- * @param &$uri
+ * @param $uri
  *   String reference containing the URI to normalize.
  */
-function file_uri_normalize($uri) {
-  if ($scheme = file_uri_valid_scheme($uri)) {
+function file_stream_wrapper_uri_normalize($uri) {
+  $scheme = file_uri_scheme($uri);
+
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
     $target = file_uri_target($uri);
 
     // Remove all occurrences of the wrapper's directory path.
@@ -259,15 +262,7 @@ function file_uri_normalize($uri) {
  *   FALSE is returned if no registered handler could be found.
  */
 function file_stream_wrapper_get_instance_by_uri($uri) {
-  $class = file_stream_wrapper_get_class(file_uri_scheme($uri));
-  if (class_exists($class)) {
-    $instance = new $class;
-    $instance->uri = $uri;
-    return $instance;
-  }
-  else {
-    return FALSE;
-  }
+  return file_stream_wrapper_get_instance_by_scheme(file_uri_scheme($uri));
 }
 
 /**
@@ -290,7 +285,15 @@ function file_stream_wrapper_get_instance_by_uri($uri) {
  *   FALSE is returned if no registered handler could be found.
  */
 function file_stream_wrapper_get_instance_by_scheme($scheme) {
-  return file_stream_wrapper_get_instance_by_uri($scheme . '://');
+  $class = file_stream_wrapper_get_class($scheme);
+  if (class_exists($class)) {
+    $instance = new $class;
+    $instance->uri = $uri;
+    return $instance;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
