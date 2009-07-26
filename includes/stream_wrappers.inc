@@ -59,6 +59,13 @@ interface StreamWrapperInterface {
  * Drupal stream wrapper classes.
  */
 interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
+  /**
+   * Set the absolute stream resource URI.
+   *
+   * This allows you to set the URI.  Generally is only called by the factory
+   * method.
+   */
+  function setUri($uri);
 
   /**
    * Returns an absolute stream resource URL for internal purposes. 
@@ -168,7 +175,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *
    * @var String
    */
-  public $uri;
+  protected $uri;
 
   /**
    * Gets the path that the wrapper is responsible for.
@@ -178,6 +185,13 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    */
   abstract function getDirectoryPath();
 
+  /**
+   * Base implementation of setUri().
+   */
+  function setUri($uri) {
+    $this->uri = $uri;
+  }
+ 
   /**
    * Base implementation of getInternalUri().
    */

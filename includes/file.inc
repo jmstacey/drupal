@@ -112,7 +112,7 @@ function file_get_stream_wrappers() {
 
   if (!isset($wrappers)) {
     $wrappers = module_invoke_all('stream_wrappers');
-    druapl_alter('stream_wrappers', $wrappers);
+    drupal_alter('stream_wrappers', $wrappers);
     $existing = stream_get_wrappers();
     foreach ($wrappers as $scheme => $info) {
       // We only register classes that implement our interface.
@@ -125,10 +125,10 @@ function file_get_stream_wrappers() {
         else {
           $wrappers[$scheme]['override'] = FALSE;
         }
-        stream_wrapper_register($scheme, $class_name);
+        stream_wrapper_register($scheme, $info['class']);
       }
     }
-  }
+  }file_put_contents('/tmp/log.txt', print_r($wrappers,1));
   return $wrappers;
 }
 
@@ -179,7 +179,6 @@ function file_uri_scheme($uri) {
  *   does not have a registered handler.
  */
 function file_stream_wrapper_valid_scheme($scheme) {
-
   // Does the scheme have a registered handler that is callable?
   $class = file_stream_wrapper_get_class($scheme);
   if (class_exists($class)) {
@@ -242,7 +241,7 @@ function file_stream_wrapper_uri_normalize($uri) {
     $target = rtrim($target, '/');
 
     // Trim erroneous leading slashes from target.
-    $uri = $scheme . '://' . preg_replace('@^[/\\]*@', '', $target);
+    $uri = $scheme . '://' . ltrim($target, '/');
   }
   return $uri;
 }
@@ -262,7 +261,16 @@ function file_stream_wrapper_uri_normalize($uri) {
  *   FALSE is returned if no registered handler could be found.
  */
 function file_stream_wrapper_get_instance_by_uri($uri) {
-  return file_stream_wrapper_get_instance_by_scheme(file_uri_scheme($uri));
+  $scheme = file_uri_scheme($uri);
+  $class = file_stream_wrapper_get_class($scheme);
+  if (class_exists($class)) {
+    $instance = new $class;
+    $instance->setUri($uri);
+    return $instance;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -288,7 +296,7 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
   $class = file_stream_wrapper_get_class($scheme);
   if (class_exists($class)) {
     $instance = new $class;
-    $instance->uri = $uri;
+    $instance->setUri($scheme . '://');
     return $instance;
   }
   else {
