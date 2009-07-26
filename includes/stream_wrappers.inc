@@ -182,7 +182,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Base implementation of getInternalUri().
    */
   function getInternalUri() {
-    return $this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->uri);
+    return $this->getDirectoryPath() . '/' . file_uri_target($this->uri);
   }
 
   /**
@@ -237,7 +237,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Base implementaiton of realpath().
    */
   function realpath() {
-    return @realpath($this->getDirectoryPath() . '/' . DrupalStreamWrapperRegistry::getStreamTarget($this->uri));
+    return @realpath($this->getDirectoryPath() . '/' . file_uri_target($this->uri));
   }
 
   /**
@@ -550,7 +550,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
    * Return the HTML URI of a public file.
    */
   function getExternalUrl() {
-    $path = str_replace('\\', '/', DrupalStreamWrapperRegistry::getStreamTarget($this->uri));
+    $path = str_replace('\\', '/', file_uri_target($this->uri));
     return $GLOBALS['base_url'] . '/' . self::getDirectoryPath() . '/' . $path;
   }
 }
@@ -579,7 +579,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
    * Return the HTML URI of a private file.
    */
   function getExternalUrl() {
-    $path = str_replace('\\', '/', DrupalStreamWrapperRegistry::getStreamTarget($this->uri));
+    $path = str_replace('\\', '/', file_uri_target($this->uri));
     return url('system/files/' . $path, array('absolute' => TRUE));
   }
 }
