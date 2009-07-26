@@ -240,8 +240,14 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   // Try creating the .htaccess file if it's missing from the public, private, or temp directories.
   if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
        $directory == SCHEME_PUBLIC || $directory == SCHEME_PRIVATE || $directory == SCHEME_TEMP && !is_file("$directory/.htaccess")) {
-
-    $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
+    if (file_directory_path('public') == $directory || $directory == SCHEME_PUBLIC) {
+      // Public htaccess file.
+      $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
+    }
+    else {
+      // Private htaccess file.
+      $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nDeny from all\nOptions None\nOptions +FollowSymLinks";
+    }
     if (file_put_contents($htaccess_path, $htaccess_lines)) {
       drupal_chmod($htaccess_path);
     }
