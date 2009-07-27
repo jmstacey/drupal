@@ -582,7 +582,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('file_private_path', 'sites/default/files/private');
+    return variable_get('file_private_path', 'sites/default/private/files');
   }
 
   /**

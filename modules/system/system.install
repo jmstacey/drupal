@@ -178,14 +178,14 @@ function system_requirements($phase) {
 
   // Test files directories.
   $directories = array(
-    variable_get('stream_public_path', 'sites/default/files'), 
-    variable_get('stream_private_path', 'sites/default/private/files'), 
-    variable_get('stream_temp_path', 'sites/default/private/temp')
+    variable_get('file_public_path', 'sites/default/files'),
+    variable_get('file_private_path', 'sites/default/private/files'),
+    variable_get('file_temporary_path', 'sites/default/private/temp')
   );
   $requirements['file system'] = array(
     'title' => $t('File system'),
   );
-  
+
   $error = '';
   // For installer, create the directories if possible.
   foreach ($directories as $directory) {
