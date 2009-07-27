@@ -167,7 +167,7 @@ class FileTestCase extends DrupalWebTestCase {
    *   arbitrary string will be used.
    * @param $scheme
    *   Optionaly string indicating the stream scheme to use. Drupal core includes
-   *   public://, private://, and temp://. The public:// wrapper is the default.
+   *   public://, private://, and temporary://. The public:// wrapper is the default.
    * @return
    *   File object.
    */

@@ -333,12 +333,6 @@ function file_create_url($uri) {
  *   returned.
  */
 function file_create_path($uri = NULL, $stream = TRUE) {
-  // Flat out check for http so that we don't have to actually implement getExternalUrl()
-  // for the http wrapper.
-  if (file_uri_scheme($uri) == 'http') {
-    // This is already a somewhat properly formatted URL, so do nothing and return.
-    return $uri;
-  }
   if (is_null($uri)) {
     $uri = variable_get('stream_default_scheme', 'public');
   }
@@ -435,8 +429,8 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   }
 
   // Try creating the .htaccess file if it's missing from the public, private, or temp directories.
-  if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
-       $directory == 'public://' || $directory == 'private://' || $directory == 'temp://' && !is_file("$directory/.htaccess")) {
+  if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_temp() == $directory) ||
+       $directory == 'public://' || $directory == 'private://' || $directory == 'temporary://' && !is_file("$directory/.htaccess")) {
     if (file_directory_path('public') == $directory || $directory == 'public://') {
       // Public htaccess file.
       $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
@@ -751,17 +745,18 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     $stream = FALSE;
   }
   
-  $proposed_destination = file_create_path($destination, $stream);
+  // $proposed_destination = file_create_path($destination, $stream);
+  $proposed_destination = $destination; // TODO: use file_create_path when it works again.
   $directory = $proposed_destination;
   $basename = $directory;
- /* $basename  = file_check_path($directory);
+  $basename  = file_check_path($directory);
 
   // Make sure we at least have a valid directory.
   if ($basename === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => empty($original_destination) ? $proposed_destination : $original_destination)), 'error');
     return FALSE;
   }
-*/
+
   // If the destination file is not specified then use the filename of the
   // source file.
   $basename = $basename ? $basename : basename($source);
@@ -1795,7 +1790,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  *   A string containing a temp directory.
  */
 function file_directory_temp() {
-  return file_directory_path('temp');
+  return file_directory_path('temporary');
 }
 
 /**
