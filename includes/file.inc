@@ -1387,8 +1387,8 @@ function file_validate_name_length($file) {
   if (empty($file->filename)) {
     $errors[] = t("The file's name is empty. Please give a name to the file.");
   }
-  if (strlen($file->filename) > 255) {
-    $errors[] = t("The file's name exceeds the 255 characters limit. Please rename the file and try again.");
+  if (strlen($file->filename) > 240) {
+    $errors[] = t("The file's name exceeds the 240 characters limit. Please rename the file and try again.");
   }
   return $errors;
 }
