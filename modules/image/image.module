@@ -602,8 +602,7 @@ function image_style_url($style_name, $path) {
  * @see image_style_url()
  */
 function image_style_path($style_name, $path) {
-  // TODO: Don't assume public
-  return SCHEME_PUBLIC . 'styles/' . $style_name . '/' . DrupalStreamWrapperRegistry::getStreamTarget($path);
+  return variable_get('stream_default_scheme', 'public') . '://styles/' . $style_name . '/' . DrupalStreamWrapperRegistry::getStreamTarget($path);
 }
 
 /**

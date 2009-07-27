@@ -239,7 +239,7 @@ EOF;
 </opml>
 EOF;
 
-    $path = SCHEME_PUBLIC . '/empty-opml.xml';
+    $path = 'public://empty-opml.xml';
     return file_unmanaged_save_data($opml, $path);
   }
 

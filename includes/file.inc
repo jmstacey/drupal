@@ -1683,11 +1683,11 @@ function file_transfer($source, $headers) {
 function file_download() {
   // Merge remainder of arguments from GET['q'], into relative file path.
   $args     = func_get_args();
-  $filepath = SCHEME_PRIVATE . implode('/', $args);
+  $filepath = 'private://' . implode('/', $args);
 
   // Maintain compatibility with old ?file=paths saved in node bodies.
   if (isset($_GET['file'])) {
-    $filepath = SCHEME_PRIVATE . $_GET['file'];
+    $filepath = 'private://' . $_GET['file'];
   }
 
   if (file_exists(file_create_path($filepath))) {

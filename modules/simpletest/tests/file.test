@@ -171,7 +171,7 @@ class FileTestCase extends DrupalWebTestCase {
    * @return
    *   File object.
    */
-  function createFile($path = NULL, $contents = NULL, $scheme = SCHEME_PUBLIC) {
+  function createFile($path = NULL, $contents = NULL, $scheme = 'public://') {
     if (is_null($path)) {
       $path = $this->randomName();
     }
@@ -511,13 +511,13 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     // No filename.
     $filepath = file_unmanaged_save_data($contents);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path(SCHEME_PUBLIC), file_directory_path(file_stream_wrapper_valid_scheme($filepath)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($filepath)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
     $filepath = file_unmanaged_save_data($contents, 'asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path(SCHEME_PUBLIC), drupal_dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), drupal_dirname($filepath), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));
@@ -1100,7 +1100,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $file = $this->createFile();
 
     // Moving to a new name.
-    $desired_filepath = SCHEME_PUBLIC . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
     $new_filepath = file_unmanaged_move($file->uri, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Move was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
@@ -1109,7 +1109,7 @@ class FileUnmanagedMoveTest extends FileTestCase {
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Moving with rename.
-    $desired_filepath = SCHEME_PUBLIC . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
     $this->assertTrue(file_exists($new_filepath), t('File exists before moving.'));
     $this->assertTrue(file_put_contents($desired_filepath, ' '), t('Created a file so a rename will have to happen.'));
     $newer_filepath = file_unmanaged_move($new_filepath, $desired_filepath, FILE_EXISTS_RENAME);
@@ -1173,7 +1173,7 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $file = $this->createFile();
 
     // Copying to a new name.
-    $desired_filepath = SCHEME_PUBLIC . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
     $new_filepath = file_unmanaged_copy($file->uri, $desired_filepath, FILE_EXISTS_ERROR);
     $this->assertTrue($new_filepath, t('Copy was successful.'));
     $this->assertEqual($new_filepath, $desired_filepath, t('Returned expected filepath.'));
@@ -1182,7 +1182,7 @@ class FileUnmanagedCopyTest extends FileTestCase {
     $this->assertFilePermissions($new_filepath, variable_get('file_chmod_file', 0664));
 
     // Copying with rename.
-    $desired_filepath = SCHEME_PUBLIC . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
     $this->assertTrue(file_put_contents($desired_filepath, ' '), t('Created a file so a rename will have to happen.'));
     $newer_filepath = file_unmanaged_copy($file->uri, $desired_filepath, FILE_EXISTS_RENAME);
     $this->assertTrue($newer_filepath, t('Copy was successful.'));
@@ -1290,7 +1290,7 @@ class FileMoveTest extends FileHookTestCase {
   function testNormal() {
     $contents = $this->randomName(10);
     $source = $this->createFile(NULL, $contents);
-    $desired_filepath = SCHEME_PUBLIC . $this->randomName();
+    $desired_filepath = 'public://' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
@@ -1451,7 +1451,7 @@ class FileCopyTest extends FileHookTestCase {
   function testNormal() {
     $contents    = $this->randomName(10);
     $source      = $this->createFile(NULL, $contents);
-    $desired_uri = SCHEME_PUBLIC . $this->randomName();
+    $desired_uri = 'public://' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
@@ -1778,7 +1778,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents);
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path(SCHEME_PUBLIC), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, basename($result->uri), t("Filename was set to the file's basename."));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
@@ -1797,10 +1797,10 @@ class FileSaveDataTest extends FileHookTestCase {
   function testWithFilename() {
     $contents = $this->randomName(8);
 
-    $result = file_save_data($contents, SCHEME_PUBLIC . 'asdf.txt');
+    $result = file_save_data($contents, 'public://' . 'asdf.txt');
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path(SCHEME_PUBLIC), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($result->uri), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'text/plain', t('A MIME type was set.'));
@@ -1824,7 +1824,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, $existing->uri, FILE_EXISTS_RENAME);
     $this->assertTrue($result, t("File saved sucessfully."));
 
-    $this->assertEqual(file_directory_path(SCHEME_PUBLIC), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t("Filename was set to the basename of the source, rather than that of the renamed file."));
     $this->assertEqual($contents, file_get_contents($result->uri), t("Contents of the file are correct."));
     $this->assertEqual($result->filemime, 'application/octet-stream', t("A MIME type was set."));
@@ -1852,7 +1852,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, $existing->uri, FILE_EXISTS_REPLACE);
     $this->assertTrue($result, t('File saved sucessfully.'));
 
-    $this->assertEqual(file_directory_path(SCHEME_PUBLIC), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t('Filename was set to the basename of the existing file, rather than preserving the original name.'));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
