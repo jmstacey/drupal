@@ -1780,7 +1780,7 @@ function file_upload_max_size() {
  *   file_default_mimetype_mapping()
  */
 function file_get_mimetype($uri, $mapping = NULL) {
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->getMimeType($uri, $mapping);
   }
   else {
@@ -1831,7 +1831,7 @@ function drupal_chmod($uri, $mode = NULL) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     if ($wrapper->chmod($mode)) {
       return TRUE;
     }
@@ -1872,7 +1872,7 @@ function drupal_realpath($uri) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->realpath();
   }
   else {
@@ -1898,8 +1898,8 @@ function drupal_realpath($uri) {
  * @see dirname()
  */
 function drupal_dirname($uri) {
-  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    $target  = DrupalStreamWrapperRegistry::getStreamTarget($uri);
+  if ($scheme = file_stream_wrapper_valid_scheme($uri)) {
+    $target  = file_stream_wrapper_valid_scheme($uri);
     $dirname = dirname($target);
 
     if ($dirname == '.') {
