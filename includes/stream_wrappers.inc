@@ -8,10 +8,10 @@
  * Provides a Drupal interface and classes to implement PHP stream wrappers for
  * public, private, and temporary files.
  *
- * Note that PHP 5.2 fopen() only supports URIs of the form scheme://target
+ * Note that PHP 5.2 fopen() only supports URIs of the form "scheme://target"
  * despite the fact that according to RFC 3986 a URI's scheme component
  * delimiter is in general just ":", not "://".  Becuase of this PHP limitation
- * and for consistency Drupal will only accept URIs of form scheme://target.
+ * and for consistency Drupal will only accept URIs of form "scheme://target".
  *
  * @link http://www.faqs.org/rfcs/rfc3986.html
  * @link http://bugs.php.net/bug.php?id=47070
@@ -68,10 +68,10 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * In the case of the three local wrappers (public, private, temp)
    * drupal_realpath() should be used for security reasons.
    *
-   * For example, the internal path of public://foobar.txt might be
+   * For example, the internal path of "public://foobar.txt" might be
    * sites/default/files/foobar.txt. Following this call with realpath() will
    * return an absolute path such as
-   * /Users/foo/Sites/drupal/sites/default/files/foobar.txt.
+   * "/Users/foo/Sites/drupal/sites/default/files/foobar.txt".
    *
    * @return
    *   Returns a string containing the canonical, absolute path.
@@ -85,7 +85,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *
    * This function should return a URL that can be embedded in a web page
    * and accessed from a browser. For example, the external URL of
-   * youtube://xIpLd0WQKCY might be http://www.youtube.com/watch?v=xIpLd0WQKCY.
+   * "youtube://xIpLd0WQKCY" might be
+   * "http://www.youtube.com/watch?v=xIpLd0WQKCY".
    *
    * @return
    *   Returns a string containing a web accessible URL for the resource.
@@ -141,8 +142,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
  * Drupal stream wrapper base class for local files.
  *
  * This class provides a complete stream wrapper implementation. URIs such as
- * public://example.txt are expanded to a normal filesystem path such as
- * sites/default/files/example.txt and then PHP filesystem functions are
+ * "public://example.txt" are expanded to a normal filesystem path such as
+ * "sites/default/files/example.txt" and then PHP filesystem functions are
  * invoked.
  *
  * DrupalLocalStreamWrapper implementations need to override at least the
@@ -167,7 +168,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   /**
    * Instance URI (stream).
    *
-   * A stream is referenced as scheme://target.
+   * A stream is referenced as "scheme://target".
    *
    * @var String
    */

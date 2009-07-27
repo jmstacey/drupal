@@ -79,10 +79,10 @@ define('FILE_STATUS_PERMANENT', 1);
  * registered to handle a stream, which we need to be able to find the handler
  * for class instantiation.
  *
- * If a module registers a scheme that is already registered with PHP, it will
- * be unregistered and replaced with the specified class.
+ * If a module registers a scheme that is already registered with PHP, the
+ * existing scheme will be unregistered and replaced with the specified class.
  *
- * A stream is referenced as: scheme://target
+ * A stream is referenced as "scheme://target".
  *
  * @return
  *   Returns the entire Drupal stream wrapper registry.
@@ -130,13 +130,11 @@ function file_stream_wrapper_get_class($scheme) {
 /**
  * Returns the scheme of a URI (e.g. a stream).
  *
- * A stream is referenced as scheme://target.
- *
  * @param $uri
- *   A stream, referenced as scheme://target.
+ *   A stream, referenced as "scheme://target".
  * @return
  *   A string containing the name of the scheme, or FALSE if none. For example,
- *   the URI public://example.txt would return "public".
+ *   the URI "public://example.txt" would return "public".
  */
 function file_uri_scheme($uri) {
   $data = explode('://', $uri, 2);
@@ -152,7 +150,7 @@ function file_uri_scheme($uri) {
  * scheme without creating a new instance of the registered handler.
  *
  * @param $scheme
- *   A URI scheme, a stream is referenced as scheme://target.
+ *   A URI scheme, a stream is referenced as "scheme://target".
  * @return
  *   Returns a string containing the name of a validated stream,
  *   or FALSE if the URI does not contain a scheme or the scheme
@@ -172,14 +170,12 @@ function file_stream_wrapper_valid_scheme($scheme) {
 /**
  * Returns the target of a URI (e.g. a stream).
  *
- * A stream is referenced as scheme://target.
- *
  * @param $uri
- *   A stream, referenced as scheme://target
+ *   A stream, referenced as "scheme://target".
  * @return
  *   A string containing the target (path), or FALSE if none.
- *   For example, the URI public://sample/test.txt would return
- *   sample/test.txt
+ *   For example, the URI "public://sample/test.txt" would return
+ *   "sample/test.txt".
  */
 function file_uri_target($uri) {
   $data = explode('://', $uri, 2);
@@ -188,7 +184,7 @@ function file_uri_target($uri) {
     return FALSE;
   }
 
-  // Remove erroneous beginning forward slash
+  // Remove erroneous beginning forward slash.
   $data[1] = ltrim($data[1], '\/');
 
   return $data[1];
@@ -197,12 +193,12 @@ function file_uri_target($uri) {
 /**
  * Normalizes a URI by making it syntactically correct.
  *
- * A stream is referenced as scheme://target.
+ * A stream is referenced as "scheme://target".
  *
  * The following actions are taken:
  * - Remove all occurrences of the wrapper's directory path
  * - Remove trailing slashes from target
- * - Trim erroneous leading slashes from target. e.g. ':///' becomes '://'
+ * - Trim erroneous leading slashes from target. e.g. ":///" becomes "://".
  *
  * @param $uri
  *   String reference containing the URI to normalize.
@@ -219,7 +215,7 @@ function file_stream_wrapper_uri_normalize($uri) {
     $directory_path = file_stream_wrapper_get_instance_by_scheme($scheme)->getDirectoryPath();
     $target = str_replace($directory_path, '', $target);
 
-    // Trim trailing slashes from target
+    // Trim trailing slashes from target.
     $target = rtrim($target, '/');
 
     // Trim erroneous leading slashes from target.
@@ -239,7 +235,7 @@ function file_stream_wrapper_uri_normalize($uri) {
  * @return
  *   Returns a new stream wrapper object appropriate for the given URI or FALSE
  *   if no registered handler could be found. For example, a URI of
- *   private://example.txt would return a new private stream wrapper object
+ *   "private://example.txt" would return a new private stream wrapper object
  *   (DrupalPrivateStreamWrapper).
  */
 function file_stream_wrapper_get_instance_by_uri($uri) {
@@ -259,15 +255,15 @@ function file_stream_wrapper_get_instance_by_uri($uri) {
  * Returns a reference to the stream wrapper class responsible for a given scheme.
  *
  * This helper method returns a stream instance using a scheme. That is, the
- * passed string does not contain a '://'. For example, 'public' is a scheme
- * but 'public://' is a URI (stream). This is because the later contains both
+ * passed string does not contain a "://". For example, "public" is a scheme
+ * but "public://" is a URI (stream). This is because the later contains both
  * a scheme and target despite target being empty.
  *
- * Note: the instance URI will be initialized to 'scheme://' so that you can
+ * Note: the instance URI will be initialized to "scheme://" so that you can
  * make the customary method calls as if you had retrieved an instance by URI.
  *
  * @param $scheme
- *   If the stream was 'public://target', 'public' would be the scheme.
+ *   If the stream was "public://target", "public" would be the scheme.
  * @return
  *   Returns a new stream wrapper object appropriate for the given $scheme.
  *   For example, for the public scheme a stream wrapper object
