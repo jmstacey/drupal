@@ -177,7 +177,11 @@ function system_requirements($phase) {
   }
 
   // Test files directories.
-  $directories = array(file_directory_path(), file_directory_path('private'), file_directory_temp());
+  $directories = array(
+    variable_get('stream_public_path', 'sites/default/files'), 
+    variable_get('stream_private_path', 'sites/default/private/files'), 
+    variable_get('stream_temp_path', 'sites/default/private/temp')
+  );
   $requirements['file system'] = array(
     'title' => $t('File system'),
   );
