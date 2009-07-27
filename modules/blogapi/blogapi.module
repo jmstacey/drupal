@@ -480,7 +480,7 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
   // Return the successful result.
   // TODO: Don't assume public.
   $uri = SCHEME_PUBLIC . "/$file";
-  DrupalStreamWrapperRegistry::normalizeUri($uri);
+  $uri = file_stream_wrapper_uri_normalize($uri);
   return array('url' => file_create_url($uri), 'struct');
 }
 /**

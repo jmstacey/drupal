@@ -7,21 +7,11 @@
  */
 
 /**
- * Stream wrapper initialization is included here because there are cases where
- * File API is needed before a bootstrap, or in an alternate order (e.g. maintenance theme).
- * This method of initialization doesn't break anything and requires fewer changes
- * to core.
+ * Stream wrapper code is included here because there are cases where
+ * File API is needed before a bootstrap, or in an alternate order (e.g.
+ * maintenance theme).
  */
-// Stream wrapper interface and base class implementation
 require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
-
-// Stream wrapper registry
-require_once DRUPAL_ROOT . '/includes/stream_wrapper_registry.inc';
-
-// Register core wrappers
-DrupalStreamWrapperRegistry::register('public',  'DrupalPublicStreamWrapper');
-DrupalStreamWrapperRegistry::register('private', 'DrupalPrivateStreamWrapper');
-DrupalStreamWrapperRegistry::register('temp',    'DrupalTempStreamWrapper');
 
 /**
  * @defgroup file File interface
@@ -98,6 +88,221 @@ define('FILE_EXISTS_ERROR', 2);
 define('FILE_STATUS_PERMANENT', 1);
 
 /**
+ * Drupal stream wrapper registry.
+ *
+ * Provide a facility for managing and querying user-defined stream wrappers
+ * in PHP. PHP's internal stream_get_wrappers() doesn't return the class
+ * registered to handle a stream, which we need to be able to find the handler
+ * for class instantiation.
+ *
+ * If a module registers a scheme that is already registered with PHP, it will
+ * be unregistered and replaced with the specified class.
+ *
+ * A stream is referenced as: scheme://target
+ *
+ * @return
+ *   Returns the entire Drupal stream wrapper registry.
+ * @see hook_stream_wrappers()
+ * @see hook_stream_wrappers_alter()
+ */
+function file_get_stream_wrappers() {
+  $wrappers = &drupal_static(__FUNCTION__);
+
+  if (!isset($wrappers)) {
+    $wrappers = module_invoke_all('stream_wrappers');
+    drupal_alter('stream_wrappers', $wrappers);
+    $existing = stream_get_wrappers();
+    foreach ($wrappers as $scheme => $info) {
+      // We only register classes that implement our interface.
+      if (in_array('DrupalStreamWrapperInterface', class_implements($info['class']), TRUE)) {
+        // Record whether we are overriding an existing scheme.
+        if (in_array($scheme, $existing, TRUE)) {
+          $wrappers[$scheme]['override'] = TRUE;
+          stream_wrapper_unregister($scheme);
+        }
+        else {
+          $wrappers[$scheme]['override'] = FALSE;
+        }
+        stream_wrapper_register($scheme, $info['class']);
+      }
+    }
+  }
+  return $wrappers;
+}
+
+/**
+ * Returns the stream wrapper class name for a given scheme.
+ *
+ * @param $scheme
+ *   Stream scheme.
+ * @return
+ *   Return string if a scheme has a registered handler, or FALSE.
+ */
+function file_stream_wrapper_get_class($scheme) {
+  $wrappers = file_get_stream_wrappers();
+  return empty($wrappers[$scheme]) ? FALSE : $wrappers[$scheme]['class'];
+}
+
+/**
+ * Returns the scheme of a URI (e.g. a stream).
+ *
+ * A stream is referenced as scheme://target.
+ *
+ * @param $uri
+ *   A stream, referenced as scheme://target.
+ * @return
+ *   A string containing the name of the scheme, or FALSE if none. For example,
+ *   the URI public://example.txt would return "public".
+ */
+function file_uri_scheme($uri) {
+  $data = explode('://', $uri, 2);
+
+  return count($data) == 2 ? $data[0] : FALSE;
+}
+
+/**
+ * Check that the scheme of a stream URI is valid.
+ *
+ * Confirms that there is a registered stream handler for the provided scheme
+ * and that it is callable. This is useful if you want to confirm a valid
+ * scheme without creating a new instance of the registered handler.
+ *
+ * @param $scheme
+ *   A URI scheme, a stream is referenced as scheme://target.
+ * @return
+ *   Returns a string containing the name of a validated stream,
+ *   or FALSE if the URI does not contain a scheme or the scheme
+ *   does not have a registered handler.
+ */
+function file_stream_wrapper_valid_scheme($scheme) {
+  // Does the scheme have a registered handler that is callable?
+  $class = file_stream_wrapper_get_class($scheme);
+  if (class_exists($class)) {
+    return $scheme;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Returns the target of a URI (e.g. a stream).
+ *
+ * A stream is referenced as scheme://target.
+ *
+ * @param $uri
+ *   A stream, referenced as scheme://target
+ * @return
+ *   A string containing the target (path), or FALSE if none.
+ *   For example, the URI public://sample/test.txt would return
+ *   sample/test.txt
+ */
+function file_uri_target($uri) {
+  $data = explode('://', $uri, 2);
+
+  if (count($data) != 2) {
+    return FALSE;
+  }
+
+  // Remove erroneous beginning forward slash
+  $data[1] = ltrim($data[1], '\/');
+
+  return $data[1];
+}
+
+/**
+ * Normalizes a URI by making it syntactically correct.
+ *
+ * A stream is referenced as scheme://target.
+ *
+ * The following actions are taken:
+ * - Remove all occurrences of the wrapper's directory path
+ * - Remove trailing slashes from target
+ * - Trim erroneous leading slashes from target. e.g. ':///' becomes '://'
+ *
+ * @param $uri
+ *   String reference containing the URI to normalize.
+ * @return
+ *	 Returns a string containing the normalized URI.
+ */
+function file_stream_wrapper_uri_normalize($uri) {
+  $scheme = file_uri_scheme($uri);
+
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
+    $target = file_uri_target($uri);
+
+    // Remove all occurrences of the wrapper's directory path.
+    $directory_path = file_stream_wrapper_get_instance_by_scheme($scheme)->getDirectoryPath();
+    $target = str_replace($directory_path, '', $target);
+
+    // Trim trailing slashes from target
+    $target = rtrim($target, '/');
+
+    // Trim erroneous leading slashes from target.
+    $uri = $scheme . '://' . ltrim($target, '/');
+  }
+  return $uri;
+}
+
+/**
+ * Returns a reference to the stream wrapper class responsible for a given URI (stream).
+ *
+ * The scheme determines the stream wrapper class that should be
+ * used by consulting the stream wrapper registry.
+ *
+ * @param $uri
+ *   A stream, referenced as "scheme://target".
+ * @return
+ *   Returns a new stream wrapper object appropriate for the given URI or FALSE
+ *   if no registered handler could be found. For example, a URI of
+ *   private://example.txt would return a new private stream wrapper object
+ *   (DrupalPrivateStreamWrapper).
+ */
+function file_stream_wrapper_get_instance_by_uri($uri) {
+  $scheme = file_uri_scheme($uri);
+  $class = file_stream_wrapper_get_class($scheme);
+  if (class_exists($class)) {
+    $instance = new $class;
+    $instance->setUri($uri);
+    return $instance;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Returns a reference to the stream wrapper class responsible for a given scheme.
+ *
+ * This helper method returns a stream instance using a scheme. That is, the
+ * passed string does not contain a '://'. For example, 'public' is a scheme
+ * but 'public://' is a URI (stream). This is because the later contains both
+ * a scheme and target despite target being empty.
+ *
+ * Note: the instance URI will be initialized to 'scheme://' so that you can
+ * make the customary method calls as if you had retrieved an instance by URI.
+ *
+ * @param $scheme
+ *   If the stream was 'public://target', 'public' would be the scheme.
+ * @return
+ *   Returns a new stream wrapper object appropriate for the given $scheme.
+ *   For example, for the public scheme a stream wrapper object
+ *   (DrupalPublicStreamWrapper).
+ *   FALSE is returned if no registered handler could be found.
+ */
+function file_stream_wrapper_get_instance_by_scheme($scheme) {
+  $class = file_stream_wrapper_get_class($scheme);
+  if (class_exists($class)) {
+    $instance = new $class;
+    $instance->setUri($scheme . '://');
+    return $instance;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
  * Creates the web accessible URL to a stream.
  *
  * Compatibility: only stream wrappers.
@@ -115,12 +320,12 @@ define('FILE_STATUS_PERMANENT', 1);
 function file_create_url($uri) {
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
   // for the http wrapper.
-  if (DrupalStreamWrapperRegistry::getStreamScheme($uri) == 'http') {
+  if (file_uri_scheme($uri) == 'http') {
     // This is already a somewhat properly formatted URL, so do nothing and return.
     return $uri;
   }
 
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->getExternalUrl();
   }
   else {
@@ -153,7 +358,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
     return SCHEME_PUBLIC;
   }
 
-  if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+  if ($scheme  = file_stream_wrapper_valid_scheme(($uri)) {
     // The URI contains a valid stream scheme.
     $file_path = $scheme . '://';
   }
@@ -208,7 +413,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  *   is returned.
  */
 function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
-  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+  if (!file_stream_wrapper_valid_scheme(($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
   }
@@ -243,7 +448,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   }
 
   // Security SA_2006_06 compliance
-  if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+  if (file_stream_wrapper_valid_scheme(($directory)) {
     $htaccess_path = $directory . '.htaccess';
   }
   else {
@@ -253,8 +458,14 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   // Try creating the .htaccess file if it's missing from the public, private, or temp directories.
   if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
        $directory == SCHEME_PUBLIC || $directory == SCHEME_PRIVATE || $directory == SCHEME_TEMP && !is_file("$directory/.htaccess")) {
-
-    $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
+    if (file_directory_path('public') == $directory || $directory == SCHEME_PUBLIC) {
+      // Public htaccess file.
+      $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
+    }
+    else {
+      // Private htaccess file.
+      $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nDeny from all\nOptions None\nOptions +FollowSymLinks";
+    }
     if (file_put_contents($htaccess_path, $htaccess_lines)) {
       drupal_chmod($htaccess_path);
     }
@@ -331,7 +542,7 @@ function file_check_location($source, $directory = '') {
   }
   else {
     // The file does not exist yet.
-    if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($source)) {
+    if ($scheme = file_stream_wrapper_valid_scheme(($source)) {
       // We're dealing with a valid stream wrapper.
       $source = drupal_realpath(file_directory_path($scheme)) . '/' . basename($source);
     }
@@ -558,8 +769,8 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   }
 
   // If $source and $destination do not contain a scheme we're dealing with a normal path.
-  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) &&
-      !DrupalStreamWrapperRegistry::getValidStreamScheme($destination)) {
+  if (!file_stream_wrapper_valid_scheme(($source) &&
+      !file_stream_wrapper_valid_scheme(($destination)) {
     $stream = FALSE;
   }
 
@@ -577,7 +788,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // source file.
   $basename = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
-  DrupalStreamWrapperRegistry::normalizeUri($destination);
+  $destination = file_stream_wrapper_uri_normalize($destination);
 
   if ($destination === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $proposed_destination)), 'error');
@@ -825,7 +1036,7 @@ function file_unmunge_filename($filename) {
  */
 function file_create_filename($basename, $directory) {
   // Are we dealing with a stream?
-  if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+  if (file_stream_wrapper_valid_scheme(($directory)) {
     $separator = '';
   }
   else {
@@ -1571,7 +1782,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
     while (FALSE !== ($filename = readdir($handle))) {
       if (!preg_match($options['nomask'], $filename) && $filename[0] != '.') {
         $uri = "$dir/$filename";
-        DrupalStreamWrapperRegistry::normalizeUri($uri);
+        $uri = file_stream_wrapper_uri_normalize($uri);
         if (is_dir($uri) && $options['recurse']) {
           // Give priority to files in this folder by merging them in after any subdirectory files.
           $files = array_merge(file_scan_directory($uri, $mask, $options, $depth + 1), $files);
@@ -1629,7 +1840,7 @@ function file_directory_temp() {
  *   is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme = SCHEME_PUBLIC) {
-  if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)) {
+  if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }
   else {
@@ -1693,7 +1904,7 @@ function file_upload_max_size() {
  *   file_default_mimetype_mapping()
  */
 function file_get_mimetype($uri, $mapping = NULL) {
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->getMimeType($uri, $mapping);
   }
   else {
@@ -1744,7 +1955,7 @@ function drupal_chmod($uri, $mode = NULL) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     if ($wrapper->chmod($mode)) {
       return TRUE;
     }
@@ -1785,7 +1996,7 @@ function drupal_realpath($uri) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->realpath();
   }
   else {
@@ -1811,8 +2022,8 @@ function drupal_realpath($uri) {
  * @see dirname()
  */
 function drupal_dirname($uri) {
-  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    $target  = DrupalStreamWrapperRegistry::getStreamTarget($uri);
+  if ($scheme = file_stream_wrapper_valid_scheme(($uri)) {
+    $target  = file_uri_target($uri);
     $dirname = dirname($target);
 
     if ($dirname == '.') {

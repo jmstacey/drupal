@@ -24,6 +24,19 @@ function file_test_menu() {
 }
 
 /**
+ * Implementation of hook_stream_wrappers().
+ */
+function file_test_stream_wrappers() {
+  return array(
+    'dummy' => array(
+      'name' => t('Dummy files'),
+      'class' => 'DrupalDummyStreamWrapper',
+      'description' => t('Dummy wrapper for simpletest.'),
+    ),
+  );
+}
+
+/**
  * Form to test file uploads.
  */
 function _file_test_form(&$form_state) {
