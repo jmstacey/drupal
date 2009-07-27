@@ -1035,9 +1035,6 @@ class DrupalWebTestCase extends DrupalTestCase {
 
     $simpletest_stream_wrapper_path = $this->originalFileDirectory .'/simpletest';
 
-    // Register our simpletest:// stream wrapper.
-    DrupalStreamWrapperRegistry::register('simpletest',  'DrupalSimpleTestStreamWrapper');
-
     $clean_url_original = variable_get('clean_url', 0);
 
     // Generate temporary prefixed database to ensure that tests have a clean starting point.
@@ -1167,8 +1164,6 @@ class DrupalWebTestCase extends DrupalTestCase {
     }
 
     if (preg_match('/simpletest\d+/', $db_prefix)) {
-      // Unregister our simpletest:// stream wrapper.
-      DrupalStreamWrapperRegistry::unregister('simpletest');
       // Remove our temporary variable.
       unset($simpletest_stream_wrapper_path);
 
