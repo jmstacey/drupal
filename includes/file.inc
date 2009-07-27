@@ -1679,15 +1679,10 @@ function file_transfer($source, $headers) {
  *
  * @see hook_file_download()
  */
-function file_download() {
+function file_download($scheme, $target) {
   // Merge remainder of arguments from GET['q'], into relative file path.
-  $args     = func_get_args();
-  $filepath = SCHEME_PRIVATE . implode('/', $args);
-
-  // Maintain compatibility with old ?file=paths saved in node bodies.
-  if (isset($_GET['file'])) {
-    $filepath = SCHEME_PRIVATE . $_GET['file'];
-  }
+  $args = func_get_args();
+  $filepath = $scheme . '://' . implode('/', $args);
 
   if (file_exists(file_create_path($filepath))) {
     // Let other modules provide headers and controls access to the file.

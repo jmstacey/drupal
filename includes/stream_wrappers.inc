@@ -226,14 +226,14 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Base implementation of chmod().
    */
   function chmod($mode) {
-    return @chmod($this->realpath(), $mode);
+    return @chmod($this->getLocalPath(), $mode);
   }
 
   /**
    * Base implementaiton of realpath().
    */
   function realpath() {
-    return @realpath($this->getDirectoryPath() . '/' . file_uri_target($this->uri));
+    return $this->getLocalPath();
   }
 
   /**
@@ -246,7 +246,17 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     if (!isset($uri)) {
       $uri = $this->uri;
     }
-    return $this->getDirectoryPath() . '/' . file_uri_target($uri);
+    $path = $this->getDirectoryPath() . '/' . file_uri_target($uri);
+    $realpath = realpath($path);
+    if (!$realpath) {
+      // This file does not yet exist.
+      $realpath = realpath(dirname($path)) . '/' . basename($path);
+    }
+    $directory = realpath($this->getDirectoryPath());
+    if (!$directory || strpos($realpath, $directory) !== 0) {
+      return FALSE;
+    }
+    return $realpath;
   }
 
   /**
