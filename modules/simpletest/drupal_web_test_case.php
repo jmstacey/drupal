@@ -1097,7 +1097,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     variable_set('stream_private_path', $private_files_directory);
 
     // Create the directories
-    $directory = file_directory_path(SCHEME_PUBLIC);
+    $directory = file_directory_path('public://');
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     file_check_directory($private_files_directory, FILE_CREATE_DIRECTORY);
 

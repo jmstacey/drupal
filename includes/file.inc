@@ -295,9 +295,9 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  *   Returns a string containing a URL that may be used to access the stream.
  *   If the provided string already contains a preceding 'http', nothing is done
  *   and the same string is returned. If a Valid stream wrapper could not be found
- *   to generate an external Url, then FALSE will be returned.
+ *   to generate an external URL, then FALSE will be returned.
  */
-function file_create_url($uri) {
+function file_create_external_url($uri) {
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
   // for the http wrapper.
   if (file_uri_scheme($uri) == 'http') {
@@ -333,10 +333,6 @@ function file_create_url($uri) {
  *   returned.
  */
 function file_create_path($uri = NULL, $stream = TRUE) {
-
-  file_stream_wrapper_get_instance_by_scheme
-
-
   if (is_null($uri)) {
     $uri = variable_get('stream_default_scheme', 'public');
   }
@@ -358,7 +354,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
     $file_path = file_directory_path();
   }
   // Check if the destination is inside the specified path.
-  if ($path = file_create_url($file_path)) {
+  if ($path = file_create_external_url($file_path)) {
     return $path;
   }
   // File not found.
@@ -433,8 +429,8 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   }
 
   // Try creating the .htaccess file if it's missing from the public, private, or temp directories.
-  if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
-       $directory == 'public://' || $directory == 'private://' || $directory == 'temp://' && !is_file("$directory/.htaccess")) {
+  if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_temp() == $directory) ||
+       $directory == 'public://' || $directory == 'private://' || $directory == 'temporary://' && !is_file("$directory/.htaccess")) {
     if (file_directory_path('public') == $directory || $directory == 'public://') {
       // Public htaccess file.
       $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
@@ -735,10 +731,8 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   $stream = TRUE; // TRUE: Handle this operation as a stream. FALSE: as a normal path
-
   $original_source      = $source;
   $original_destination = $destination;
-
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
@@ -750,9 +744,11 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
       !file_stream_wrapper_valid_scheme($destination)) {
     $stream = FALSE;
   }
-
-  $proposed_destination = file_create_path($destination, $stream);
+  
+  // $proposed_destination = file_create_path($destination, $stream);
+  $proposed_destination = $destination; // TODO: use file_create_path when it works again.
   $directory = $proposed_destination;
+  $basename = $directory;
   $basename  = file_check_path($directory);
 
   // Make sure we at least have a valid directory.
@@ -1681,6 +1677,7 @@ function file_transfer($source, $headers) {
  */
 function file_download($scheme, $target) {
   // Merge remainder of arguments from GET['q'], into relative file path.
+
   $args = func_get_args();
   $filepath = $scheme . '://' . implode('/', $args);
 
@@ -1789,7 +1786,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  *   A string containing a temp directory.
  */
 function file_directory_temp() {
-  return file_directory_path('temp');
+  return file_directory_path('temporary');
 }
 
 /**
@@ -1965,7 +1962,7 @@ function drupal_realpath($uri) {
 /**
  * Gets the name of the directory from a given path.
  *
- * PHP's dirname() does not properly pase streams, so this function fills
+ * PHP's dirname() does not properly pass streams, so this function fills
  * that gap. It is backwards compatible with normal paths and will use
  * PHP's dirname() as a fallback.
  *
