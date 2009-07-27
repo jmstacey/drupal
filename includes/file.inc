@@ -358,7 +358,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
     return SCHEME_PUBLIC;
   }
 
-  if ($scheme  = file_stream_wrapper_valid_scheme(($uri)) {
+  if ($scheme  = file_stream_wrapper_valid_scheme($uri)) {
     // The URI contains a valid stream scheme.
     $file_path = $scheme . '://';
   }
@@ -413,7 +413,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  *   is returned.
  */
 function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
-  if (!file_stream_wrapper_valid_scheme(($directory)) {
+  if (!file_stream_wrapper_valid_scheme($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
   }
@@ -448,7 +448,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   }
 
   // Security SA_2006_06 compliance
-  if (file_stream_wrapper_valid_scheme(($directory)) {
+  if (file_stream_wrapper_valid_scheme($directory)) {
     $htaccess_path = $directory . '.htaccess';
   }
   else {
@@ -542,7 +542,7 @@ function file_check_location($source, $directory = '') {
   }
   else {
     // The file does not exist yet.
-    if ($scheme = file_stream_wrapper_valid_scheme(($source)) {
+    if ($scheme = file_stream_wrapper_valid_scheme($source)) {
       // We're dealing with a valid stream wrapper.
       $source = drupal_realpath(file_directory_path($scheme)) . '/' . basename($source);
     }
@@ -769,8 +769,8 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   }
 
   // If $source and $destination do not contain a scheme we're dealing with a normal path.
-  if (!file_stream_wrapper_valid_scheme(($source) &&
-      !file_stream_wrapper_valid_scheme(($destination)) {
+  if (!file_stream_wrapper_valid_scheme($source) &&
+      !file_stream_wrapper_valid_scheme($destination)) {
     $stream = FALSE;
   }
 
@@ -1036,7 +1036,7 @@ function file_unmunge_filename($filename) {
  */
 function file_create_filename($basename, $directory) {
   // Are we dealing with a stream?
-  if (file_stream_wrapper_valid_scheme(($directory)) {
+  if (file_stream_wrapper_valid_scheme($directory)) {
     $separator = '';
   }
   else {
@@ -2022,7 +2022,7 @@ function drupal_realpath($uri) {
  * @see dirname()
  */
 function drupal_dirname($uri) {
-  if ($scheme = file_stream_wrapper_valid_scheme(($uri)) {
+  if ($scheme = file_stream_wrapper_valid_scheme($uri)) {
     $target  = file_uri_target($uri);
     $dirname = dirname($target);
 

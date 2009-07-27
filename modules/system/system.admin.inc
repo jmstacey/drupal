@@ -1324,11 +1324,12 @@ function system_performance_settings() {
   $form['bandwidth_optimizations'] = array(
     '#type' => 'fieldset',
     '#title' => t('Bandwidth optimizations'),
-    '#description' => '<p>' . t('Drupal can automatically optimize external resources like CSS and JavaScript, which can reduce both the size and number of requests made to your website. CSS files can be aggregated and compressed into a single file, while JavaScript files are aggregated (but not compressed). These optional optimizations may reduce server load, bandwidth requirements, and page loading times.') . '</p><p>' . t('These options are disabled if you have not set up your files directory, or if your download method is set to private.') . '</p>'
+    '#description' => '<p>' . t('Drupal can automatically optimize external resources like CSS and JavaScript, which can reduce both the size and number of requests made to your website. CSS files can be aggregated and compressed into a single file, while JavaScript files are aggregated (but not compressed). These optional optimizations may reduce server load, bandwidth requirements, and page loading times.') . '</p><p>' . t('These options are disabled if you have not set up your files directory.') . '</p>'
   );
-
-  $directory = file_directory_path();
-  $is_writable = is_dir($directory) && is_writable($directory) && (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC);
+  // TODO: This file_get_stream_wrappers is temporary until bootstrap loads this properly.
+  file_get_stream_wrappers();
+  $directory = 'public://';
+  $is_writable = is_dir($directory) && is_writable($directory);
   $form['bandwidth_optimizations']['preprocess_css'] = array(
     '#type' => 'radios',
     '#title' => t('Optimize CSS files'),

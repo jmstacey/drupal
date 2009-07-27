@@ -177,7 +177,11 @@ function system_requirements($phase) {
   }
 
   // Test files directories.
-  $directories = array(file_directory_path(), file_directory_path('private'), file_directory_temp());
+  $directories = array(
+    variable_get('stream_public_path', 'sites/default/files'), 
+    variable_get('stream_private_path', 'sites/default/private/files'), 
+    variable_get('stream_temp_path', 'sites/default/private/temp')
+  );
   $requirements['file system'] = array(
     'title' => $t('File system'),
   );
@@ -194,19 +198,19 @@ function system_requirements($phase) {
       $description = '';
       $requirements['file system']['value'] = $t('Not writable');
       if (!$is_directory) {
-        $error .= $t('The directory %directory does not exist.', array('%directory' => $directory));
+        $error .= $t('The directory %directory does not exist.', array('%directory' => $directory)) . ' ';
       }
       else {
-        $error .= $t('The directory %directory is not writable.', array('%directory' => $directory));
+        $error .= $t('The directory %directory is not writable.', array('%directory' => $directory)) . ' ';
       }
       // The files directory requirement check is done only during install and runtime.
       if ($phase == 'runtime') {
-        $description = $error . ' ' . $t('You may need to set the correct directory at the <a href="@admin-file-system">file system settings page</a> or change the current directory\'s permissions so that it is writable.', array('@admin-file-system' => url('admin/settings/file-system')));
+        $description = $error . $t('You may need to set the correct directory at the <a href="@admin-file-system">file system settings page</a> or change the current directory\'s permissions so that it is writable.', array('@admin-file-system' => url('admin/settings/file-system')));
       }
       elseif ($phase == 'install') {
         // For the installer UI, we need different wording. 'value' will
         // be treated as version, so provide none there.
-        $description = $error . ' ' . $t('An automated attempt to create this directory failed, possibly due to a permissions problem. To proceed with the installation, either create the directory and modify its permissions manually, or ensure that the installer has the permissions to create it automatically. For more information, please see INSTALL.txt or the <a href="@handbook_url">online handbook</a>.', array('@handbook_url' => 'http://drupal.org/server-permissions'));
+        $description = $error . $t('An automated attempt to create this directory failed, possibly due to a permissions problem. To proceed with the installation, either create the directory and modify its permissions manually, or ensure that the installer has the permissions to create it automatically. For more information, please see INSTALL.txt or the <a href="@handbook_url">online handbook</a>.', array('@handbook_url' => 'http://drupal.org/server-permissions'));
         $requirements['file system']['value'] = '';
       }
       if (!empty($description)) {

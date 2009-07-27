@@ -2459,7 +2459,7 @@ function drupal_get_css($css = NULL) {
 
   $preprocess_css = (variable_get('preprocess_css', FALSE) && (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update'));
   $directory = file_directory_path();
-  $is_writable = is_dir($directory) && is_writable($directory) && (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC);
+  $is_writable = is_dir($directory) && is_writable($directory);
 
   // A dummy query-string is added to filenames, to gain control over
   // browser-caching. The string changes on every update or full cache
@@ -2930,7 +2930,7 @@ function drupal_get_js($scope = 'header', $javascript = NULL) {
   $files = array();
   $preprocess_js = (variable_get('preprocess_js', FALSE) && (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update'));
   $directory = file_directory_path();
-  $is_writable = is_dir($directory) && is_writable($directory) && (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC);
+  $is_writable = is_dir($directory) && is_writable($directory);
 
   // A dummy query-string is added to filenames, to gain control over
   // browser-caching. The string changes on every update or full cache
@@ -3451,7 +3451,8 @@ function _drupal_bootstrap_full() {
   fix_gpc_magic();
   // Load all enabled modules
   module_load_all();
-
+  // Make sure all stream wrappers are registered.
+  file_get_stream_wrappers();
   // Let all modules take action before menu system handles the request
   // We do not want this while running update.php.
   if (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update') {
