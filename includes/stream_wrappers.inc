@@ -8,6 +8,9 @@
  * Provides a Drupal interface and classes to implement PHP stream wrappers for
  * public, private, and temporary files.
  *
+ * A stream wrapper is an abstraction of a file system that allows Drupal to
+ * use the same set of methods to access both local files and remote resources.
+ *
  * Note that PHP 5.2 fopen() only supports URIs of the form "scheme://target"
  * despite the fact that according to RFC 3986 a URI's scheme component
  * delimiter is in general just ":", not "://".  Becuase of this PHP limitation
@@ -63,22 +66,12 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   function setUri($uri);
 
   /**
-   * Returns an absolute stream resource URL for internal purposes.
-   *
-   * In the case of the three local wrappers (public, private, temp)
-   * drupal_realpath() should be used for security reasons.
-   *
-   * For example, the internal path of "public://foobar.txt" might be
-   * sites/default/files/foobar.txt. Following this call with realpath() will
-   * return an absolute path such as
-   * "/Users/foo/Sites/drupal/sites/default/files/foobar.txt".
+   * Returns the stream resource URI.
    *
    * @return
-   *   Returns a string containing the canonical, absolute path.
-   * @see realpath()
-   * @see drupal_realpath()
+   *   Returns the current URI of the instance.
    */
-  public function getInternalUri();
+  public function getUri();
 
   /**
    * Returns a web accessible URL for the resource.
@@ -127,7 +120,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *
    * Implementation placeholder. PHP's realpath() does not support stream
    * wrappers. We provide this as a default so that individual wrappers may
-   * implement their own solutions. The base class will always return FALSE.
+   * implement their own solutions.
    *
    * @return
    *   Returns a string with absolute pathname on success (implemented
@@ -146,9 +139,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
  * "sites/default/files/example.txt" and then PHP filesystem functions are
  * invoked.
  *
- * DrupalLocalStreamWrapper implementations need to override at least the
- * getInternalUri() method to rewrite the URI before is it passed back to the
- * calling function.
+ * DrupalLocalStreamWrapper implementations need to implement at least the
+ * getDirectoryPath() and getExternalUrl() methods.
  */
 abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface {
   /**
@@ -190,16 +182,9 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 
   /**
-   * Base implementation of getInternalUri().
+   * Base implementation of getUri().
    */
-  function getInternalUri() {
-    return $this->getDirectoryPath() . '/' . file_uri_target($this->uri);
-  }
-
-  /**
-   * Base implementation of getExternalUrl().
-   */
-  function getExternalUrl() {
+  function getUri() {
     return $this->uri;
   }
 
@@ -252,6 +237,19 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 
   /**
+   * Return the local filesystem path.
+   *
+   * @param $uri
+   *   Optional URI, supplied when doing a move or rename.
+   */
+  protected function getLocalPath($uri = NULL) {
+    if (!isset($uri)) {
+      $uri = $this->uri;
+    }
+    return $this->getDirectoryPath() . '/' . file_uri_target($uri);
+  }
+
+  /**
    * Support for fopen(), file_get_contents(), file_put_contents() etc.
    *
    * @param $uri
@@ -260,19 +258,19 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   The file mode ("r", "wb" etc.).
    * @param $options
    *   A bit mask of STREAM_USE_PATH and STREAM_REPORT_ERRORS.
-   * @param &$opened_uri
+   * @param &$opened_path
    *   A string containing the path actually opened.
    * @return
    *   Returns TRUE if file was opened successfully.
    * @see http://php.net/manual/en/streamwrapper.stream-open.php
    */
-  public function stream_open($uri, $mode, $options, &$opened_uri) {
+  public function stream_open($uri, $mode, $options, &$opened_path) {
     $this->uri = $uri;
-    $uri = $this->getInternalUri();
-    $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($uri, $mode) : @fopen($uri, $mode);
+    $path = $this->getLocalPath();
+    $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($path, $mode) : @fopen($path, $mode);
 
     if ((bool)$this->handle && $options & STREAM_USE_PATH) {
-      $opened_url = $uri;
+      $opened_url = $path;
     }
 
     return (bool)$this->handle;
@@ -408,7 +406,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    */
   public function unlink($uri) {
     $this->uri = $uri;
-    return unlink($this->getInternalUri());
+    return unlink($this->getLocalPath());
   }
 
   /**
@@ -423,7 +421,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @see http://php.net/manual/en/streamwrapper.rename.php
    */
   public function rename($from_uri, $to_uri) {
-    return rename($this->getInternalUri($from_uri), $this->getInternalUri($to_uri));
+    return rename($this->getLocalPath($from_uri), $this->getLocalPath($to_uri));
   }
 
   /**
@@ -443,10 +441,10 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     $this->uri = $uri;
     $recursive = (bool)($options & STREAM_MKDIR_RECURSIVE);
     if ($options & STREAM_REPORT_ERRORS) {
-      return mkdir($this->getInternalUri(), $mode, $recursive);
+      return mkdir($this->getLocalPath(), $mode, $recursive);
     }
     else {
-      return @mkdir($this->getInternalUri(), $mode, $recursive);
+      return @mkdir($this->getLocalPath(), $mode, $recursive);
     }
   }
 
@@ -464,10 +462,10 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   public function rmdir($uri, $options) {
     $this->uri = $uri;
     if ($options & STREAM_REPORT_ERRORS) {
-      return rmdir($this->getInternalUri());
+      return rmdir($this->getLocalPath());
     }
     else {
-      return @rmdir($this->getInternalUri());
+      return @rmdir($this->getLocalPath());
     }
   }
 
@@ -486,10 +484,10 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   public function url_stat($uri, $flags) {
     $this->uri = $uri;
     if ($flags & STREAM_URL_STAT_QUIET) {
-      return @stat($this->getInternalUri());
+      return @stat($this->getLocalPath());
     }
     else {
-      return stat($this->getInternalUri());
+      return stat($this->getLocalPath());
     }
   }
 
@@ -506,7 +504,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    */
   public function dir_opendir($uri, $options) {
     $this->uri = $uri;
-    $this->handle = opendir($this->getInternalUri());
+    $this->handle = opendir($this->getLocalPath());
 
     return (bool)$this->handle;
   }
@@ -545,7 +543,6 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 }
 
-
 /**
  * Drupal public (public://) stream wrapper class.
  *
@@ -557,7 +554,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('stream_public_path', 'sites/default/files');
+    return variable_get('file_public_path', 'sites/default/files');
   }
 
   /**
@@ -585,7 +582,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('stream_private_path', 'sites/default/private/files');
+    return variable_get('file_private_path', 'sites/default/files/private');
   }
 
   /**
@@ -599,20 +596,26 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
   }
 }
 
-
 /**
- * Drupal temp (temp://) stream wrapper class.
+ * Drupal temporary (temporary://) stream wrapper class.
  *
  * Provides support for storing temporarily accessible files with the Drupal
  * file interface.
  *
  * Extends DrupalPublicStreamWrapper.
  */
-class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
+class DrupalTemporaryStreamWrapper extends DrupalLocalStreamWrapper {
   /**
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('stream_temp_path', 'sites/default/private/temp');
+    return variable_get('file_temporary_path', 'sites/default/private/temp');
+  }
+
+  /**
+   * Overrides getExternalUrl().
+   */
+  public function getExternalUrl() {
+    return '';
   }
 }

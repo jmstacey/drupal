@@ -1172,9 +1172,9 @@ function system_stream_wrappers() {
       'class' => 'DrupalPrivateStreamWrapper',
       'description' => t('Private local files served by Drupal.'),
     ),
-    'temp' => array(
+    'temporary' => array(
       'name' => t('Temporary files'),
-      'class' => 'DrupalTempStreamWrapper',
+      'class' => 'DrupalTemporaryStreamWrapper',
       'description' => t('Temporary local files for upload and previews.'),
     )
   );

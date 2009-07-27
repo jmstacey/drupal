@@ -70,6 +70,9 @@ define('FILE_STATUS_PERMANENT', 1);
 /**
  * Drupal stream wrapper registry.
  *
+ * A stream wrapper is an abstraction of a file system that allows Drupal to
+ * use the same set of methods to access both local files and remote resources.
+ *
  * Provide a facility for managing and querying user-defined stream wrappers
  * in PHP. PHP's internal stream_get_wrappers() doesn't return the class
  * registered to handle a stream, which we need to be able to find the handler
@@ -148,15 +151,14 @@ function file_uri_scheme($uri) {
  * @param $scheme
  *   A URI scheme, a stream is referenced as "scheme://target".
  * @return
- *   Returns a string containing the name of a validated stream,
- *   or FALSE if the URI does not contain a scheme or the scheme
- *   does not have a registered handler.
+ *   Returns TRUE if the string is the name of a validated stream,
+ *   or FALSE if the scheme does not have a registered handler.
  */
 function file_stream_wrapper_valid_scheme($scheme) {
   // Does the scheme have a registered handler that is callable?
   $class = file_stream_wrapper_get_class($scheme);
   if (class_exists($class)) {
-    return $scheme;
+    return TRUE;
   }
   else {
     return FALSE;
