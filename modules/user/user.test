@@ -518,7 +518,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
 
     // Test if directories specified in settings exist in filesystem.
     $file_dir = 'public://';
-    $file_check = file_check_directory($file_dir, FILE_CREATE_DIRECTORY, 'stream_public_path');
+    $file_check = file_check_directory($file_dir, FILE_CREATE_DIRECTORY);
 
     /*
       TODO: Add capability to store photos publicly or privately, but tests will be the same.
@@ -527,7 +527,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
     $picture_dir = variable_get('user_picture_path', 'pictures');
     $picture_path = $file_dir . $picture_dir;
 
-    $pic_check = file_check_directory($picture_path, FILE_CREATE_DIRECTORY, 'user_picture_path');
+    $pic_check = file_check_directory($picture_path, FILE_CREATE_DIRECTORY);
     $this->_directory_test = is_writable($picture_path);
     $this->assertTrue($this->_directory_test, "The directory $picture_path doesn't exist or is not writable. Further tests won't be made.");
   }

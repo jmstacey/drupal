@@ -683,8 +683,7 @@ class FileDirectoryTest extends FileTestCase {
     $this->assertFalse(is_dir($directory), t('Directory does not exist prior to testing.'));
 
     // Non-existent directory.
-    $form_element = $this->randomName();
-    $this->assertFalse(file_check_directory($directory, 0, $form_element), t('Error reported for non-existing directory.'), 'File');
+    $this->assertFalse(file_check_directory($directory, 0), t('Error reported for non-existing directory.'), 'File');
 
     // Check that an error was set for the form element above.
     $errors = form_get_errors();
@@ -698,12 +697,7 @@ class FileDirectoryTest extends FileTestCase {
 
     // Make directory read only.
     @chmod($directory, 0444);
-    $form_element = $this->randomName();
-    $this->assertFalse(file_check_directory($directory, 0, $form_element), t('Error reported for a non-writeable directory.'), 'File');
-
-    // Check if form error was set.
-    $errors = form_get_errors();
-    $this->assertEqual($errors[$form_element], t('The directory %directory is not writable', array('%directory' => $directory)), t('Properly generated an error for the passed form element.'), 'File');
+    $this->assertFalse(file_check_directory($directory, 0), t('Error reported for a non-writeable directory.'), 'File');
 
     // Test directory permission modification.
     $this->assertTrue(file_check_directory($directory, FILE_MODIFY_PERMISSIONS), t('No error reported when making directory writeable.'), 'File');

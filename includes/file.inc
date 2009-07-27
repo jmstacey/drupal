@@ -376,16 +376,11 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  *   A bitmask to indicate if the directory should be created if it does
  *   not exist (FILE_CREATE_DIRECTORY) or made writable if it is read-only
  *   (FILE_MODIFY_PERMISSIONS).
- * @param $form_item
- *   An optional string containing the name of a form item. Any errors will be
- *   attached to this item making it useful for settings forms that require the
- *   user to specify a writable directory. If it can't be made to work, a form
- *   error will be set preventing them from saving the settings.
  * @return
  *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
-function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
+function file_check_directory(&$directory, $mode = 0) {
   if (!file_stream_wrapper_valid_scheme($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
@@ -399,10 +394,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
       drupal_chmod($directory);
     }
     else {
-      if ($form_item) {
-        form_set_error($form_item, t('The directory %directory does not exist.', array('%directory' => $directory)));
-        watchdog('file system', 'The directory %directory does not exist.', array('%directory' => $directory), WATCHDOG_ERROR);
-      }
       return FALSE;
     }
   }
@@ -412,10 +403,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
     // If not able to modify permissions, or if able to, but chmod
     // fails, return false.
     if (!$mode || (($mode & FILE_MODIFY_PERMISSIONS) && !drupal_chmod($directory))) {
-      if ($form_item) {
-        form_set_error($form_item, t('The directory %directory is not writable', array('%directory' => $directory)));
-        watchdog('file system', 'The directory %directory is not writable, because it does not have the correct permissions set.', array('%directory' => $directory), WATCHDOG_ERROR);
-      }
       return FALSE;
     }
   }

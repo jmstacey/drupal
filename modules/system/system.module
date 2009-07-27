@@ -1676,7 +1676,10 @@ function system_theme_select_form($description = '', $default_value = '', $weigh
  *   The form element containing the name of the directory to check.
  */
 function system_check_directory($form_element) {
-  file_check_directory($form_element['#value'], FILE_CREATE_DIRECTORY, $form_element['#parents'][0]);
+  if (!file_check_directory($form_element['#value'], FILE_CREATE_DIRECTORY)) {
+    form_set_error($form_element['#parents'][0], t('The directory %directory does not exist or is not writable.', array('%directory' => $form_element['#value'])));
+    watchdog('file system', 'The directory %directory does not exist or is not writable.', array('%directory' => $form_element['#value']), WATCHDOG_ERROR);
+  }
   return $form_element;
 }
 
