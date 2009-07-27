@@ -1675,15 +1675,17 @@ function file_transfer($source, $headers) {
  *
  * @see hook_file_download()
  */
-function file_download($scheme, $target) {
+function file_download() {
   // Merge remainder of arguments from GET['q'], into relative file path.
 
   $args = func_get_args();
-  $filepath = $scheme . '://' . implode('/', $args);
+  $scheme = array_shift($args);
+  $target = implode('/', $args);
+  $uri = $scheme . '://' . $atget;
 
-  if (file_exists(file_create_path($filepath))) {
+  if (file_exists($uri)) {
     // Let other modules provide headers and controls access to the file.
-    $headers = module_invoke_all('file_download', $filepath);
+    $headers = module_invoke_all('file_download', $uri);
     if (in_array(-1, $headers)) {
       return drupal_access_denied();
     }
