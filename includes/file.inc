@@ -333,10 +333,12 @@ function file_create_url($uri) {
  *   returned.
  */
 function file_create_path($uri = NULL, $stream = TRUE) {
-
-  file_stream_wrapper_get_instance_by_scheme
-
-
+  // Flat out check for http so that we don't have to actually implement getExternalUrl()
+  // for the http wrapper.
+  if (file_uri_scheme($uri) == 'http') {
+    // This is already a somewhat properly formatted URL, so do nothing and return.
+    return $uri;
+  }
   if (is_null($uri)) {
     $uri = variable_get('stream_default_scheme', 'public');
   }
@@ -735,10 +737,8 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   $stream = TRUE; // TRUE: Handle this operation as a stream. FALSE: as a normal path
-
   $original_source      = $source;
   $original_destination = $destination;
-
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
@@ -750,17 +750,18 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
       !file_stream_wrapper_valid_scheme($destination)) {
     $stream = FALSE;
   }
-
+  
   $proposed_destination = file_create_path($destination, $stream);
   $directory = $proposed_destination;
-  $basename  = file_check_path($directory);
+  $basename = $directory;
+ /* $basename  = file_check_path($directory);
 
   // Make sure we at least have a valid directory.
   if ($basename === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => empty($original_destination) ? $proposed_destination : $original_destination)), 'error');
     return FALSE;
   }
-
+*/
   // If the destination file is not specified then use the filename of the
   // source file.
   $basename = $basename ? $basename : basename($source);
@@ -1970,7 +1971,7 @@ function drupal_realpath($uri) {
 /**
  * Gets the name of the directory from a given path.
  *
- * PHP's dirname() does not properly pase streams, so this function fills
+ * PHP's dirname() does not properly pass streams, so this function fills
  * that gap. It is backwards compatible with normal paths and will use
  * PHP's dirname() as a fallback.
  *
