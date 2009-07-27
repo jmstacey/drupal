@@ -238,6 +238,9 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
 
   /**
    * Return the local filesystem path.
+   *
+   * @param $uri
+   *   Optional URI, supplied when doing a move or rename.
    */
   protected function getLocalPath($uri = NULL) {
     if (!isset($uri)) {
@@ -606,38 +609,6 @@ class DrupalTemporaryStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    $temporary_directory = variable_get('file_temporary_path');
-
-    if (is_null($temporary_directory)) {
-      $directories = array();
-
-      // Has PHP been set with an upload_tmp_dir?
-      if (ini_get('upload_tmp_dir')) {
-        $directories[] = ini_get('upload_tmp_dir');
-      }
-
-      // Operating system specific dirs.
-      if (substr(PHP_OS, 0, 3) == 'WIN') {
-        $directories[] = 'c:/windows/temp';
-        $directories[] = 'c:/winnt/temp';
-      }
-      else {
-        $directories[] = '/tmp';
-      }
-
-      foreach ($directories as $directory) {
-        if (!$temporary_directory && is_dir($directory)) {
-          $temporary_directory = $directory;
-        }
-      }
-
-      // If a directory has been found, use it, otherwise default to
-      // 'files/tmp'.
-      $temporary_directory = $temporary_directory ? $temporary_directory : file_directory_path('public') . '/tmp';
-      variable_set('stream_temporary_path', $temporary_directory);
-      return $temporary_directory;
-    }
-
     return variable_get('file_temporary_path', '/tmp');
   }
 
