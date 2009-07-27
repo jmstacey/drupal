@@ -637,7 +637,8 @@ class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
         }
       }
 
-      // If a directory has been found, use it, otherwise default to 'files/tmp'
+      // If a directory has been found, use it, otherwise default to
+      // 'files/tmp'.
       $temporary_directory = $temporary_directory ? $temporary_directory : file_directory_path('public') . '/tmp';
       variable_set('stream_temp_path', $temporary_directory);
       return $temporary_directory;
