@@ -219,7 +219,7 @@ function system_requirements($phase) {
       }
     }
     else {
-      if (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PUBLIC) {
+      if (variable_get('stream_default_scheme', 'public') == 'public') {
         $requirements['file system']['value'] = $t('Writable (<em>public</em> download method)');
       }
       else {
@@ -2330,6 +2330,21 @@ function system_update_7030() {
     'primary key' => array('fid'),
   );
   db_create_table($ret, 'file', $schema['file']);
+}
+
+/**
+ * Migrate the old file_downloads setting to stream_default_scheme.
+ */
+function system_update_7031() {
+  $ret = array();
+  if (variable_get('file_downloads') == 1) {
+    variable_set('stream_default_scheme', 'public');
+  }
+  elseif (variable_get('file_downloads') == 2) {
+    variable_set('stream_default_scheme', 'private');
+  }
+  variable_del('file_downloads');
+  return $ret;
 }
 
 /**
