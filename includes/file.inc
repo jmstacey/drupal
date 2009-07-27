@@ -314,54 +314,6 @@ function file_external_url($uri) {
 }
 
 /**
- * Asserts that the URI is a complete path that resides in a valid
- * filesystem directory.
- *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
- * @param $uri
- *   A string containing the URI to verify. If this value is omitted,
- *   the default stream will be used (public or private).
- * @param $stream
- *   TRUE indicates that $uri should be a stream and a valid scheme is
- *   required. FALSE indicates that $uri should be treated as a normal
- *   path.
- * @return
- *   Returns a string containing the path to the stream. If the URI is
- *   invalid (i.e. outside a valid filesystem directory), FALSE will be
- *   returned.
- */
-function file_create_path($uri = NULL, $stream = TRUE) {
-  if (is_null($uri)) {
-    $uri = variable_get('stream_default_scheme', 'public');
-  }
-
-  if ($scheme  = file_stream_wrapper_valid_scheme($uri)) {
-    // The URI contains a valid stream scheme.
-    $file_path = $scheme . '://';
-  }
-  elseif ($stream) {
-    // The URI must contain a valid scheme.
-    $file_path = 'public://' . $uri;
-  }
-  else {
-    /**
-     * Normal paths must still fall within a directory managed by a registered
-     * stream wrapper for security reasons. We'll assume public:// for now.
-     * TODO: Search all registered wrapper paths for a valid match.
-     */
-    $file_path = file_directory_path();
-  }
-  // Check if the destination is inside the specified path.
-  if ($path = file_external_url($file_path)) {
-    return $path;
-  }
-  // File not found.
-  return FALSE;
-}
-
-/**
  * Asserts that the directory exists and is writable.
  *
  * Directories need to have execute permissions to be considered a directory by
@@ -654,7 +606,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
     }
     // If we are renaming around an existing file (rather than a directory),
     // use its basename for the filename.
-    else if ($replace == FILE_EXISTS_RENAME && is_file(file_create_path($destination))) {
+    else if ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
       $file->filename = basename($destination);
     }
 
@@ -681,15 +633,11 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * - If file already exists in $destination either the call will error out,
  *   replace the file or rename the file based on the $replace parameter.
  *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $source
- *   A string specifying the file location of the original file.
+ *   A string specifying the file location of the original file, or a URI.
  * @param $destination
- *   A string containing the destination that $source should be copied to. This
- *   can be a complete file path, a directory path or, if this value is omitted,
- *   Drupal's 'files' directory will be used.
+ *   A URI containing the destination that $source should be copied to. If
+ *   NULL the default scheme will be used as the destination.
  * @param $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE - Replace the existing file.
@@ -702,40 +650,34 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * @see file_copy()
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
-  $stream = TRUE; // TRUE: Handle this operation as a stream. FALSE: as a normal path
-  $original_source      = $source;
+
+  $original_source = $source;
   $original_destination = $destination;
+  // If the destination file is not specified then use the filename of the
+  // source file.
+  if (is_null($destination)) {
+    $destination = variable_get('stream_scheme_default', 'public') . '://' . basename($source);
+  }
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
+    // TODO: throw an exception instead.
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
     return FALSE;
   }
 
-  // If $source and $destination do not contain a scheme we're dealing with a normal path.
-  if (!file_stream_wrapper_valid_scheme($source) &&
-      !file_stream_wrapper_valid_scheme($destination)) {
-    $stream = FALSE;
-  }
-  
-  // $proposed_destination = file_create_path($destination, $stream);
-  $proposed_destination = $destination; // TODO: use file_create_path when it works again.
-  $directory = $proposed_destination;
-  $basename  = basename($directory);
-
-  // Make sure we at least have a valid directory.
-  if ($basename === FALSE) {
-    drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => empty($original_destination) ? $proposed_destination : $original_destination)), 'error');
+  $destination = file_stream_wrapper_uri_normalize($destination);
+  $destination_scheme = file_uri_scheme($destination);
+  $destination_dir = drupal_dirname($destination);
+  // Make sure we at least have a valid destination directory.
+  if (!$destination_scheme || !file_stream_wrapper_valid_scheme($destination_scheme) || !is_dir($destination_dir)) {
+    drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => $destination_dir)), 'error');
     return FALSE;
   }
 
-  // If the destination file is not specified then use the filename of the
-  // source file.
-  $basename = $basename ? $basename : basename($source);
-  $destination = file_destination($directory . '/'. $basename, $replace);
-  $destination = file_stream_wrapper_uri_normalize($destination);
+  $destination = file_destination($destination, $replace);
 
   if ($destination === FALSE) {
-    drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $proposed_destination)), 'error');
+    drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $destination_dir)), 'error');
     return FALSE;
   }
   // Make sure source and destination filenames are not the same, makes no
@@ -852,7 +794,7 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
     }
     // If we are renaming around an existing file (rather than a directory),
     // use its basename for the filename.
-    else if ($replace == FILE_EXISTS_RENAME && is_file(file_create_path($destination))) {
+    else if ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
       $file->filename = basename($destination);
     }
 
@@ -1256,7 +1198,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   }
 
   $file->source = $source;
-  $file->destination = file_destination(file_create_path($destination . $file->filename), $replace);
+  $file->destination = file_destination($destination . $file->filename, $replace);
   // If file_destination() returns FALSE then $replace == FILE_EXISTS_ERROR and
   // there's an existing file so we need to bail.
   if ($file->destination === FALSE) {
@@ -1554,7 +1496,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
     }
     // If we are renaming around an existing file (rather than a directory),
     // use its basename for the filename.
-    else if ($replace == FILE_EXISTS_RENAME && is_file(file_create_path($destination))) {
+    else if ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
       $file->filename = basename($destination);
     }
 
