@@ -501,20 +501,6 @@ abstract class DrupalTestCase {
 }
 
 /**
- * Drupal simpletest (simpletest://) stream wrapper class.
- *
- * Provides support for the simpletest directory created within the public
- * files directory.
- */
-class DrupalSimpleTestStreamWrapper extends DrupalPublicStreamWrapper {
-  public function getDirectoryPath() {
-    global $simpletest_stream_wrapper_path;
-    // This gets set just before registering our stream wrapper.
-    return $simpletest_stream_wrapper_path;
-  }
-}
-
-/**
  * Test case for Drupal unit tests.
  *
  * These tests can not access the database nor files. Calling any Drupal
