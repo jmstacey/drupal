@@ -328,16 +328,11 @@ function file_external_url($uri) {
  *   A bitmask to indicate if the directory should be created if it does
  *   not exist (FILE_CREATE_DIRECTORY) or made writable if it is read-only
  *   (FILE_MODIFY_PERMISSIONS).
- * @param $form_item
- *   An optional string containing the name of a form item. Any errors will be
- *   attached to this item making it useful for settings forms that require the
- *   user to specify a writable directory. If it can't be made to work, a form
- *   error will be set preventing them from saving the settings.
  * @return
  *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
-function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
+function file_check_directory(&$directory, $mode = 0) {
   if (!file_stream_wrapper_valid_scheme($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
@@ -351,10 +346,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
       drupal_chmod($directory);
     }
     else {
-      if ($form_item) {
-        form_set_error($form_item, t('The directory %directory does not exist.', array('%directory' => $directory)));
-        watchdog('file system', 'The directory %directory does not exist.', array('%directory' => $directory), WATCHDOG_ERROR);
-      }
       return FALSE;
     }
   }
@@ -364,10 +355,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
     // If not able to modify permissions, or if able to, but chmod
     // fails, return false.
     if (!$mode || (($mode & FILE_MODIFY_PERMISSIONS) && !drupal_chmod($directory))) {
-      if ($form_item) {
-        form_set_error($form_item, t('The directory %directory is not writable', array('%directory' => $directory)));
-        watchdog('file system', 'The directory %directory is not writable, because it does not have the correct permissions set.', array('%directory' => $directory), WATCHDOG_ERROR);
-      }
       return FALSE;
     }
   }
@@ -402,58 +389,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   }
 
   return TRUE;
-}
-
-/**
- * Assert that a file is located inside the specified directory.
- *
- * This should be used to make sure a file specified is really located within
- * the directory to prevent exploits. Note that the file or path being checked
- * does not actually need to exist yet.
- *
- * @code
- *   // Returns FALSE:
- *   file_check_location('/www/example.com/files/../../../etc/passwd', '/www/example.com/files');
- *
- *   // Returns TRUE:
- *   file_check_location('public://dir1/../example.txt', 'public://');
- * @endcode
- *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
- * @param $source
- *   A string set to the file to check. May be a literal path or a stream wrapper URI.
- * @param $directory
- *   A string where the file should be located.
- * @return
- *   Returns FALSE if the path does not exist in the directory. Otherwise,
- *   returns the real path of the source.
- */
-function file_check_location($source, $directory = '') {
-  $original_source = $source;
-  $abs_pathname    = drupal_realpath($source);
-
-  if ($abs_pathname) {
-    $source = $abs_pathname;
-  }
-  else {
-    // The file does not exist yet.
-    if ($scheme = file_stream_wrapper_valid_scheme($source)) {
-      // We're dealing with a valid stream wrapper.
-      $source = drupal_realpath(file_directory_path($scheme)) . '/' . basename($source);
-    }
-    else {
-      $source = drupal_realpath(dirname($source)) . '/' . basename($source);
-    }
-  }
-
-  $directory = drupal_realpath($directory);
-  if ($directory && strpos($source, $directory) !== 0) {
-    return FALSE;
-  }
-
-  return $original_source;
 }
 
 /**
