@@ -1894,7 +1894,9 @@ function drupal_realpath($uri) {
  * @see dirname()
  */
 function drupal_dirname($uri) {
-  if ($scheme = file_stream_wrapper_valid_scheme($uri)) {
+	$scheme = file_uri_scheme($uri);
+
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
     $target  = file_uri_target($uri);
     $dirname = dirname($target);
 
@@ -1907,6 +1909,29 @@ function drupal_dirname($uri) {
   else {
     return dirname($uri);
   }
+}
+
+/**
+ * Creates a directory using Drupal's default mode.
+ *
+ * PHP's mkdir() does not respect Drupal's default mode, so this function
+ * fills that gap. It is backwards compatibel with normal paths and will use
+ * PHP's mkdir() as a fallback.
+ *
+ * Compatibility: normal paths and stream wrappers.
+ * @see http://drupal.org/node/515192
+ *
+ * @param $uri
+ *   A URI or path.
+ * @param
+ *	 Even more todo
+ * @return
+ *   Returns a string containing the directory name.
+ *
+ * @see mkdir()
+ */
+function drupal_mkdir($uri) {
+	// TODO: Implement
 }
 
 /**
