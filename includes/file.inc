@@ -289,18 +289,18 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  * @see http://drupal.org/node/515192
  *
  * @param $uri
- *   A string containing the URI to verify. If this value is omitted,
- *   Drupal's public files directory will be used [public://].
+ *   The URI to for which we need an external URL.
  * @return
  *   Returns a string containing a URL that may be used to access the stream.
  *   If the provided string already contains a preceding 'http', nothing is done
  *   and the same string is returned. If a Valid stream wrapper could not be found
  *   to generate an external URL, then FALSE will be returned.
  */
-function file_create_external_url($uri) {
+function file_external_url($uri) {
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
   // for the http wrapper.
-  if (file_uri_scheme($uri) == 'http') {
+  $scheme = file_uri_scheme($uri);
+  if ($scheme == 'http' || $scheme == 'https') {
     // This is already a somewhat properly formatted URL, so do nothing and return.
     return $uri;
   }
