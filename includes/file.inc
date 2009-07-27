@@ -316,7 +316,7 @@ function file_create_url($uri) {
  *
  * @param $uri
  *   A string containing the URI to verify. If this value is omitted,
- *   Drupal's public files directory will be used [public://].
+ *   the default stream will be used (public or private).
  * @param $stream
  *   TRUE indicates that $uri should be a stream and a valid scheme is
  *   required. FALSE indicates that $uri should be treated as a normal
@@ -327,9 +327,8 @@ function file_create_url($uri) {
  *   returned.
  */
 function file_create_path($uri = NULL, $stream = TRUE) {
-  // If URI is omitted, use Drupal's public files directory [public://].
   if (is_null($uri)) {
-    return SCHEME_PUBLIC;
+    $uri = variable_get('stream_default_scheme', 'public');
   }
 
   if ($scheme  = file_stream_wrapper_valid_scheme($uri)) {
@@ -339,7 +338,6 @@ function file_create_path($uri = NULL, $stream = TRUE) {
   elseif ($stream) {
     // The URI must contain a valid scheme.
     $file_path = 'public://' . $uri;
-    $uri       = 'public://' . $uri;
   }
   else {
     /**
@@ -347,17 +345,12 @@ function file_create_path($uri = NULL, $stream = TRUE) {
      * stream wrapper for security reasons. We'll assume public:// for now.
      * TODO: Search all registered wrapper paths for a valid match.
      */
-    $file_path = file_directory_path('public://');
+    $file_path = file_directory_path();
   }
-
   // Check if the destination is inside the specified path.
-  if ($path = file_check_location($uri, $file_path)) {
+  if ($path = file_create_url($file_path)) {
     return $path;
   }
-  elseif (file_check_location($file_path . '/' . $uri, $file_path)) {
-    return $file_path . '/' . $uri;
-  }
-
   // File not found.
   return FALSE;
 }
@@ -1763,7 +1756,10 @@ function file_directory_temp() {
  *   A string containing the base path of a stream. FALSE is returned if the scheme
  *   is invalid or a wrapper could not be instantiated.
  */
-function file_directory_path($scheme = 'public://') {
+function file_directory_path($scheme = NULL) {
+  if ($scheme === NULL) {
+    $scheme = variable_get('stream_default_scheme', 'public');
+  }
   if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }

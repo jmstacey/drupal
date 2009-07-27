@@ -2458,7 +2458,7 @@ function drupal_get_css($css = NULL) {
   $no_inline_preprocess = '';
 
   $preprocess_css = (variable_get('preprocess_css', FALSE) && (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update'));
-  $directory = file_directory_path();
+  $directory = file_directory_path('public');
   $is_writable = is_dir($directory) && is_writable($directory);
 
   // A dummy query-string is added to filenames, to gain control over
@@ -2516,7 +2516,7 @@ function drupal_get_css($css = NULL) {
       // starting with "ad*".
       $filename = 'css_' . md5(serialize($types) . $query_string) . '.css';
       $preprocess_file = drupal_build_css_cache($types, $filename);
-      $output .= '<link type="text/css" rel="stylesheet" media="' . $media . '" href="' . base_path() . $preprocess_file . '" />' . "\n";
+      $output .= '<link type="text/css" rel="stylesheet" media="' . $media . '" href="' . $preprocess_file . '" />' . "\n";
     }
   }
   if (!empty($no_inline_preprocess)) {
@@ -2540,9 +2540,8 @@ function drupal_build_css_cache($types, $filename) {
   $data = '';
 
   // Create the css/ within the files folder.
-  $csspath = file_create_path('css');
+  $csspath = file_create_path('public', 'css');
   file_check_directory($csspath, FILE_CREATE_DIRECTORY);
-
   if (!file_exists($csspath . '/' . $filename)) {
     // Build aggregate CSS file.
     foreach ($types as $type => $css) {
@@ -2982,7 +2981,7 @@ function drupal_get_js($scope = 'header', $javascript = NULL) {
     // starting with "ad*".
     $filename = 'js_' . md5(serialize($files) . $query_string) . '.js';
     $preprocess_file = drupal_build_js_cache($files, $filename);
-    $preprocessed .= '<script type="text/javascript" src="' . base_path() . $preprocess_file . '"></script>' . "\n";
+    $preprocessed .= '<script type="text/javascript" src="' . $preprocess_file . '"></script>' . "\n";
   }
 
   // Keep the order of JS files consistent as some are preprocessed and others are not.
@@ -3253,7 +3252,7 @@ function drupal_build_js_cache($files, $filename) {
   $contents = '';
 
   // Create the js/ within the files folder.
-  $jspath = file_create_path('js');
+  $jspath = file_create_path('public', 'js');
   file_check_directory($jspath, FILE_CREATE_DIRECTORY);
 
   if (!file_exists($jspath . '/' . $filename)) {
