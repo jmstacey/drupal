@@ -1158,7 +1158,7 @@ function system_library() {
 }
 
 /**
- * Implementation of hook_stream_wrappers().
+ * Implements hook_stream_wrappers().
  */
 function system_stream_wrappers() {
   return array(

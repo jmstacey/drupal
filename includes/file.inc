@@ -95,10 +95,10 @@ define('FILE_STATUS_PERMANENT', 1);
  * registered to handle a stream, which we need to be able to find the handler
  * for class instantiation.
  *
- * If a module registers a scheme that is already registered with PHP, it will
- * be unregistered and replaced with the specified class.
+ * If a module registers a scheme that is already registered with PHP, the
+ * existing scheme will be unregistered and replaced with the specified class.
  *
- * A stream is referenced as: scheme://target
+ * A stream is referenced as "scheme://target".
  *
  * @return
  *   Returns the entire Drupal stream wrapper registry.
@@ -146,8 +146,6 @@ function file_stream_wrapper_get_class($scheme) {
 /**
  * Returns the scheme of a URI (e.g. a stream).
  *
- * A stream is referenced as scheme://target.
- *
  * @param $uri
  *   A stream, referenced as scheme://target.
  * @return
@@ -188,14 +186,12 @@ function file_stream_wrapper_valid_scheme($scheme) {
 /**
  * Returns the target of a URI (e.g. a stream).
  *
- * A stream is referenced as scheme://target.
- *
  * @param $uri
  *   A stream, referenced as scheme://target
  * @return
  *   A string containing the target (path), or FALSE if none.
  *   For example, the URI public://sample/test.txt would return
- *   sample/test.txt
+ *   sample/test.txt.
  */
 function file_uri_target($uri) {
   $data = explode('://', $uri, 2);
