@@ -189,11 +189,6 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 
   /**
-   * Base implementation of getExternalUrl().
-   */
-  abstract function getExternalUrl();
-
-  /**
    * Base implementation of getMimeType().
    */
   static function getMimeType($uri, $mapping = NULL) {
@@ -644,5 +639,12 @@ class DrupalTemporaryStreamWrapper extends DrupalLocalStreamWrapper {
     }
 
     return variable_get('file_temporary_path', '/tmp');
+  }
+
+  /**
+   * Overrides getExternalUrl().
+   */
+  public function getExternalUrl() {
+    return '';
   }
 }
