@@ -315,12 +315,12 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
 function file_create_url($uri) {
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
   // for the http wrapper.
-  if (DrupalStreamWrapperRegistry::getStreamScheme($uri) == 'http') {
+  if (file_uri_scheme($uri) == 'http') {
     // This is already a somewhat properly formatted URL, so do nothing and return.
     return $uri;
   }
 
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->getExternalUrl();
   }
   else {
@@ -350,7 +350,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
     return SCHEME_PUBLIC;
   }
 
-  if ($scheme  = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
+  if ($scheme  = file_stream_wrapper_valid_scheme(($uri)) {
     // The URI contains a valid stream scheme.
     $file_path = $scheme . '://';
   }
@@ -402,7 +402,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
  *   is returned.
  */
 function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
-  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+  if (!file_stream_wrapper_valid_scheme(($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
   }
@@ -437,7 +437,7 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
   }
 
   // Security SA_2006_06 compliance
-  if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+  if (file_stream_wrapper_valid_scheme(($directory)) {
     $htaccess_path = $directory . '.htaccess';
   }
   else {
@@ -525,7 +525,7 @@ function file_check_location($source, $directory = '') {
   }
   else {
     // The file does not exist yet.
-    if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($source)) {
+    if ($scheme = file_stream_wrapper_valid_scheme(($source)) {
       // We're dealing with a valid stream wrapper.
       $source = drupal_realpath(file_directory_path($scheme)) . '/' . basename($source);
     }
@@ -741,8 +741,8 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   }
 
   // If $source and $destination do not contain a scheme we're dealing with a normal path.
-  if (!DrupalStreamWrapperRegistry::getValidStreamScheme($source) &&
-      !DrupalStreamWrapperRegistry::getValidStreamScheme($destination)) {
+  if (!file_stream_wrapper_valid_scheme(($source) &&
+      !file_stream_wrapper_valid_scheme(($destination)) {
     $stream = FALSE;
   }
 
@@ -760,7 +760,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // source file.
   $basename = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
-  DrupalStreamWrapperRegistry::normalizeUri($destination);
+  file_stream_wrapper_uri_normalize($destination);
 
   if ($destination === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $proposed_destination)), 'error');
@@ -995,7 +995,7 @@ function file_unmunge_filename($filename) {
  */
 function file_create_filename($basename, $directory) {
   // Are we dealing with a stream?
-  if (DrupalStreamWrapperRegistry::getValidStreamScheme($directory)) {
+  if (file_stream_wrapper_valid_scheme(($directory)) {
     $separator = '';
   }
   else {
@@ -1724,7 +1724,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
     while (FALSE !== ($filename = readdir($handle))) {
       if (!preg_match($options['nomask'], $filename) && $filename[0] != '.') {
         $uri = "$dir/$filename";
-        DrupalStreamWrapperRegistry::normalizeUri($uri);
+        file_stream_wrapper_uri_normalize($uri);
         if (is_dir($uri) && $options['recurse']) {
           // Give priority to files in this folder by merging them in after any subdirectory files.
           $files = array_merge(file_scan_directory($uri, $mask, $options, $depth + 1), $files);
@@ -1782,7 +1782,7 @@ function file_directory_temp() {
  *   is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme = SCHEME_PUBLIC) {
-  if (isset($scheme) && $wrapper = DrupalStreamWrapperRegistry::getInstanceByScheme($scheme)) {
+  if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }
   else {
@@ -1846,7 +1846,7 @@ function file_upload_max_size() {
  *   file_default_mimetype_mapping()
  */
 function file_get_mimetype($uri, $mapping = NULL) {
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->getMimeType($uri, $mapping);
   }
   else {
@@ -1897,7 +1897,7 @@ function drupal_chmod($uri, $mode = NULL) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's chmod. This allows use of drupal_chmod even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     if ($wrapper->chmod($mode)) {
       return TRUE;
     }
@@ -1938,7 +1938,7 @@ function drupal_realpath($uri) {
   // If this URI is a stream, pass it off to the appropriate stream wrapper.
   // Otherwise, attempt PHP's realpath. This allows use of drupal_realpath even
   // for unmanaged files outside of the stream wrapper interface.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($uri)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
     return $wrapper->realpath();
   }
   else {
@@ -1964,8 +1964,8 @@ function drupal_realpath($uri) {
  * @see dirname()
  */
 function drupal_dirname($uri) {
-  if ($scheme = DrupalStreamWrapperRegistry::getValidStreamScheme($uri)) {
-    $target  = DrupalStreamWrapperRegistry::getStreamTarget($uri);
+  if ($scheme = file_stream_wrapper_valid_scheme(($uri)) {
+    $target  = file_uri_target($uri);
     $dirname = dirname($target);
 
     if ($dirname == '.') {

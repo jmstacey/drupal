@@ -87,7 +87,7 @@ class UploadTestCase extends DrupalWebTestCase {
 
       $this->assertNoText($new_name, $new_name . ' not found on node.');
       $uri = SCHEME_PUBLIC . $upload->description;
-      $external_uri = DrupalStreamWrapperRegistry::getInstanceByUri($uri)->getExternalUrl();
+      $external_uri = file_stream_wrapper_get_instance_by_uri($uri)->getExternalUrl();
       $this->drupalGet($external_uri, array('external' => TRUE));
       $this->assertResponse(array(404), 'Uploaded ' . $upload->description . ' is not accessible.');
     }
