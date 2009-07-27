@@ -7,22 +7,15 @@
  *
  * Provides a Drupal interface and classes to implement PHP stream wrappers for
  * public, private, and temporary files.
+ *
+ * Note that PHP 5.2 fopen() only supports URIs of the form scheme://target
+ * despite the fact that according to RFC 3986 a URI's scheme component
+ * delimiter is in general just ":", not "://".  Becuase of this PHP limitation
+ * and for consistency Drupal will only accept URIs of form scheme://target.
+ *
+ * @link http://www.faqs.org/rfcs/rfc3986.html
+ * @link http://bugs.php.net/bug.php?id=47070
  */
-
-/**
- *  The scheme for the public stream wrapper.
- */
-define('SCHEME_PUBLIC', 'public://');
-
-/**
- *  The scheme for the private stream wrapper.
- */
-define('SCHEME_PRIVATE', 'private://');
-
-/**
- *  The scheme for the temporary stream wrapper.
- */
-define('SCHEME_TEMP', 'temp://');
 
 /**
  * Generic PHP stream wrapper interface.
@@ -50,7 +43,6 @@ interface StreamWrapperInterface {
   public function dir_rewinddir();
   public function dir_closedir();
 }
-
 
 /**
  * Drupal stream wrapper extension.
