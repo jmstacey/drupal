@@ -128,7 +128,7 @@ function file_get_stream_wrappers() {
         stream_wrapper_register($scheme, $info['class']);
       }
     }
-  }file_put_contents('/tmp/log.txt', print_r($wrappers,1));
+  }
   return $wrappers;
 }
 
