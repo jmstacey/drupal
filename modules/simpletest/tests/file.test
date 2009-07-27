@@ -44,35 +44,6 @@ function file_test_file_scan_callback_reset() {
 }
 
 /**
- * Helper class for testing the stream wrapper registry.
- *
- * Dummy stream wrapper implementation (dummy://).
- */
-class DrupalDummyStreamWrapper extends DrupalLocalStreamWrapper {
-  function getDirectoryPath() {
-    return variable_get('stream_public_path', 'sites/default/files');
-  }
-
-  /**
-   * Override getInternalUri().
-   *
-   * Return a dummy path for testing.
-   */
-  function getInternalUri() {
-    return '/dummy/example.txt';
-  }
-
-  /**
-   * Override getExternalUrl().
-   *
-   * Return the HTML URI of a public file.
-   */
-  function getExternalUrl() {
-    return '/dummy/example.txt';
-  }
-}
-
-/**
  * Base class for file tests that adds some additional file specific
  * assertions and helper functions.
  */
