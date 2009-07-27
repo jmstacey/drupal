@@ -2687,7 +2687,7 @@ function _drupal_load_stylesheet($matches) {
  * Delete all cached CSS files.
  */
 function drupal_clear_css_cache() {
-  file_scan_directory(file_create_path('css'), '/.*/', array('callback' => 'file_unmanaged_delete'));
+  file_scan_directory('public://css', '/.*/', array('callback' => 'file_unmanaged_delete'));
 }
 
 /**
@@ -3275,7 +3275,7 @@ function drupal_build_js_cache($files, $filename) {
  * Delete all cached JS files.
  */
 function drupal_clear_js_cache() {
-  file_scan_directory(file_create_path('js'), '/.*/', array('callback' => 'file_unmanaged_delete'));
+  file_scan_directory('public://js', '/.*/', array('callback' => 'file_unmanaged_delete'));
   variable_set('javascript_parsed', array());
 }
 
