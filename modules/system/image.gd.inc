@@ -255,7 +255,7 @@ function image_gd_load(stdClass $image) {
  */
 function image_gd_save(stdClass $image, $destination) {
   // Convert URI to a normal path because PHP apparently has some gaps in stream wrapper support.
-  if ($wrapper = DrupalStreamWrapperRegistry::getInstanceByUri($destination)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($destination)) {
     $destination = $wrapper->getInternalUri();
   }
   
