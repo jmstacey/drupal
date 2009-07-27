@@ -354,7 +354,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
     $file_path = file_directory_path();
   }
   // Check if the destination is inside the specified path.
-  if ($path = file_create_external_url($file_path)) {
+  if ($path = file_external_url($file_path)) {
     return $path;
   }
   // File not found.
