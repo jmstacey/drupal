@@ -2088,9 +2088,9 @@ class StreamWrapperRegistryTest extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => t('Stream Wrapper Registry'),
-      'description' => t('Tests stream wrapper registry.'),
-      'group' => t('File'),
+      'name' => 'Stream Wrapper Registry',
+      'description' => 'Tests stream wrapper registry.',
+      'group' => 'File',
     );
   }
 
