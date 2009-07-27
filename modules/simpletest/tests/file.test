@@ -2106,7 +2106,6 @@ class StreamWrapperRegistryTest extends DrupalWebTestCase {
 
   function tearDown() {
     parent::tearDown();
-    // Unregister the test handler.
     stream_wrapper_unregister($this->scheme);
   }
 
@@ -2132,7 +2131,7 @@ class StreamWrapperRegistryTest extends DrupalWebTestCase {
   }
 
   /**
-   * Test the uri and target functions.
+   * Test the URI and target functions.
    */
   function testGetInstanceByUri() {
     $instance = file_stream_wrapper_get_instance_by_uri($this->scheme . '://foo');

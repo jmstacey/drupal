@@ -200,7 +200,7 @@ function file_uri_target($uri) {
     return FALSE;
   }
 
-  // Remove erroneous beginning forward slash
+  // Remove erroneous beginning forward slash.
   $data[1] = ltrim($data[1], '\/');
 
   return $data[1];
@@ -229,7 +229,7 @@ function file_stream_wrapper_uri_normalize($uri) {
     $directory_path = file_stream_wrapper_get_instance_by_scheme($scheme)->getDirectoryPath();
     $target = str_replace($directory_path, '', $target);
 
-    // Trim trailing slashes from target
+    // Trim trailing slashes from target.
     $target = rtrim($target, '/');
 
     // Trim erroneous leading slashes from target.
