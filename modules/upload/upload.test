@@ -209,7 +209,7 @@ class UploadTestCase extends DrupalWebTestCase {
   function checkUploadedFile($filename) {
     global $base_url;
     $file = 'public://' . $filename;
-    $this->drupalGet(file_create_external_url($file), array('external' => TRUE));
+    $this->drupalGet(file_external_url($file), array('external' => TRUE));
     $this->assertResponse(array(200), 'Uploaded ' . $filename . ' is accessible.');
     $this->assertTrue(strpos($this->drupalGetHeader('Content-Type'), 'text/plain') === 0, t('MIME type is text/plain.'));
     $this->assertEqual(file_get_contents($file), $this->drupalGetContent(), 'Uploaded contents of ' . $filename . ' verified.');

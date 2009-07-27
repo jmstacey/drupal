@@ -315,7 +315,9 @@ function system_themes_form_submit($form, &$form_state) {
  */
 function system_theme_settings(&$form_state, $key = '') {
   $directory_path = file_directory_path();
-  file_check_directory($directory_path, FILE_CREATE_DIRECTORY, 'stream_public_path');
+  if (!file_check_directory($directory_path, FILE_CREATE_DIRECTORY) {
+    drupal_set_message(t('The directory %directory does not exist or is not writable.', array('%directory' => $directory_path)), 'warning');
+  }
 
   // Default settings are defined in theme_get_settings() in includes/theme.inc
   if ($key) {
