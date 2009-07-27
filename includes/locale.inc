@@ -2437,11 +2437,11 @@ function _locale_rebuild_js($langcode = NULL) {
 
   // Construct the filepath where JS translation files are stored.
   // There is (on purpose) no front end to edit that variable.
-  $dir = file_create_path(variable_get('locale_js_directory', 'languages'));
+  $dir = 'public://' . variable_get('locale_js_directory', 'languages');
 
   // Delete old file, if we have no translations anymore, or a different file to be saved.
   if (!empty($language->javascript) && (!$data || $language->javascript != $data_hash)) {
-    file_unmanaged_delete(file_create_path($dir . '/' . $language->language . '_' . $language->javascript . '.js'));
+    file_unmanaged_delete($dir . '/' . $language->language . '_' . $language->javascript . '.js');
     $language->javascript = '';
     $status = 'deleted';
   }
@@ -2449,6 +2449,7 @@ function _locale_rebuild_js($langcode = NULL) {
   // Only create a new file if the content has changed.
   if ($data && $language->javascript != $data_hash) {
     // Ensure that the directory exists and is writable, if possible.
+#TODO: this should be drupal_mkdir();
     file_check_directory($dir, TRUE);
 
     // Save the file.
