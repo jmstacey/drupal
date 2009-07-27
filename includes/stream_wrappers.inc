@@ -55,27 +55,27 @@ interface StreamWrapperInterface {
 /**
  * Drupal stream wrapper extension.
  *
- * Extend the StreamWrapperInterface with methods expected by
- * Drupal stream wrapper classes.
+ * Extend the StreamWrapperInterface with methods expected by Drupal stream
+ * wrapper classes.
  */
 interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   /**
    * Set the absolute stream resource URI.
    *
-   * This allows you to set the URI.  Generally is only called by the factory
+   * This allows you to set the URI. Generally is only called by the factory
    * method.
    */
   function setUri($uri);
 
   /**
-   * Returns an absolute stream resource URL for internal purposes. 
+   * Returns an absolute stream resource URL for internal purposes.
    *
    * In the case of the three local wrappers (public, private, temp)
    * drupal_realpath() should be used for security reasons.
    *
    * For example, the internal path of public://foobar.txt might be
-   * sites/default/files/foobar.txt. Following this call with
-   * realpath() will return an absolute path such as
+   * sites/default/files/foobar.txt. Following this call with realpath() will
+   * return an absolute path such as
    * /Users/foo/Sites/drupal/sites/default/files/foobar.txt.
    *
    * @return
@@ -114,11 +114,12 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   /**
    * Changes permissions of the resource.
    *
-   * PHP lacks this functionality and it is not part of the official
-   * stream wrapper interface. This is a custom implementation for
-   * Drupal.
+   * PHP lacks this functionality and it is not part of the official stream
+   * wrapper interface. This is a custom implementation for Drupal.
    *
    * @param $mode
+   *   Integer value for the permissions. Consult PHP chmod() documentation
+   *   for more information.
    * @return
    *   Returns TRUE on success or FALSE on failure.
    */
@@ -127,10 +128,9 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
   /**
    * Returns canonical, absolute path of the resource.
    *
-   * Implementation placeholder. PHP's realpath() does not support
-   * stream wrappers. We provide this as a default so that
-   * individual wrappers may implement their own solutions.
-   * The base class will always return FALSE.
+   * Implementation placeholder. PHP's realpath() does not support stream
+   * wrappers. We provide this as a default so that individual wrappers may
+   * implement their own solutions. The base class will always return FALSE.
    *
    * @return
    *   Returns a string with absolute pathname on success (implemented
@@ -146,7 +146,8 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
  *
  * This class provides a complete stream wrapper implementation. URIs such as
  * public://example.txt are expanded to a normal filesystem path such as
- * sites/default/files/example.txt and then PHP filesystem functions are invoked.
+ * sites/default/files/example.txt and then PHP filesystem functions are
+ * invoked.
  *
  * DrupalLocalStreamWrapper implementations need to override at least the
  * getInternalUri() method to rewrite the URI before is it passed back to the
@@ -191,7 +192,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   function setUri($uri) {
     $this->uri = $uri;
   }
- 
+
   /**
    * Base implementation of getInternalUri().
    */
@@ -546,8 +547,8 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
 /**
  * Drupal public (public://) stream wrapper class.
  *
- * Provides support for storing publicly accessible
- * files with the Drupal file interface.
+ * Provides support for storing publicly accessible files with the Drupal file
+ * interface.
  */
 class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
 
@@ -573,8 +574,8 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
 /**
  * Drupal private (private://) stream wrapper class.
  *
- * Provides support for storing privately accessible
- * files with the Drupal file interface.
+ * Provides support for storing privately accessible files with the Drupal file
+ * interface.
  *
  * Extends DrupalPublicStreamWrapper.
  */
@@ -602,8 +603,8 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
 /**
  * Drupal temp (temp://) stream wrapper class.
  *
- * Provides support for storing temporarily accessible
- * files with the Drupal file interface.
+ * Provides support for storing temporarily accessible files with the Drupal
+ * file interface.
  *
  * Extends DrupalPublicStreamWrapper.
  */
