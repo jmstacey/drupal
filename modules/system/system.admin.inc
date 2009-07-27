@@ -1326,8 +1326,7 @@ function system_performance_settings() {
     '#title' => t('Bandwidth optimizations'),
     '#description' => '<p>' . t('Drupal can automatically optimize external resources like CSS and JavaScript, which can reduce both the size and number of requests made to your website. CSS files can be aggregated and compressed into a single file, while JavaScript files are aggregated (but not compressed). These optional optimizations may reduce server load, bandwidth requirements, and page loading times.') . '</p><p>' . t('These options are disabled if you have not set up your files directory.') . '</p>'
   );
-  // TODO: This file_get_stream_wrappers is temporary until bootstrap loads this properly.
-  file_get_stream_wrappers();
+  
   $directory = 'public://';
   $is_writable = is_dir($directory) && is_writable($directory);
   $form['bandwidth_optimizations']['preprocess_css'] = array(
@@ -1409,14 +1408,19 @@ function system_file_system_settings() {
     '#description' => t('A local file system path where temporary files will be stored. This directory should not be accessible over the web.'),
     '#after_build' => array('system_check_directory'),
   );
-
-  $form['file_downloads'] = array(
+  $wrappers = file_get_stream_wrappers();
+  $options = array(
+    'public' => $wrappers['public']['description'],
+    'private' => $wrappers['private']['description']
+  );
+  $form['stream_default_scheme'] = array(
     '#type' => 'radios',
     '#title' => t('Default download method'),
-    '#default_value' => FILE_DOWNLOADS_PUBLIC,
-    '#options' => array(FILE_DOWNLOADS_PUBLIC => t('Public - files are available using HTTP directly.'), FILE_DOWNLOADS_PRIVATE => t('Private - files are transferred by Drupal.')),
-    '#description' => t('This setting is simply used as the preferred download method. The download method will ultimately be determined by the URI of a file.')
+    '#default_value' => 'public',
+    '#options' => $options,
+    '#description' => t('This setting is used as the preferred download method. The use of public files is more efficient, but does not provide any access control.'),
   );
+  
 
   return system_settings_form($form, TRUE);
 }

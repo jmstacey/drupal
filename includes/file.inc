@@ -35,26 +35,6 @@ require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
  */
 
 /**
- * Flag to indicate that the 'public' file download method is enabled (DEPRECATED).
- *
- * TODO: Deprecated, cleanup.
- *
- * When using this method, files are available from a regular HTTP request,
- * which provides no additional access restrictions.
- */
-define('FILE_DOWNLOADS_PUBLIC', 1);
-
-/**
- * Flag to indicate that the 'private' file download method is enabled (DEPRECATED).
- *
- * TODO: Deprecated, cleanup.
- *
- * When using this method, all file requests are served by Drupal, during which
- * access-control checking can be performed.
- */
-define('FILE_DOWNLOADS_PRIVATE', 2);
-
-/**
  * Flag used by file_check_directory() -- create directory if not present.
  */
 define('FILE_CREATE_DIRECTORY', 1);
@@ -358,8 +338,8 @@ function file_create_path($uri = NULL, $stream = TRUE) {
   }
   elseif ($stream) {
     // The URI must contain a valid scheme.
-    $file_path = SCHEME_PUBLIC . $uri;
-    $uri       = SCHEME_PUBLIC . $uri;
+    $file_path = 'public://' . $uri;
+    $uri       = 'public://' . $uri;
   }
   else {
     /**
@@ -367,7 +347,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
      * stream wrapper for security reasons. We'll assume public:// for now.
      * TODO: Search all registered wrapper paths for a valid match.
      */
-    $file_path = file_directory_path(SCHEME_PUBLIC);
+    $file_path = file_directory_path('public://');
   }
 
   // Check if the destination is inside the specified path.
@@ -448,8 +428,8 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
 
   // Try creating the .htaccess file if it's missing from the public, private, or temp directories.
   if ((file_directory_path('public') == $directory || file_directory_path('private') == $directory || file_directory_path('temp') == $directory) ||
-       $directory == SCHEME_PUBLIC || $directory == SCHEME_PRIVATE || $directory == SCHEME_TEMP && !is_file("$directory/.htaccess")) {
-    if (file_directory_path('public') == $directory || $directory == SCHEME_PUBLIC) {
+       $directory == 'public://' || $directory == 'private://' || $directory == 'temp://' && !is_file("$directory/.htaccess")) {
+    if (file_directory_path('public') == $directory || $directory == 'public://') {
       // Public htaccess file.
       $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
     }
@@ -1783,7 +1763,7 @@ function file_directory_temp() {
  *   A string containing the base path of a stream. FALSE is returned if the scheme
  *   is invalid or a wrapper could not be instantiated.
  */
-function file_directory_path($scheme = SCHEME_PUBLIC) {
+function file_directory_path($scheme = 'public://') {
   if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }
