@@ -742,36 +742,6 @@ class FileDirectoryTest extends FileTestCase {
   }
 
   /**
-   * This tests that a file is actually in the specified directory, to prevent
-   * exploits.
-   */
-  function testFileCheckLocation() {
-    $source = 'misc/xyz.txt';
-    $directory = 'misc';
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Non-existent file validates when checked for location in existing directory.'), 'File');
-
-    $source = 'fake/xyz.txt';
-    $directory = 'fake';
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Non-existent file validates when checked for location in non-existing directory.'), 'File');
-
-    $source = 'misc/../install.php';
-    $directory = 'misc';
-    $result = file_check_location($source, $directory);
-    $this->assertFalse($result, t('Existing file fails validation when it exists outside the directory path, using a /../ exploit.'), 'File');
-
-    $source = 'misc/druplicon.png';
-    $directory = 'misc';
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Existing file passes validation when checked for location in directory path, and filepath contains a subfolder of the checked path.'), 'File');
-
-    $result = file_check_location($source, $directory);
-    $this->assertTrue($result, t('Existing file passes validation, returning the source when checked for location in directory.'), 'File');
-  }
-
-
-  /**
    * This will take a directory and path, and find a valid filepath that is not
    * taken by another file.
    */

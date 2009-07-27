@@ -453,58 +453,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
 }
 
 /**
- * Assert that a file is located inside the specified directory.
- *
- * This should be used to make sure a file specified is really located within
- * the directory to prevent exploits. Note that the file or path being checked
- * does not actually need to exist yet.
- *
- * @code
- *   // Returns FALSE:
- *   file_check_location('/www/example.com/files/../../../etc/passwd', '/www/example.com/files');
- *
- *   // Returns TRUE:
- *   file_check_location('public://dir1/../example.txt', 'public://');
- * @endcode
- *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
- * @param $source
- *   A string set to the file to check. May be a literal path or a stream wrapper URI.
- * @param $directory
- *   A string where the file should be located.
- * @return
- *   Returns FALSE if the path does not exist in the directory. Otherwise,
- *   returns the real path of the source.
- */
-function file_check_location($source, $directory = '') {
-  $original_source = $source;
-  $abs_pathname    = drupal_realpath($source);
-
-  if ($abs_pathname) {
-    $source = $abs_pathname;
-  }
-  else {
-    // The file does not exist yet.
-    if ($scheme = file_stream_wrapper_valid_scheme($source)) {
-      // We're dealing with a valid stream wrapper.
-      $source = drupal_realpath(file_directory_path($scheme)) . '/' . basename($source);
-    }
-    else {
-      $source = drupal_realpath(dirname($source)) . '/' . basename($source);
-    }
-  }
-
-  $directory = drupal_realpath($directory);
-  if ($directory && strpos($source, $directory) !== 0) {
-    return FALSE;
-  }
-
-  return $original_source;
-}
-
-/**
  * Loads multiple file objects from the database.
  *
  * @param array $fids
