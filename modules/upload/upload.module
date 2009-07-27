@@ -372,7 +372,7 @@ function upload_node_view($node, $build_mode) {
       $node->rss_elements[] = array(
         'key' => 'enclosure',
         'attributes' => array(
-          'url' => file_create_url($file->uri),
+          'url' => file_create_external_url($file->uri),
           'length' => $file->filesize,
           'type' => $file->filemime
         )
@@ -443,7 +443,7 @@ function theme_upload_attachments($elements) {
   foreach ($elements['#files'] as $file) {
     $file = (object)$file;
     if ($file->list && empty($file->remove)) {
-      $href = file_create_url($file->uri);
+      $href = file_create_external_url($file->uri);
       $text = $file->description ? $file->description : $file->filename;
       $rows[] = array(l($text, $href), format_size($file->filesize));
     }
@@ -543,7 +543,7 @@ function _upload_form($node) {
       $file = (object)$file;
       $key = $file->fid;
 
-      $form['files'][$key]['description'] = array('#type' => 'textfield', '#default_value' => !empty($file->description) ? $file->description : $file->filename, '#maxlength' => 256, '#description' => '<small>' . file_create_url($file->uri) . '</small>');
+      $form['files'][$key]['description'] = array('#type' => 'textfield', '#default_value' => !empty($file->description) ? $file->description : $file->filename, '#maxlength' => 256, '#description' => '<small>' . file_create_external_url($file->uri) . '</small>');
       $form['files'][$key]['size'] = array('#markup' => format_size($file->filesize));
       $form['files'][$key]['remove'] = array('#type' => 'checkbox', '#default_value' => !empty($file->remove));
       $form['files'][$key]['list'] = array('#type' => 'checkbox',  '#default_value' => $file->list);

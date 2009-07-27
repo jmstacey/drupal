@@ -295,9 +295,9 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  *   Returns a string containing a URL that may be used to access the stream.
  *   If the provided string already contains a preceding 'http', nothing is done
  *   and the same string is returned. If a Valid stream wrapper could not be found
- *   to generate an external Url, then FALSE will be returned.
+ *   to generate an external URL, then FALSE will be returned.
  */
-function file_create_url($uri) {
+function file_create_external_url($uri) {
   // Flat out check for http so that we don't have to actually implement getExternalUrl()
   // for the http wrapper.
   if (file_uri_scheme($uri) == 'http') {
@@ -354,7 +354,7 @@ function file_create_path($uri = NULL, $stream = TRUE) {
     $file_path = file_directory_path();
   }
   // Check if the destination is inside the specified path.
-  if ($path = file_create_url($file_path)) {
+  if ($path = file_create_external_url($file_path)) {
     return $path;
   }
   // File not found.

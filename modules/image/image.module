@@ -568,7 +568,7 @@ function image_style_url($style_name, $path) {
 
   // If the image already exists use that rather than regenerating it.
   if (file_exists($destination)) {
-    return file_create_url($destination);
+    return file_create_external_url($destination);
   }
 
   // Disable page cache for this request. This prevents anonymous users from
@@ -801,7 +801,7 @@ function theme_image_style($style_name, $path, $alt = '', $title = '', $attribut
   if (!file_exists($style_path)) {
     $style_path = image_style_url($style_name, $path);
   }
-  return theme('image', file_create_url($style_path), $alt, $title, $attributes, $getsize);
+  return theme('image', file_create_external_url($style_path), $alt, $title, $attributes, $getsize);
 }
 
 /**

@@ -557,7 +557,7 @@ class ImportOPMLTestCase extends AggregatorTestCase {
     $path = $this->getEmptyOpml();
     $form = array(
       'files[upload]' => $path,
-      'remote' => file_create_url($path),
+      'remote' => file_create_external_url($path),
     );
     $this->drupalPost('admin/content/aggregator/add/opml', $form, t('Import'));
     $this->assertRaw(t('You must <em>either</em> upload a file or enter a URL.'), t('Error if both fields are filled.'));
@@ -580,7 +580,7 @@ class ImportOPMLTestCase extends AggregatorTestCase {
     $this->drupalPost('admin/content/aggregator/add/opml', $form, t('Import'));
     $this->assertText(t('No new feed has been added.'), t('Attempting to upload invalid XML.'));
 
-    $form = array('remote' => file_create_url($this->getEmptyOpml()));
+    $form = array('remote' => file_create_external_url($this->getEmptyOpml()));
     $this->drupalPost('admin/content/aggregator/add/opml', $form, t('Import'));
     $this->assertText(t('No new feed has been added.'), t('Attempting to load empty OPML from remote URL.'));
 
