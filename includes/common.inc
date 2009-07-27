@@ -2515,7 +2515,7 @@ function drupal_get_css($css = NULL) {
       // Prefix filename to prevent blocking by firewalls which reject files
       // starting with "ad*".
       $filename = 'css_' . md5(serialize($types) . $query_string) . '.css';
-      $preprocess_file = file_create_external_url(drupal_build_css_cache($types, $filename));
+      $preprocess_file = file_external_url(drupal_build_css_cache($types, $filename));
       
       $output .= '<link type="text/css" rel="stylesheet" media="' . $media . '" href="' . $preprocess_file . '" />' . "\n";
     }
@@ -2981,7 +2981,7 @@ function drupal_get_js($scope = 'header', $javascript = NULL) {
     // Prefix filename to prevent blocking by firewalls which reject files
     // starting with "ad*".
     $filename = 'js_' . md5(serialize($files) . $query_string) . '.js';
-    $preprocess_file = file_create_external_url(drupal_build_js_cache($files, $filename));
+    $preprocess_file = file_external_url(drupal_build_js_cache($files, $filename));
     $preprocessed .= '<script type="text/javascript" src="' . $preprocess_file . '"></script>' . "\n";
   }
 

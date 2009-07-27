@@ -480,7 +480,7 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
   // Return the successful result.
   $uri = variable_get('stream_default_scheme', 'public') . ":///$file";
   $uri = file_stream_wrapper_uri_normalize($uri);
-  return array('url' => file_create_external_url($uri), 'struct');
+  return array('url' => file_external_url($uri), 'struct');
 }
 /**
  * Blogging API callback. Returns a list of the taxonomy terms that can be

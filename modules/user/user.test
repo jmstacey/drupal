@@ -702,7 +702,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
 
       // Check if image is displayed in user's profile page.
       $this->drupalGet('user');
-      $this->assertRaw(DrupalStreamWrapperRegistry::getStreamTarget($pic_path), t("Image is displayed in user's profile page"));
+      $this->assertRaw(file_uri_target($pic_path), t("Image is displayed in user's profile page"));
 
       // Check if file is located in proper directory.
       $this->assertTrue(is_file($pic_path), t('File is located in proper directory'));

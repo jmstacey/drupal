@@ -709,9 +709,9 @@ function theme_image_style_preview($style) {
 
   // Build the preview of the image style.
   $output .= '<div class="preview-image-wrapper">';
-  $output .= check_plain($style['name']) . ' (' . l(t('view actual size'), file_create_external_url($preview_file) . '?' . time()) . ')';
+  $output .= check_plain($style['name']) . ' (' . l(t('view actual size'), file_external_url($preview_file) . '?' . time()) . ')';
   $output .= '<div class="preview-image modified-image" style="' . $preview_attributes['style'] . '">';
-  $output .= '<a href="' . file_create_external_url($preview_file) . '?' . time() . '">' . theme('image', file_create_external_url($preview_file) . '?' . time(), t('Sample modified image'), '', $preview_attributes, FALSE) . '</a>';
+  $output .= '<a href="' . file_external_url($preview_file) . '?' . time() . '">' . theme('image', file_external_url($preview_file) . '?' . time(), t('Sample modified image'), '', $preview_attributes, FALSE) . '</a>';
   $output .= '<div class="height" style="height: ' . $preview_height . 'px"><span>' . $preview_image['height'] . 'px</span></div>';
   $output .= '<div class="width" style="width: ' . $preview_width . 'px"><span>' . $preview_image['width'] . 'px</span></div>';
   $output .= '</div>'; // End preview-image.

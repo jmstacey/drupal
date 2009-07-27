@@ -568,7 +568,7 @@ function image_style_url($style_name, $path) {
 
   // If the image already exists use that rather than regenerating it.
   if (file_exists($destination)) {
-    return file_create_external_url($destination);
+    return file_external_url($destination);
   }
 
   // Disable page cache for this request. This prevents anonymous users from
@@ -579,8 +579,8 @@ function image_style_url($style_name, $path) {
   // checked by image_style_generate().
   cache_set('access:' . $style_name . ':' . md5($path), 1, 'cache_image', REQUEST_TIME + 600);
   
-  $scheme = DrupalStreamWrapperRegistry::getStreamScheme($path);
-  $target = DrupalStreamWrapperRegistry::getStreamTarget($path);
+  $scheme = file_uri_scheme($path);
+  $target = file_uri_target($path);
 
   // Generate a callback path for the image.
   $url = url('image/generate/' . $style_name . '/' . $scheme . '/' . $target, array('absolute' => TRUE));
@@ -602,7 +602,7 @@ function image_style_url($style_name, $path) {
  * @see image_style_url()
  */
 function image_style_path($style_name, $path) {
-  return variable_get('stream_default_scheme', 'public') . '://styles/' . $style_name . '/' . DrupalStreamWrapperRegistry::getStreamTarget($path);
+  return variable_get('stream_default_scheme', 'public') . '://styles/' . $style_name . '/' . file_uri_target($path);
 }
 
 /**
@@ -801,7 +801,7 @@ function theme_image_style($style_name, $path, $alt = '', $title = '', $attribut
   if (!file_exists($style_path)) {
     $style_path = image_style_url($style_name, $path);
   }
-  return theme('image', file_create_external_url($style_path), $alt, $title, $attributes, $getsize);
+  return theme('image', file_external_url($style_path), $alt, $title, $attributes, $getsize);
 }
 
 /**
