@@ -258,19 +258,19 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   /**
    * Support for fopen(), file_get_contents(), file_put_contents() etc.
    *
-   * @param $path
+   * @param $uri
    *   A string containing the path to the file to open.
    * @param $mode
    *   The file mode ("r", "wb" etc.).
    * @param $options
    *   A bit mask of STREAM_USE_PATH and STREAM_REPORT_ERRORS.
-   * @param &$opened_path
+   * @param &$opened_uri
    *   A string containing the path actually opened.
    * @return
    *   Returns TRUE if file was opened successfully.
    * @see http://php.net/manual/en/streamwrapper.stream-open.php
    */
-  public function stream_open($uri, $mode, $options, &$opened_url) {
+  public function stream_open($uri, $mode, $options, &$opened_uri) {
     $this->uri = $uri;
     $uri = $this->getInternalUri();
     $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($uri, $mode) : @fopen($uri, $mode);
@@ -286,6 +286,12 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for flock().
    *
    * @param $operation
+   *   One of the following:
+   *   - LOCK_SH to acquire a shared lock (reader).
+   *   - LOCK_EX to acquire an exclusive lock (writer).
+   *   - LOCK_UN to release a lock (shared or exclusive).
+   *   - LOCK_NB if you don't want flock() to block while locking (not
+   *     supported on Windows).
    * @return
    *   Always returns TRUE at the present time.
    * @see http://php.net/manual/en/streamwrapper.stream-lock.php
