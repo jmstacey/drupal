@@ -85,7 +85,7 @@ function simpletest_theme() {
 /**
  * Implementation of hook_stream_wrappers().
  */
-function file_test_stream_wrappers() {
+function simpletest_test_stream_wrappers() {
   return array(
     'simpletest' => array(
       'name' => t('Simpletest files'),
