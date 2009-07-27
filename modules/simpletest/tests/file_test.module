@@ -24,7 +24,7 @@ function file_test_menu() {
 }
 
 /**
- * Implementation of hook_stream_wrappers().
+ * Implement hook_stream_wrappers().
  */
 function file_test_stream_wrappers() {
   return array(
