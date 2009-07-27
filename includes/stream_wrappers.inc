@@ -64,6 +64,9 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    *
    * This allows you to set the URI. Generally is only called by the factory
    * method.
+   *
+   * @param $uri
+   *   A string containing the URI that should be used for this instance.
    */
   function setUri($uri);
 
@@ -154,7 +157,6 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
  * calling function.
  */
 abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface {
-
   /**
    * Stream context resource.
    *
@@ -172,7 +174,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   /**
    * Instance URI (stream).
    *
-   * A stream is referenced as scheme://target
+   * A stream is referenced as scheme://target.
    *
    * @var String
    */
@@ -557,7 +559,6 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
  * interface.
  */
 class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
-
   /**
    * Implements abstract public function getDirectoryPath()
    */
@@ -586,7 +587,6 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
  * Extends DrupalPublicStreamWrapper.
  */
 class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
-
   /**
    * Implements abstract public function getDirectoryPath()
    */
@@ -615,7 +615,6 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
  * Extends DrupalPublicStreamWrapper.
  */
 class DrupalTempStreamWrapper extends DrupalLocalStreamWrapper {
-
   /**
    * Implements abstract public function getDirectoryPath()
    */
