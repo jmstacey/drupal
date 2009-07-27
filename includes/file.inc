@@ -226,6 +226,8 @@ function file_uri_target($uri) {
  *
  * @param $uri
  *   String reference containing the URI to normalize.
+ * @return
+ *	 Returns a string containing the normalized URI.
  */
 function file_stream_wrapper_uri_normalize($uri) {
   $scheme = file_uri_scheme($uri);
@@ -760,7 +762,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // source file.
   $basename = $basename ? $basename : basename($source);
   $destination = file_destination($directory . '/'. $basename, $replace);
-  file_stream_wrapper_uri_normalize($destination);
+  $destination = file_stream_wrapper_uri_normalize($destination);
 
   if ($destination === FALSE) {
     drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $proposed_destination)), 'error');
@@ -1724,7 +1726,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
     while (FALSE !== ($filename = readdir($handle))) {
       if (!preg_match($options['nomask'], $filename) && $filename[0] != '.') {
         $uri = "$dir/$filename";
-        file_stream_wrapper_uri_normalize($uri);
+        $uri = file_stream_wrapper_uri_normalize($uri);
         if (is_dir($uri) && $options['recurse']) {
           // Give priority to files in this folder by merging them in after any subdirectory files.
           $files = array_merge(file_scan_directory($uri, $mask, $options, $depth + 1), $files);
