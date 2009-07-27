@@ -1632,12 +1632,12 @@ function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EX
 /**
  * Pipes a file through Drupal to the client using HTTP.
  *
- * @param $source
- *   String specifying the file path to transfer.
+ * @param $uri
+ *   String specifying the file URI to transfer.
  * @param
  *   Returns an array of HTTP headers to send along with the file.
  */
-function file_transfer($source, $headers) {
+function file_transfer($uri, $headers) {
   if (ob_get_level()) {
     ob_end_clean();
   }
@@ -1646,11 +1646,9 @@ function file_transfer($source, $headers) {
     drupal_set_header($name, $value);
   }
   drupal_send_headers();
-
-  $source = file_create_path($source);
-
+  $scheme = file_uri_scheme($uri);
   // Transfer file in 1024 byte chunks to save memory usage.
-  if ($fd = fopen($source, 'rb')) {
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme) && $fd = fopen($uri, 'rb')) {
     while (!feof($fd)) {
       print fread($fd, 1024);
     }
@@ -1677,7 +1675,6 @@ function file_transfer($source, $headers) {
  */
 function file_download() {
   // Merge remainder of arguments from GET['q'], into relative file path.
-
   $args = func_get_args();
   $scheme = array_shift($args);
   $target = implode('/', $args);
@@ -1690,7 +1687,7 @@ function file_download() {
       return drupal_access_denied();
     }
     if (count($headers)) {
-      file_transfer($filepath, $headers);
+      file_transfer($uri, $headers);
     }
   }
   return drupal_not_found();

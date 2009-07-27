@@ -626,6 +626,7 @@ class DrupalTemporaryStreamWrapper extends DrupalLocalStreamWrapper {
    * Overrides getExternalUrl().
    */
   public function getExternalUrl() {
-    return '';
+    $path = str_replace('\\', '/', file_uri_target($this->uri));
+    return url('system/temporary/' . $path, array('absolute' => TRUE));
   }
 }
