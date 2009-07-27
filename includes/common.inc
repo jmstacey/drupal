@@ -2540,7 +2540,7 @@ function drupal_build_css_cache($types, $filename) {
   $data = '';
 
   // Create the css/ within the files folder.
-  $csspath = file_create_path('public', 'css');
+  $csspath = 'public://css';
   file_check_directory($csspath, FILE_CREATE_DIRECTORY);
   if (!file_exists($csspath . '/' . $filename)) {
     // Build aggregate CSS file.
@@ -3252,7 +3252,7 @@ function drupal_build_js_cache($files, $filename) {
   $contents = '';
 
   // Create the js/ within the files folder.
-  $jspath = file_create_path('public', 'js');
+  $jspath = 'public://js';
   file_check_directory($jspath, FILE_CREATE_DIRECTORY);
 
   if (!file_exists($jspath . '/' . $filename)) {
