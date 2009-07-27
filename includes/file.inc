@@ -453,34 +453,6 @@ function file_check_directory(&$directory, $mode = 0, $form_item = NULL) {
 }
 
 /**
- * Determines whether a path is a directory, or a directory/file.
- *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
- * @param $path
- *   A string containing a file path. This will be set to the directory's path.
- * @return
- *   Returns the basename of the path. If the directory is not in a Drupal
- *   writable directory FALSE is returned.
- */
-function file_check_path(&$path) {
-  // Check if path is a directory.
-  if (file_check_directory($path)) {
-    return '';
-  }
-
-  // Check if path is a possible dir/file.
-  $filename = basename($path);
-  $path     = drupal_dirname($path);
-  if (file_check_directory($path)) {
-    return $filename;
-  }
-
-  return FALSE;
-}
-
-/**
  * Assert that a file is located inside the specified directory.
  *
  * This should be used to make sure a file specified is really located within
@@ -748,8 +720,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // $proposed_destination = file_create_path($destination, $stream);
   $proposed_destination = $destination; // TODO: use file_create_path when it works again.
   $directory = $proposed_destination;
-  $basename = $directory;
-  $basename  = file_check_path($directory);
+  $basename  = basename($directory);
 
   // Make sure we at least have a valid directory.
   if ($basename === FALSE) {
@@ -1279,9 +1250,8 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
     $file->filename .= '.txt';
   }
 
-  // If the destination is not provided, or is not writable, then use the
-  // temporary directory.
-  if (empty($destination) || file_check_path($destination) === FALSE) {
+  // If the destination is not provided, use the temporary directory.
+  if (empty($destination)) {
     $destination = file_directory_temp();
   }
 
