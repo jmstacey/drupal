@@ -1,4 +1,4 @@
-// $Id: CHANGELOG.txt,v 1.317 2009-07-21 07:09:46 webchick Exp $
+// $Id: CHANGELOG.txt,v 1.321 2009-07-28 19:06:15 dries Exp $
 
 Drupal 7.0, xxxx-xx-xx (development version)
 ----------------------
@@ -73,6 +73,8 @@ Drupal 7.0, xxxx-xx-xx (development version)
     * If your site is being upgraded from Drupal 6 and you do not have the
       contributed date or event modules installed, user time zone settings will
       fallback to the system time zone and will have to be reconfigured by each user.
+- Filter system:
+    * Refactored the HTML corrector to take advantage of PHP 5 features.
 - Removed ping module:
     * Contributed modules with similar functionality are available.
 - Refactored the "access rules" component of user module:
@@ -124,6 +126,9 @@ Drupal 7.0, xxxx-xx-xx (development version)
       and allow custom data fields to be attached to itself.
     * Provides a subset of the features of the Content Construction
       Kit (CCK) module.
+- Installer:
+    * Refactored the installer into an API that allows Drupal to be installed
+      via a command line script.
 - Page organization
     * Made the help text area a full featured region with blocks.
     * Site mission is replaced with the highlighted content block region and 
@@ -140,6 +145,8 @@ Drupal 7.0, xxxx-xx-xx (development version)
     * Upgraded the jQuery Forms library to 2.21.
     * Added jQuery UI 1.7.2, which allows improvements to Drupal's user
       experience.
+- Better module version support.
+    * Modules now can specify which version of another module they depend on.
 
 Drupal 6.0, 2008-02-13
 ----------------------

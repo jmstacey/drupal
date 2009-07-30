@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.admin.inc,v 1.26 2009-07-01 20:39:20 dries Exp $
+// $Id: comment.admin.inc,v 1.28 2009-07-29 06:39:33 dries Exp $
 
 /**
  * @file
@@ -101,9 +101,7 @@ function comment_admin_overview($type = 'new', $arg) {
     '#empty' => t('No comments available.'),
   );
 
-  $form['pager'] = array(
-    '#markup' => theme('pager', NULL)
-  );
+  $form['pager'] = array('#theme' => 'pager');
 
   return $form;
 }
@@ -174,7 +172,7 @@ function comment_multiple_delete_confirm(&$form_state) {
   foreach (array_filter($edit['comments']) as $cid => $value) {
     $comment = comment_load($cid);
     if (is_object($comment) && is_numeric($comment->cid)) {
-      $subject = db_result(db_query('SELECT subject FROM {comment} WHERE cid = %d', $cid));
+      $subject = db_query('SELECT subject FROM {comment} WHERE cid = :cid', array(':cid' => $cid))->fetchField();
       $form['comments'][$cid] = array('#type' => 'hidden', '#value' => $cid, '#prefix' => '<li>', '#suffix' => check_plain($subject) . '</li>');
       $comment_counter++;
     }

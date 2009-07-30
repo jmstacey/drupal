@@ -1,5 +1,5 @@
 <?php
-// $Id: common.inc,v 1.940 2009-07-23 21:20:16 webchick Exp $
+// $Id: common.inc,v 1.945 2009-07-29 06:39:33 dries Exp $
 
 /**
  * @file
@@ -2140,14 +2140,14 @@ function url($path = NULL, array $options = array()) {
  * @return
  *   An HTML string ready for insertion in a tag.
  */
-function drupal_attributes($attributes = array()) {
-  foreach ($attributes as $attribute => $data) {
+function drupal_attributes(array $attributes = array()) {
+  foreach ($attributes as $attribute => &$data) {
     if (is_array($data)) {
       $data = implode(' ', $data);
     }
-    $items[] = $attribute . '="' . check_plain($data) . '"';
+    $data = $attribute . '="' . check_plain($data) . '"';
   }
-  return isset($items) ? ' ' . implode(' ', $items) : '';
+  return $attributes ? ' ' . implode(' ', $attributes) : '';
 }
 
 /**
@@ -3607,15 +3607,18 @@ function drupal_cron_cleanup() {
  *   An array of file objects of the specified type.
  */
 function drupal_system_listing($mask, $directory, $key = 'name', $min_depth = 1) {
-  global $profile;
+  global $install_state;
   $config = conf_path();
 
   // When this function is called during Drupal's initial installation process,
   // the name of the profile that's about to be installed is stored in the global
-  // $profile variable. At all other times, the standard Drupal systems variable
+  // installation state. At all other times, the standard Drupal systems variable
   // table contains the name of the current profile, and we can call variable_get()
   // to determine what one is active.
-  if (!isset($profile)) {
+  if (isset($install_state['parameters']['profile'])) {
+    $profile = $install_state['parameters']['profile'];
+  }
+  else {
     $profile = variable_get('install_profile', 'default');
   }
   $searchdir = array($directory);
@@ -4128,7 +4131,7 @@ function drupal_common_theme() {
       'arguments' => array('links' => NULL),
     ),
     'table' => array(
-      'arguments' => array('header' => NULL, 'rows' => NULL, 'attributes' => array(), 'caption' => NULL),
+      'arguments' => array('header' => NULL, 'rows' => NULL, 'attributes' => array(), 'caption' => NULL, 'colgroups' => array(), 'sticky' => TRUE),
     ),
     'table_select_header_cell' => array(
       'arguments' => array(),
@@ -4150,9 +4153,6 @@ function drupal_common_theme() {
     ),
     'more_link' => array(
       'arguments' => array('url' => NULL, 'title' => NULL)
-    ),
-    'closure' => array(
-      'arguments' => array('main' => 0),
     ),
     'blocks' => array(
       'arguments' => array('region' => NULL),

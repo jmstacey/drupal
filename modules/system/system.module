@@ -1,5 +1,5 @@
 <?php
-// $Id: system.module,v 1.727 2009-07-20 18:51:34 dries Exp $
+// $Id: system.module,v 1.729 2009-07-27 19:53:18 dries Exp $
 
 /**
  * @file
@@ -1376,7 +1376,6 @@ function system_init() {
   }
 }
 
-
 /**
  * Implement MODULE_preprocess_HOOK().
  */
@@ -1870,6 +1869,7 @@ function _system_get_theme_data() {
         'highlight' => 'Highlighted content',
         'help' => 'Help',
         'page_top' => 'Page top',
+        'page_bottom' => 'Page bottom',
       ),
       'description' => '',
       'features' => array(
@@ -2049,6 +2049,7 @@ function system_system_info_alter(&$info, $file) {
   // Remove page-top from the blocks UI since it is reserved for modules to
   // populate from outside the blocks system.
   $info['regions_hidden'][] = 'page_top';
+  $info['regions_hidden'][] = 'page_bottom';
 }
 
 /**

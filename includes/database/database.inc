@@ -1,5 +1,5 @@
 <?php
-// $Id: database.inc,v 1.65 2009-07-22 04:45:35 dries Exp $
+// $Id: database.inc,v 1.68 2009-07-28 12:13:46 dries Exp $
 
 /**
  * @file
@@ -891,7 +891,7 @@ abstract class DatabaseConnection extends PDO {
       }
 
       // Reset any scheduled rollback
-      $this->willRollBack = FALSE;
+      $this->willRollback = FALSE;
     }
   }
 
@@ -912,7 +912,7 @@ abstract class DatabaseConnection extends PDO {
     --$this->transactionLayers;
 
     if ($this->transactionLayers == 0 && $this->supportsTransactions()) {
-      if ($this->willRollBack) {
+      if ($this->willRollback) {
         parent::rollBack();
       }
       else {
@@ -2509,7 +2509,7 @@ function db_result(DatabaseStatementInterface $statement) {
  */
 function _db_check_install_needed() {
   global $databases;
-  if (empty($databases) && !function_exists('install_main')) {
+  if (empty($databases) && !drupal_installation_attempted()) {
     include_once DRUPAL_ROOT . '/includes/install.inc';
     install_goto('install.php');
   }
@@ -2691,6 +2691,21 @@ function db_rewrite_sql($query, $primary_table = 'n', $primary_field = 'nid',  $
   }
 
   return $query;
+}
+
+/**
+ * Ensures the environment for a Drupal database on a predefined connection.
+ *
+ * This will run tasks that check that Drupal can perform all of the functions
+ * on a database, that Drupal needs. Tasks include simple checks like CREATE
+ * TABLE to database specfic functions like stored procedures and client 
+ * encoding.
+ */
+function db_run_tasks($driver) {
+  $task_class = 'DatabaseTasks_' . $driver;
+  $DatabaseTasks = new $task_class();
+  $DatabaseTasks->runTasks();
+  return true;
 }
 
 /**

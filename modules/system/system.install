@@ -1,5 +1,5 @@
 <?php
-// $Id: system.install,v 1.356 2009-07-21 07:27:00 webchick Exp $
+// $Id: system.install,v 1.359 2009-07-28 19:18:08 dries Exp $
 
 /**
  * @file
@@ -272,6 +272,17 @@ function system_requirements($phase) {
   include_once DRUPAL_ROOT . '/includes/unicode.inc';
   $requirements = array_merge($requirements, unicode_requirements());
 
+  // Verify if the DOM PHP 5 extension is available.
+  $has_dom = class_exists('DOMDocument');
+  if (!$has_dom) {
+    $requirements['php_dom'] = array(
+      'title' => $t('PHP DOM Extension'),
+      'value' => $t('Not found'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t("The DOM extension is part of PHP 5 core, but doesn't seem to be enabled on your system. You need to enable the DOM extension on your PHP installation."),
+    );
+  }
+
   if ($phase == 'runtime') {
     // Check for update status module.
     if (!module_exists('update')) {
@@ -379,13 +390,11 @@ function system_install() {
 
   // Built-in roles.
   $rid_anonymous = db_insert('role')
-    ->fields(array('name'))
-    ->values(array('name' => 'anonymous user'))
+    ->fields(array('name' => 'anonymous user'))
     ->execute();
 
   $rid_authenticated = db_insert('role')
-    ->fields(array('name'))
-    ->values(array('name' => 'authenticated user'))
+    ->fields(array('name' => 'authenticated user'))
     ->execute();
 
   // Sanity check to ensure the anonymous and authenticated role IDs are the
@@ -1290,11 +1299,17 @@ function system_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
-      'md5'  => array(
-        'description' => "Md5 hash of the file's contents when last parsed.",
-        'type' => 'varchar',
-        'length' => 32,
+      'filectime'  => array(
+        'description' => "The creation time of the file when last parsed.",
+        'type' => 'int',
         'not null' => TRUE,
+        'default' => 0,
+      ),
+      'filemtime'  => array(
+        'description' => "The modification time of the file when last parsed.",
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
     'primary key' => array('filename'),
@@ -1550,7 +1565,7 @@ function system_update_7003() {
     ':status' => 0,
     ':type' => $type,
   ));
-  while ($blocked = db_fetch_object($result)) {
+  foreach ($result as $blocked) {
     if (filter_var($blocked->mask, FILTER_VALIDATE_IP, FILTER_FLAG_NO_RES_RANGE) !== FALSE) {
       $ret[] = update_sql("INSERT INTO {blocked_ips} (ip) VALUES ('$blocked->mask')");
     }
@@ -1718,8 +1733,9 @@ function system_update_7006() {
   );
   $schema['registry_file'] = array(
     'fields' => array(
-      'filename'   => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
-      'md5'   => array('type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => ''),
+      'filename'   => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+      'filectime'  => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'filemtime'  => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
     ),
     'primary key' => array('filename'),
   );
