@@ -619,7 +619,6 @@ class DrupalTemporaryStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    
     return variable_get('file_temporary_path', 'sites/default/private/temp');
   }
 
