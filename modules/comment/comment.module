@@ -1,5 +1,5 @@
 <?php
-// $Id: comment.module,v 1.743 2009-07-28 10:09:25 dries Exp $
+// $Id: comment.module,v 1.748 2009-08-02 11:25:18 dries Exp $
 
 /**
  * @file
@@ -127,7 +127,7 @@ function comment_theme() {
  * Implement hook_menu().
  */
 function comment_menu() {
-  $items['admin/content/content/comment'] = array(
+  $items['admin/content/comment'] = array(
     'title' => 'Comments',
     'description' => 'List and edit site comments and the comment approval queue.',
     'page callback' => 'comment_admin',
@@ -135,12 +135,12 @@ function comment_menu() {
     'type' => MENU_LOCAL_TASK,
   );
   // Tabs begin here.
-  $items['admin/content/content/comment/new'] = array(
+  $items['admin/content/comment/new'] = array(
     'title' => 'Published comments',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-  $items['admin/content/content/comment/approval'] = array(
+  $items['admin/content/comment/approval'] = array(
     'title' => 'Approval queue',
     'page arguments' => array('approval'),
     'access arguments' => array('administer comments'),
@@ -148,15 +148,15 @@ function comment_menu() {
   );
   $items['comment/delete'] = array(
     'title' => 'Delete comment',
-    'page callback' => 'comment_delete',
+    'page callback' => 'comment_delete_page',
     'access arguments' => array('administer comments'),
     'type' => MENU_CALLBACK,
   );
   $items['comment/edit/%comment'] = array(
     'title' => 'Edit comment',
-    'page callback' => 'comment_edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('comment_form', 2),
     'access callback' => 'comment_access',
-    'page arguments' => array(2),
     'access arguments' => array('edit', 2),
     'type' => MENU_CALLBACK,
   );
@@ -187,21 +187,58 @@ function comment_menu() {
 }
 
 /**
+ * Implement hook_fieldable_info().
+ */
+function comment_fieldable_info() {
+  $return = array(
+    'comment' => array(
+      'label' => t('Comment'),
+      'object keys' => array(
+        'id' => 'cid',
+        'bundle' => 'node_type',
+      ),
+      'bundle keys' => array(
+        'bundle' => 'type',
+      ),
+      'bundles' => array(),
+    ),
+  );
+  foreach (node_type_get_names() as $type => $name) {
+    $return['comment']['bundles']['comment_node_' . $type] = array(
+      'label' => $name,
+    );
+  }
+  return $return;
+}
+
+
+/**
  * Implement hook_node_type().
  */
 function comment_node_type($op, $info) {
-  $settings = array(
-    'comment',
-    'comment_default_mode',
-    'comment_default_per_page',
-    'comment_anonymous',
-    'comment_subject_field',
-    'comment_preview',
-    'comment_form_location',
-  );
-
   switch ($op) {
+    case 'insert':
+      field_attach_create_bundle('comment_node_' . $info->type);
+      break;
+
+    case 'update':
+      if (!empty($info->old_type) && $info->type != $info->old_type) {
+        field_attach_rename_bundle('comment_node_' . $info->old_type, 'comment_node_' . $info->type);
+      }
+      break;
+
     case 'delete':
+      field_attach_delete_bundle('comment_node_' . $info->type);
+
+      $settings = array(
+        'comment',
+        'comment_default_mode',
+        'comment_default_per_page',
+        'comment_anonymous',
+        'comment_subject_field',
+        'comment_preview',
+        'comment_form_location',
+      );
       foreach ($settings as $setting) {
         variable_del($setting . '_' . $info->type);
       }
@@ -554,7 +591,7 @@ function comment_node_page_additions($node) {
 
   // Append comment form if needed.
   if (user_access('post comments') && $node->comment == COMMENT_NODE_OPEN && (variable_get('comment_form_location_' . $node->type, COMMENT_FORM_BELOW) == COMMENT_FORM_BELOW)) {
-    $build = drupal_get_form('comment_form', array('nid' => $node->nid));
+    $build = drupal_get_form('comment_form', (object) array('nid' => $node->nid));
     $additions['comment_form'] = $build;
   }
 
@@ -781,6 +818,8 @@ function comment_build_content($comment, $build_mode = 'full') {
   $comment->content['comment_body'] = array(
     '#markup' => check_markup($comment->comment, $comment->format, '', FALSE),
   );
+
+  $comment->content += field_attach_view('comment', $comment, $build_mode);
 
   if (empty($comment->in_preview)) {
     $comment->content['links']['comment'] = array(
@@ -1009,9 +1048,8 @@ function comment_node_insert($node) {
  * Implement hook_node_delete().
  */
 function comment_node_delete($node) {
-  db_delete('comment')
-    ->condition('nid', $node->nid)
-    ->execute();
+  $cids = db_query('SELECT cid FROM {comment} WHERE nid = :nid', array(':nid' => $node->nid))->fetchCol();
+  comment_delete_multiple($cids);
   db_delete('node_comment_statistics')
     ->condition('nid', $node->nid)
     ->execute();
@@ -1082,13 +1120,8 @@ function comment_user_cancel($edit, $account, $method) {
 
     case 'user_cancel_delete':
       module_load_include('inc', 'comment', 'comment.admin');
-      $result = db_query('SELECT c.cid FROM {comment} c WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
-      foreach ($result as $cid) {
-        $comment = comment_load($cid);
-        // Delete the comment and its replies.
-        _comment_delete_thread($comment);
-        _comment_update_node_statistics($comment->nid);
-      }
+      $cids = db_query('SELECT c.cid FROM {comment} c WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
+      comment_delete_multiple($cids);
       break;
   }
 }
@@ -1136,6 +1169,14 @@ function comment_save($comment) {
       $comment->$key = $default;
     }
   }
+  // Make sure we have a bundle name.
+  if (!isset($comment->node_type)) {
+    $node = node_load($comment->nid);
+    $comment->node_type = 'comment_node_' . $node->type;
+  }
+
+  field_attach_presave('comment', $comment);
+
   if ($comment->cid) {
     // Update the comment in the database.
     db_update('comment')
@@ -1152,6 +1193,7 @@ function comment_save($comment) {
       ))
       ->condition('cid', $comment->cid)
       ->execute();
+    field_attach_update('comment', $comment);
     // Allow modules to respond to the updating of a comment.
     module_invoke_all('comment_update', $comment);
     // Add an entry to the watchdog log.
@@ -1229,6 +1271,8 @@ function comment_save($comment) {
     // saved node to be propagated to the slave.
     db_ignore_slave();
 
+    field_attach_insert('comment', $comment);
+
     // Tell the other modules a new comment has been submitted.
     module_invoke_all('comment_insert', $comment);
     // Add an entry to the watchdog log.
@@ -1240,6 +1284,42 @@ function comment_save($comment) {
 
   if ($comment->status == COMMENT_PUBLISHED) {
     module_invoke_all('comment_publish', $comment);
+  }
+}
+
+/**
+ * Delete a comment and all its replies.
+ *
+ * @param $cid
+ *   The comment to delete.
+ */
+function comment_delete($cid) {
+  comment_delete_multiple(array($cid));
+}
+
+/**
+ * Delete comments and all their replies.
+ *
+ * @param $cids
+ *   The comment to delete.
+ */
+function comment_delete_multiple($cids) {
+  $comments = comment_load_multiple($cids);
+  if ($comments) {
+
+    // Delete the comments.
+    db_delete('comment')
+      ->condition('cid', array_keys($comments), 'IN')
+      ->execute();
+    foreach ($comments as $comment) {
+      field_attach_delete('comment', $comment);
+      module_invoke_all('comment_delete', $comment);
+
+      // Delete the comment's replies.
+      $child_cids = db_query('SELECT cid FROM {comment} WHERE pid = :cid', array(':cid' => $comment->cid))->fetchCol();
+      comment_delete_multiple($child_cids);
+      _comment_update_node_statistics($comment->nid);
+    }
   }
 }
 
@@ -1366,7 +1446,9 @@ function comment_load_multiple($cids = array(), $conditions = array()) {
   if ($cids || $conditions) {
     $query = db_select('comment', 'c');
     $query->innerJoin('users', 'u', 'c.uid = u.uid');
+    $query->innerJoin('node', 'n', 'c.nid = n.nid');
     $query->addField('u', 'name', 'registered_name');
+    $query->addField('n', 'type', 'node_type');
     $query
       ->fields('c', array('cid', 'nid', 'pid', 'comment', 'subject', 'format', 'timestamp', 'name', 'mail', 'homepage', 'status', 'thread'))
       ->fields('u', array( 'uid', 'signature', 'picture', 'data', 'status'));
@@ -1390,11 +1472,14 @@ function comment_load_multiple($cids = array(), $conditions = array()) {
     $comment = drupal_unpack($comment);
     $comment->name = $comment->uid ? $comment->registered_name : $comment->name;
     $comment->new = node_mark($comment->nid, $comment->timestamp);
+    $comment->node_type = 'comment_node_' . $comment->node_type;
     $comments[$key] = $comment;
   }
 
-  // Invoke hook_comment_load().
   if (!empty($comments)) {
+    // Attach fields.
+    field_attach_load('comment', $comments);
+    // Invoke hook_comment_load().
     module_invoke_all('comment_load', $comments);
   }
   return $comments;
@@ -1535,21 +1620,23 @@ function comment_get_display_page($cid, $node_type) {
  * @see comment_form_validate()
  * @see comment_form_submit()
  */
-function comment_form(&$form_state, $edit = array()) {
+function comment_form(&$form_state, $comment) {
   global $user;
 
   $op = isset($_POST['op']) ? $_POST['op'] : '';
-  $node = node_load($edit['nid']);
+  $node = node_load($comment->nid);
 
   if (!$user->uid && variable_get('comment_anonymous_' . $node->type, COMMENT_ANONYMOUS_MAYNOT_CONTACT) != COMMENT_ANONYMOUS_MAYNOT_CONTACT) {
     $form_state['#attached_js'][] = drupal_get_path('module', 'comment') . '/comment.js';
   }
 
+  $comment = (array) $comment;
   // Take into account multi-step rebuilding.
   if (isset($form_state['comment'])) {
-    $edit = $form_state['comment'] + $edit;
+    $comment = $form_state['comment'] + (array) $comment;
   }
-  $edit += array('name' => '', 'mail' => '', 'homepage' => '');
+  $comment += array('name' => '', 'mail' => '', 'homepage' => '');
+  $comment = (object) $comment;
 
   $form = array();
   if (isset($form_state['comment_preview'])) {
@@ -1557,29 +1644,29 @@ function comment_form(&$form_state, $edit = array()) {
   }
 
   if ($user->uid) {
-    if (!empty($edit['cid']) && user_access('administer comments')) {
-      if (!empty($edit['author'])) {
-        $author = $edit['author'];
+    if (!empty($comment->cid) && user_access('administer comments')) {
+      if (!empty($comment->author)) {
+        $author = $comment->author;
       }
-      elseif (!empty($edit['name'])) {
-        $author = $edit['name'];
+      elseif (!empty($comment->name)) {
+        $author = $comment->name;
       }
       else {
-        $author = $edit['registered_name'];
+        $author = $comment->registered_name;
       }
 
-      if (!empty($edit['status'])) {
-        $status = $edit['status'];
+      if (!empty($comment->status)) {
+        $status = $comment->status;
       }
       else {
         $status = 0;
       }
 
-      if (!empty($edit['date'])) {
-        $date = $edit['date'];
+      if (!empty($comment->date)) {
+        $date = $comment->date;
       }
       else {
-        $date = format_date($edit['timestamp'], 'custom', 'Y-m-d H:i O');
+        $date = format_date($comment->timestamp, 'custom', 'Y-m-d H:i O');
       }
 
       $form['admin'] = array(
@@ -1590,7 +1677,7 @@ function comment_form(&$form_state, $edit = array()) {
         '#weight' => -2,
       );
 
-      if ($edit['registered_name'] != '') {
+      if ($comment->registered_name != '') {
         // The comment is by a registered user.
         $form['admin']['author'] = array(
           '#type' => 'textfield',
@@ -1621,7 +1708,7 @@ function comment_form(&$form_state, $edit = array()) {
           '#title' => t('E-mail'),
           '#maxlength' => 64,
           '#size' => 30,
-          '#default_value' => $edit['mail'],
+          '#default_value' => $comment->mail,
           '#description' => t('The content of this field is kept private and will not be shown publicly.'),
         );
         $form['admin']['homepage'] = array(
@@ -1629,7 +1716,7 @@ function comment_form(&$form_state, $edit = array()) {
           '#title' => t('Homepage'),
           '#maxlength' => 255,
           '#size' => 30,
-          '#default_value' => $edit['homepage'],
+          '#default_value' => $comment->homepage,
         );
       }
       $form['admin']['date'] = array(
@@ -1668,21 +1755,21 @@ function comment_form(&$form_state, $edit = array()) {
       '#title' => t('Your name'),
       '#maxlength' => 60,
       '#size' => 30,
-      '#default_value' => $edit['name'] ? $edit['name'] : variable_get('anonymous', t('Anonymous')),
+      '#default_value' => $comment->name ? $comment->name : variable_get('anonymous', t('Anonymous')),
     );
     $form['mail'] = array(
       '#type' => 'textfield',
       '#title' => t('E-mail'),
       '#maxlength' => 64,
       '#size' => 30,
-      '#default_value' => $edit['mail'], '#description' => t('The content of this field is kept private and will not be shown publicly.'),
+      '#default_value' => $comment->mail, '#description' => t('The content of this field is kept private and will not be shown publicly.'),
     );
     $form['homepage'] = array(
       '#type' => 'textfield',
       '#title' => t('Homepage'),
       '#maxlength' => 255,
       '#size' => 30,
-      '#default_value' => $edit['homepage'],
+      '#default_value' => $comment->homepage,
     );
   }
   elseif (variable_get('comment_anonymous_' . $node->type, COMMENT_ANONYMOUS_MAYNOT_CONTACT) == COMMENT_ANONYMOUS_MUST_CONTACT) {
@@ -1691,7 +1778,7 @@ function comment_form(&$form_state, $edit = array()) {
       '#title' => t('Your name'),
       '#maxlength' => 60,
       '#size' => 30,
-      '#default_value' => $edit['name'] ? $edit['name'] : variable_get('anonymous', t('Anonymous')),
+      '#default_value' => $comment->name ? $comment->name : variable_get('anonymous', t('Anonymous')),
       '#required' => TRUE,
     );
     $form['mail'] = array(
@@ -1699,7 +1786,7 @@ function comment_form(&$form_state, $edit = array()) {
       '#title' => t('E-mail'),
       '#maxlength' => 64,
       '#size' => 30,
-      '#default_value' => $edit['mail'], '#description' => t('The content of this field is kept private and will not be shown publicly.'),
+      '#default_value' => $comment->mail, '#description' => t('The content of this field is kept private and will not be shown publicly.'),
       '#required' => TRUE,
     );
     $form['homepage'] = array(
@@ -1707,7 +1794,7 @@ function comment_form(&$form_state, $edit = array()) {
       '#title' => t('Homepage'),
       '#maxlength' => 255,
       '#size' => 30,
-      '#default_value' => $edit['homepage'],
+      '#default_value' => $comment->homepage,
     );
   }
 
@@ -1716,12 +1803,12 @@ function comment_form(&$form_state, $edit = array()) {
       '#type' => 'textfield',
       '#title' => t('Subject'),
       '#maxlength' => 64,
-      '#default_value' => !empty($edit['subject']) ? $edit['subject'] : '',
+      '#default_value' => !empty($comment->subject) ? $comment->subject : '',
     );
   }
 
-  if (!empty($edit['comment'])) {
-    $default = $edit['comment'];
+  if (!empty($comment->comment)) {
+    $default = $comment->comment;
   }
   else {
     $default = '';
@@ -1732,25 +1819,29 @@ function comment_form(&$form_state, $edit = array()) {
     '#title' => t('Comment'),
     '#rows' => 15,
     '#default_value' => $default,
-    '#text_format' => isset($edit['format']) ? $edit['format'] : FILTER_FORMAT_DEFAULT,
+    '#text_format' => isset($comment->format) ? $comment->format : FILTER_FORMAT_DEFAULT,
     '#required' => TRUE,
   );
 
   $form['cid'] = array(
     '#type' => 'value',
-    '#value' => !empty($edit['cid']) ? $edit['cid'] : NULL,
+    '#value' => !empty($comment->cid) ? $comment->cid : NULL,
   );
   $form['pid'] = array(
     '#type' => 'value',
-    '#value' => !empty($edit['pid']) ? $edit['pid'] : NULL,
+    '#value' => !empty($comment->pid) ? $comment->pid : NULL,
   );
   $form['nid'] = array(
     '#type' => 'value',
-    '#value' => $edit['nid'],
+    '#value' => $comment->nid,
   );
   $form['uid'] = array(
     '#type' => 'value',
-    '#value' => !empty($edit['uid']) ? $edit['uid'] : 0,
+    '#value' => !empty($comment->uid) ? $comment->uid : 0,
+  );
+  $form['node_type'] = array(
+    '#type' => 'value',
+    '#value' => 'comment_node_' . $node->type,
   );
 
   // Only show the save button if comment previews are optional or if we are
@@ -1770,11 +1861,15 @@ function comment_form(&$form_state, $edit = array()) {
     '#weight' => 20,
     '#submit' => array('comment_form_build_preview'),
   );
-  $form['#token'] = 'comment' . $edit['nid'] . (isset($edit['pid']) ? $edit['pid'] : '');
+  $form['#token'] = 'comment' . $comment->nid . (isset($comment->pid) ? $comment->pid : '');
 
-  if (empty($edit['cid']) && empty($edit['pid'])) {
-    $form['#action'] = url('comment/reply/' . $edit['nid']);
+  if (empty($comment->cid) && empty($comment->pid)) {
+    $form['#action'] = url('comment/reply/' . $comment->nid);
   }
+
+  $comment->node_type = 'comment_node_' . $node->type;
+  $form['#builder_function'] = 'comment_form_submit_build_comment';
+  field_attach_form('comment', $comment, $form, $form_state);
 
   return $form;
 }
@@ -1829,12 +1924,11 @@ function comment_preview($comment) {
   }
 
   if ($comment->pid) {
-    $parent_comment = db_query('SELECT c.*, u.uid, u.name AS registered_name, u.signature, u.picture, u.data FROM {comment} c INNER JOIN {users} u ON c.uid = u.uid WHERE c.cid = :cid AND c.status = :status', array(
-      ':cid' => $comment->pid,
-      ':status' => COMMENT_PUBLISHED,
-      ))->fetchObject();
-
-    $build = comment_build($parent_comment);
+    $build = array();
+    if ($comments = comment_load_multiple(array($comment->pid), array('status' => COMMENT_PUBLISHED))) {
+      $parent_comment = $comments[$comment->pid];
+      $build = comment_build($parent_comment);
+    }
   }
   else {
     $build = node_build($node);
@@ -1851,6 +1945,9 @@ function comment_preview($comment) {
  */
 function comment_form_validate($form, &$form_state) {
   global $user;
+  $comment = (object) $form_state['values'];
+  field_attach_form_validate('comment', $comment, $form, $form_state);
+
   if ($user->uid === 0) {
     foreach (array('name', 'homepage', 'mail') as $field) {
       // Set cookie for 365 days.
@@ -1948,6 +2045,8 @@ function comment_submit($comment) {
  */
 function comment_form_submit_build_comment($form, &$form_state) {
   $comment = comment_submit($form_state['values']);
+
+  field_attach_submit('comment', $comment, $form, $form_state);
 
   $form_state['comment'] = (array)$comment;
   $form_state['rebuild'] = TRUE;
@@ -2351,6 +2450,6 @@ function comment_ranking() {
  * Implement hook_menu_alter().
  */
 function comment_menu_alter(&$items) {
-  // Add comments to the description for admin/content/content.
+  // Add comments to the description for admin/content.
   $items['admin/content/content']['description'] = "View, edit, and delete your site's content and comments.";
 }

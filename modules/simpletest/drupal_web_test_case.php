@@ -1,5 +1,5 @@
 <?php
-// $Id: drupal_web_test_case.php,v 1.130 2009-07-28 12:13:47 dries Exp $
+// $Id: drupal_web_test_case.php,v 1.132 2009-07-30 10:46:53 dries Exp $
 
 /**
  * Base class for Drupal tests.
@@ -138,20 +138,27 @@ abstract class DrupalTestCase {
   }
 
   /**
-   * Make assertions from outside the test case.
+   * Store an assertion from outside the testing context.
+   *
+   * This is useful for inserting assertions that can only be recorded after
+   * the test case has been destroyed, such as PHP fatal errors. The caller
+   * information is not automatically gathered since the caller is most likely
+   * inserting the assertion on behalf of other code. In all other respects
+   * the method behaves just like DrupalTestCase::assert() in terms of storing
+   * the assertion.
    *
    * @see DrupalTestCase::assert()
    */
-  public static function assertStatic($test_id, $test_class, $status, $message = '', $group = 'Other', array $caller = NULL) {
+  public static function insertAssert($test_id, $test_class, $status, $message = '', $group = 'Other', array $caller = array()) {
     // Convert boolean status to string status.
     if (is_bool($status)) {
       $status = $status ? 'pass' : 'fail';
     }
 
     $caller += array(
-      'function' => t('N/A'),
-      'line' => -1,
-      'file' => t('N/A'),
+      'function' => t('Unknown'),
+      'line' => 0,
+      'file' => t('Unknown'),
     );
 
     $assertion = array(
@@ -867,21 +874,27 @@ class DrupalWebTestCase extends DrupalTestCase {
    *
    * @param $permissions
    *   Array of permission names to assign to role.
+   * @param $name
+   *   (optional) String for the name of the role.  Defaults to a random string.
    * @return
    *   Role ID of newly created role, or FALSE if role creation failed.
    */
-  protected function drupalCreateRole(array $permissions) {
+  protected function drupalCreateRole(array $permissions, $name = NULL) {
+    // Generate random name if it was not passed.
+    if (!$name) {
+      $name = $this->randomName();
+    }
+
     if (!$this->checkPermissions($permissions)) {
       return FALSE;
     }
 
     // Create new role.
-    $role_name = $this->randomName();
     db_insert('role')
-      ->fields(array('name' => $role_name))
+      ->fields(array('name' => $name))
       ->execute();
-    $role = db_query('SELECT * FROM {role} WHERE name = :name', array(':name' => $role_name))->fetchObject();
-    $this->assertTrue($role, t('Created role of name: @role_name, id: @rid', array('@role_name' => $role_name, '@rid' => (isset($role->rid) ? $role->rid : t('-n/a-')))), t('Role'));
+    $role = db_query('SELECT * FROM {role} WHERE name = :name', array(':name' => $name))->fetchObject();
+    $this->assertTrue($role, t('Created role of name: @name, id: @rid', array('@name' => $name, '@rid' => (isset($role->rid) ? $role->rid : t('-n/a-')))), t('Role'));
     if ($role && !empty($role->rid)) {
       // Assign permissions to role and mark it for clean-up.
       $query = db_insert('role_permission')->fields(array('rid', 'permission'));
@@ -1030,13 +1043,22 @@ class DrupalWebTestCase extends DrupalTestCase {
       ->execute();
     $db_prefix = $db_prefix_new;
 
+    // Create test directory ahead of installation so fatal errors and debug
+    // information can be logged during installation process.
+    $directory = $this->originalFileDirectory . '/simpletest/' . substr($db_prefix, 10);
+    file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+
+    // Log fatal errors.
+    ini_set('log_errors', 1);
+    ini_set('error_log', $directory . '/error.log');
+
     include_once DRUPAL_ROOT . '/includes/install.inc';
     drupal_install_system();
 
     $this->preloadRegistry();
 
     // Include the default profile
-    require_once("./profiles/default/default.profile");
+    require_once('./profiles/default/default.profile');
     $profile_details = install_profile_info('default', 'en');
 
     // Add the specified modules to the list of modules in the default profile.
@@ -1087,22 +1109,18 @@ class DrupalWebTestCase extends DrupalTestCase {
     // default mail handler.
     variable_set('smtp_library', drupal_get_path('module', 'simpletest') . '/drupal_web_test_case.php');
 
-    // Use temporary directories
+    // Use temporary files directory with the same prefix as the database.
     $public_files_directory  = $this->originalFileDirectory . '/' . $db_prefix;
     $private_files_directory = $public_files_directory . '/private';
 
     // Set path variables
-    variable_set('stream_public_path', $public_files_directory);
-    variable_set('stream_private_path', $private_files_directory);
+    variable_set('file_public_path', $public_files_directory);
+    variable_set('file_private_path', $private_files_directory);
 
     // Create the directories
     $directory = file_directory_path('public://');
     file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     file_check_directory($private_files_directory, FILE_CREATE_DIRECTORY);
-
-    // Log fatal errors.
-    ini_set('log_errors', 1);
-    ini_set('error_log', $directory . '/error.log');
 
     set_time_limit($this->timeLimit);
   }
@@ -1141,6 +1159,13 @@ class DrupalWebTestCase extends DrupalTestCase {
    */
   protected function tearDown() {
     global $db_prefix, $user, $language, $simpletest_stream_wrapper_path;
+
+    // In case a fatal error occured that was not in the test process read the
+    // log to pick up any fatal errors.
+    $db_prefix_temp = $db_prefix;
+    $db_prefix = $this->originalPrefix;
+    simpletest_log_read($this->testId, $db_prefix, get_class($this), TRUE);
+    $db_prefix = $db_prefix_temp;
 
     $emailCount = count(variable_get('simpletest_emails', array()));
     if ($emailCount) {

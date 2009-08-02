@@ -1,5 +1,5 @@
 <?php
-// $Id: default.profile,v 1.57 2009-07-28 12:13:47 dries Exp $
+// $Id: default.profile,v 1.61 2009-08-01 18:32:01 dries Exp $
 
 /**
  * Implement hook_profile_tasks().
@@ -84,6 +84,36 @@ function default_profile_site_setup(&$install_state) {
       'pages' => '',
       'cache' => -1,
     ),
+    array(
+      'module' => 'system',
+      'delta' => 'main',
+      'theme' => 'seven',
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'help',
+      'theme' => 'seven',
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'user',
+      'delta' => 'login',
+      'theme' => 'seven',
+      'status' => 1,
+      'weight' => 10,
+      'region' => 'content',
+      'pages' => '',
+      'cache' => -1,
+    ),
   );
   $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
   foreach ($values as $record) {
@@ -150,7 +180,7 @@ function default_profile_site_setup(&$install_state) {
 
   // Create a default vocabulary named "Tags", enabled for the 'article' content type.
   $description = st('Use tags to group articles on similar topics into categories.');
-  $help = st('Enter a comma-separated list of words.');
+  $help = st('Enter a comma-separated list of words to describe your content.');
 
   $vid = db_insert('taxonomy_vocabulary')->fields(array(
     'name' => 'Tags',
@@ -188,6 +218,15 @@ function default_profile_site_setup(&$install_state) {
   // Save some default links.
   $link = array('link_path' => 'admin/structure/menu-customize/main-menu/add', 'link_title' => 'Add a main menu link', 'menu_name' => 'main-menu');
   menu_link_save($link);
+
+  // Enable the admin theme.
+  db_update('system')
+    ->fields(array('status' => 1))
+    ->condition('type', 'theme')
+    ->condition('name', 'seven')
+    ->execute();
+  variable_set('admin_theme', 'seven');
+  variable_set('node_admin_theme', '1');
 }
 
 /**
