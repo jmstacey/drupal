@@ -1116,7 +1116,7 @@ function theme_get_setting($setting_name, $refresh = FALSE) {
         }
       }
       elseif ($settings['favicon_path']) {
-        $settings['favicon'] = file_create_url($settings['favicon_path']);
+        $settings['favicon'] = file_external_url($settings['favicon_path']);
       }
       else {
         $settings['toggle_favicon'] = FALSE;
