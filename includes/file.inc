@@ -285,31 +285,39 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
 /**
  * Creates the web accessible URL to a stream.
  *
- * Compatibility: only stream wrappers.
+ * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
  * @param $uri
  *   The URI to for which we need an external URL.
  * @return
- *   Returns a string containing a URL that may be used to access the stream.
+ *   Returns a string containing a URL that may be used to access the file.
  *   If the provided string already contains a preceding 'http', nothing is done
  *   and the same string is returned. If a Valid stream wrapper could not be found
  *   to generate an external URL, then FALSE will be returned.
  */
 function file_external_url($uri) {
-  // Flat out check for http so that we don't have to actually implement getExternalUrl()
-  // for the http wrapper.
   $scheme = file_uri_scheme($uri);
-  if ($scheme == 'http' || $scheme == 'https') {
-    // This is already a somewhat properly formatted URL, so do nothing and return.
+  
+  // TODO: Implement CDN integration hook stuff here
+  // see http://drupal.org/node/499156
+  
+  if (!$scheme) {
+    // If this is not a properly formatted stream return the URI with the base url prepended.
+    return $GLOBALS['base_url'] . '/' . $uri;
+  }
+  elseif ($scheme == 'http' || $scheme == 'https') {
+    // Check for http so that we don't have to implement getExternalUrl() for the http wrapper.
     return $uri;
   }
-
-  if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
-    return $wrapper->getExternalUrl();
-  }
   else {
-    return FALSE;
+    // Attempt to return an external URL using the appropriate wrapper.
+    if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
+      return $wrapper->getExternalUrl();
+    }
+    else {
+      return FALSE;
+    }
   }
 }
 
