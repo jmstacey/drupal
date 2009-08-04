@@ -298,10 +298,10 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  */
 function file_external_url($uri) {
   $scheme = file_uri_scheme($uri);
-  
+
   // TODO: Implement CDN integration hook stuff here
   // see http://drupal.org/node/499156
-  
+
   if (!$scheme) {
     // If this is not a properly formatted stream return the URI with the base url prepended.
     return $GLOBALS['base_url'] . '/' . $uri;
@@ -397,6 +397,42 @@ function file_check_directory(&$directory, $mode = 0) {
   }
 
   return TRUE;
+}
+
+/**
+ * Creates an htaccess file in the given directory.
+ *
+ * @param $directory
+ *   The directory.
+ * @param $private
+ *   TRUE indicates that $dir should be private and protected from prying eyes.
+ *   The default is FAlSE which indicates an open public directory.
+ */
+function file_create_htaccess($directory, $private = FALSE) {
+  $htaccess_path = rtrim($directory, '/') . '/.htaccess';
+
+  if (file_exists($htaccess_path)) {
+    // Short circuit if the .htaccess file already exists.
+    return;
+  }
+
+  if ($private) {
+    // Private htaccess file.
+    $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nDeny from all\nOptions None\nOptions +FollowSymLinks";
+  }
+  else {
+    // Public htaccess file.
+    $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
+  }
+
+  // Write the .htaccess file.
+  if (file_put_contents($htaccess_path, $htaccess_lines)) {
+    drupal_chmod($htaccess_path);
+  }
+  else {
+    $variables = array('%directory' => $directory, '!htaccess' => '<br />' . nl2br(check_plain($htaccess_lines)));
+    watchdog('security', "Security warning: Couldn't write .htaccess file. Please create a .htaccess file in your %directory directory which contains the following lines: <code>!htaccess</code>", $variables, WATCHDOG_ERROR);
+  }
 }
 
 /**
@@ -1873,10 +1909,11 @@ function drupal_dirname($uri) {
  * @see mkdir()
  */
 function drupal_mkdir($uri, $mode = NULL, $recursive = FALSE, $context = NULL) {
+
   if (is_null($mode)) {
     $mode = variable_get('file_chmod_directory', 0775),
   }
-  
+
   return mkdir($uri, $mode, $recursive, $context);
 }
 
