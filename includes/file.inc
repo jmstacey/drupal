@@ -1853,24 +1853,31 @@ function drupal_dirname($uri) {
 /**
  * Creates a directory using Drupal's default mode.
  *
- * PHP's mkdir() does not respect Drupal's default mode, so this function
- * fills that gap. It is backwards compatibel with normal paths and will use
- * PHP's mkdir() as a fallback.
+ * PHP's mkdir() does not respect Drupal's default permissions mode. If a mode
+ * is not provided, this function will make sure that Drupal's is used.
  *
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
  * @param $uri
- *   A URI or path.
- * @param
- *	 Even more todo
+ *   A URI or pathname.
+ * @param $mode
+ *   By default the Drupal mode is used.
+ * @param $recursive
+ *   Default to FALSE.
+ * @param $context
+ *   Refer to http://php.net/manual/en/ref.stream.php
  * @return
- *   Returns a string containing the directory name.
+ *   Returns TRUE on success or FALSE on failure.
  *
  * @see mkdir()
  */
-function drupal_mkdir($uri) {
-	// TODO: Implement
+function drupal_mkdir($uri, $mode = NULL, $recursive = FALSE, $context = NULL) {
+  if (is_null($mode)) {
+    $mode = variable_get('file_chmod_directory', 0775),
+  }
+  
+  return mkdir($uri, $mode, $recursive, $context);
 }
 
 /**
