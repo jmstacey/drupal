@@ -609,8 +609,11 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   $original_destination = $destination;
   // If the destination file is not specified then use the filename of the
   // source file.
-  if (is_null($destination)) {
-    $destination = variable_get('file_scheme_default', 'public') . '://' . basename($source);
+  if (isset($destination)) {
+    $destination = file_stream_wrapper_uri_normalize($destination);
+  }
+  else {
+    $destination = file_build_uri(basename($source));
   }
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
@@ -619,7 +622,6 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     return FALSE;
   }
 
-  $destination = file_stream_wrapper_uri_normalize($destination);
   $destination_scheme = file_uri_scheme($destination);
   $destination_dir = drupal_dirname($destination);
   // Make sure we at least have a valid destination directory.
@@ -651,6 +653,15 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
 
   return $destination;
 }
+
+/**
+ * Given a relative path, construct a uri into Drupal's default files location.
+ */
+function file_build_uri($path) {
+  $uri = variable_get('file_scheme_default', 'public') . '://' . $path;
+  return file_stream_wrapper_uri_normalize($uri);
+}
+
 
 /**
  * Determines the destination path for a file depending on how replacement of

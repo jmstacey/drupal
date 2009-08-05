@@ -200,7 +200,7 @@ function image_file_download($filepath) {
     $original_path = implode('/', $args);
 
     // Check that the file exists and is an image.
-    if ($info = image_get_info(file_create_path($filepath))) {
+    if ($info = image_get_info($filepath)) {
       // Check the permissions of the original to grant access to this image.
       $headers = module_invoke_all('file_download', $original_path);
       if (!in_array(-1, $headers)) {
@@ -239,7 +239,8 @@ function image_file_delete($file) {
 function image_path_flush($path) {
   $styles = image_styles();
   foreach ($styles as $style) {
-    if ($path = file_create_path('styles/' . $style['name'] . '/' . $path)) {
+    $path = image_style_path($style['name'], $path);
+    if (file_exists($path)) {
       file_unmanaged_delete($path);
     }
   }
@@ -428,9 +429,7 @@ function image_style_generate() {
   $scheme = array_shift($args);
   $path = implode('/', $args);
 
-  $path = $scheme . '://' . $path;
-
-  $source = file_create_path($path);
+  $source = $scheme . '://' . $path;
   $path_md5 = md5($path);
   $destination = image_style_path($style['name'], $path);
 
@@ -483,14 +482,14 @@ function image_style_generate() {
  * @param $source
  *   Path of the source file.
  * @param $destination
- *   Path of the destination file.
+ *   Path or URI of the destination file.
  * @return
  *   TRUE if an image derivative is generated, FALSE if no image derivative
  *   is generated. NULL if the derivative is being generated.
  */
 function image_style_create_derivative($style, $source, $destination) {
   // Get the folder for the final location of this style.
-  $directory = dirname($destination);
+  $directory = drupal_dirname($destination);
 
   // Build the destination folder tree if it doesn't already exist.
   if (!file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
@@ -523,7 +522,6 @@ function image_style_create_derivative($style, $source, $destination) {
  *   An image style array.
  */
 function image_style_flush($style) {
-  // TODO: Don't assume public
   $style_directory = drupal_realpath(file_directory_path() . '/styles/' . $style['name']);
   if (is_dir($style_directory)) {
     file_unmanaged_delete_recursive($style_directory);

@@ -462,8 +462,7 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
   else {
     $filename = $name;
   }
-  $uri = variable_get('file_default_scheme', 'public') . "://$filename";
-  $uri = file_stream_wrapper_uri_normalize($uri);
+  $uri = file_build_uri($filename);
   $data = $file['bits'];
 
   if (!$data) {
