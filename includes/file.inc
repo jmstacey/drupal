@@ -610,7 +610,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // If the destination file is not specified then use the filename of the
   // source file.
   if (is_null($destination)) {
-    $destination = variable_get('stream_scheme_default', 'public') . '://' . basename($source);
+    $destination = variable_get('file_scheme_default', 'public') . '://' . basename($source);
   }
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
@@ -1662,12 +1662,12 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  *   wrapper is assumed if this is not provided.
  *   A stream is referenced as: scheme://target.
  * @return
- *   A string containing the base path of a stream. FALSE is returned if the scheme
- *   is invalid or a wrapper could not be instantiated.
+ *   A string containing the directory path of a stream. FALSE is returned if
+ *   the scheme is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme = NULL) {
   if ($scheme === NULL) {
-    $scheme = variable_get('stream_default_scheme', 'public');
+    $scheme = variable_get('file_default_scheme', 'public');
   }
   if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
     return $wrapper->getDirectoryPath();
