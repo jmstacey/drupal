@@ -810,7 +810,7 @@ function drupal_install_mkdir($file, $mask, $message = TRUE) {
     }
   }
 
-  if (@mkdir($file, intval("0$mod", 8))) {
+  if (@drupal_mkdir($file, intval("0$mod", 8))) {
     return TRUE;
   }
   else {

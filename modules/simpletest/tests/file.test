@@ -151,7 +151,7 @@ class FileTestCase extends DrupalWebTestCase {
     if (is_null($path)) {
       $path = file_directory_path() . '/' . $this->randomName();
     }
-    $this->assertTrue(mkdir($path) && is_dir($path), t('Directory was created successfully.'));
+    $this->assertTrue(drupal_mkdir($path) && is_dir($path), t('Directory was created successfully.'));
     return $path;
   }
 

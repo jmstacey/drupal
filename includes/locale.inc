@@ -2449,7 +2449,8 @@ function _locale_rebuild_js($langcode = NULL) {
   // Only create a new file if the content has changed.
   if ($data && $language->javascript != $data_hash) {
     // Ensure that the directory exists and is writable, if possible.
-#TODO: this should be drupal_mkdir();
+    
+    //TODO: this should be drupal_mkdir();
     file_check_directory($dir, TRUE);
 
     // Save the file.
