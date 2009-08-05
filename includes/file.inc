@@ -501,7 +501,7 @@ function file_save($file) {
 }
 
 /**
- * Copies a file to a new location and adds a file record to the database.
+ * Copy a file to a new location and adds a file record to the database.
  *
  * This function should be used when manipulating files that have records
  * stored in the database. This is a powerful function that in many ways
@@ -514,9 +514,6 @@ function file_save($file) {
  * - Adds the new file to the files database. If the source file is a
  *   temporary file, the resulting file will also be a temporary file.
  *   @see file_save_upload() for details on temporary files.
- *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
  *
  * @param $source
  *   A file object.
@@ -599,7 +596,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
  * @return
- *   Returns the path to the new file, or FALSE in the event of an error.
+ *   The path to the new file, or FALSE in the event of an error.
  *
  * @see file_copy()
  */
