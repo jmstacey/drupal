@@ -1647,16 +1647,6 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 }
 
 /**
- * Determine the default temporary directory.
- *
- * @return
- *   A string containing a temp directory.
- */
-function file_directory_path('temporary') {
-  return file_directory_path('temporary');
-}
-
-/**
  * Determines the base path of a given wrapper.
  *
  * This function will return the base path of a stream by providing a scheme.
