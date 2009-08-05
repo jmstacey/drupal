@@ -801,7 +801,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     // Make sure type is valid.
     if (in_array($type, array('binary', 'html', 'image', 'javascript', 'php', 'sql', 'text'))) {
       // Use original file directory instead of one created during setUp().
-      $path = 'simpletest://';
+      $path = $this->originalFileDirectory . '/simpletest';
       $files = file_scan_directory($path, '/' . $type . '\-.*/');
 
       // If size is set then remove any files that are not of that size.
@@ -1023,15 +1023,13 @@ class DrupalWebTestCase extends DrupalTestCase {
    *   List of modules to enable for the duration of the test.
    */
   protected function setUp() {
-    global $db_prefix, $user, $language, $simpletest_stream_wrapper_path;
+    global $db_prefix, $user, $language;
 
     // Store necessary current values before switching to prefixed database.
     $this->originalLanguage = $language;
     $this->originalLanguageDefault = variable_get('language_default');
     $this->originalPrefix = $db_prefix;
     $this->originalFileDirectory = file_directory_path();
-
-    $simpletest_stream_wrapper_path = $this->originalFileDirectory .'/simpletest';
 
     $clean_url_original = variable_get('clean_url', 0);
 
@@ -1158,7 +1156,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * and reset the database prefix.
    */
   protected function tearDown() {
-    global $db_prefix, $user, $language, $simpletest_stream_wrapper_path;
+    global $db_prefix, $user, $language;
 
     // In case a fatal error occured that was not in the test process read the
     // log to pick up any fatal errors.
@@ -1174,12 +1172,9 @@ class DrupalWebTestCase extends DrupalTestCase {
     }
 
     if (preg_match('/simpletest\d+/', $db_prefix)) {
-      // Remove our temporary variable.
-      unset($simpletest_stream_wrapper_path);
 
-      // Delete temporary files directory and reset files directory path.
+      // Delete temporary files directory.
       file_unmanaged_delete_recursive(file_directory_path());
-      variable_set('stream_public_path', $this->originalFileDirectory);
 
       // Remove all prefixed tables (all the tables in the schema).
       $schema = drupal_get_schema(NULL, TRUE);

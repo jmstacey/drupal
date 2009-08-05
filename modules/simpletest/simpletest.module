@@ -470,16 +470,3 @@ function simpletest_clean_results_table($test_id = NULL) {
   return FALSE;
 }
 
-/**
- * Drupal simpletest (simpletest://) stream wrapper class.
- *
- * Provides support for the simpletest directory created within the public
- * files directory.
- */
-class DrupalSimpleTestStreamWrapper extends DrupalPublicStreamWrapper {
-  public function getDirectoryPath() {
-    global $simpletest_stream_wrapper_path;
-    // This gets set just before registering our stream wrapper.
-    return $simpletest_stream_wrapper_path;
-  }
-}
