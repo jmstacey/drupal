@@ -350,7 +350,7 @@ function file_check_directory(&$directory, $mode = 0) {
   if (!is_dir($directory)) {
     // Let mkdir() recursively create directories and use the default directory
     // permissions.
-    if (($mode & FILE_CREATE_DIRECTORY) && @mkdir($directory, variable_get('file_chmod_directory', 0775), TRUE)) {
+    if (($mode & FILE_CREATE_DIRECTORY) && @drupal_mkdir($directory, NULL, TRUE)) {
       drupal_chmod($directory);
     }
     else {
