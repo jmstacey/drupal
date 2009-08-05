@@ -459,14 +459,18 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
     $filename = str_replace('.', '_', $filename);
     $filename .= '.' . $final_extension;
   }
-
+  else {
+    $filename = $name;
+  }
+  $uri = variable_get('file_default_scheme', 'public') . "://$filename";
+  $uri = file_stream_wrapper_uri_normalize($uri);
   $data = $file['bits'];
 
   if (!$data) {
     return blogapi_error(t('No file sent.'));
   }
 
-  if (!$file = file_unmanaged_save_data($data, $filename)) {
+  if (!$file = file_unmanaged_save_data($data, $uri)) {
     return blogapi_error(t('Error storing file.'));
   }
 
@@ -478,9 +482,7 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
   drupal_write_record('blogapi_files', $row);
 
   // Return the successful result.
-  $uri = variable_get('stream_default_scheme', 'public') . ":///$file";
-  $uri = file_stream_wrapper_uri_normalize($uri);
-  return array('url' => file_external_url($uri), 'struct');
+  return array('url' => file_external_url($file), 'struct');
 }
 /**
  * Blogging API callback. Returns a list of the taxonomy terms that can be
