@@ -300,7 +300,7 @@ function color_scheme_form_submit($form, &$form_state) {
   $paths['color'] = file_directory_path() . '/color';
   $paths['target'] = $paths['color'] . '/' . $id;
   foreach ($paths as $path) {
-    file_check_directory($path, FILE_CREATE_DIRECTORY);
+    file_prepare_directory($path, FILE_CREATE_DIRECTORY);
   }
   $paths['target'] = $paths['target'] . '/';
   $paths['id'] = $id;

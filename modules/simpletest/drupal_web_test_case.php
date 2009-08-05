@@ -1046,7 +1046,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     // Create test directory ahead of installation so fatal errors and debug
     // information can be logged during installation process.
     $directory = $this->originalFileDirectory . '/simpletest/' . substr($db_prefix, 10);
-    file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
     // Log fatal errors.
     ini_set('log_errors', 1);
@@ -1119,8 +1119,8 @@ class DrupalWebTestCase extends DrupalTestCase {
 
     // Create the directories
     $directory = file_directory_path('public://');
-    file_check_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-    file_check_directory($private_files_directory, FILE_CREATE_DIRECTORY);
+    file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    file_prepare_directory($private_files_directory, FILE_CREATE_DIRECTORY);
 
     set_time_limit($this->timeLimit);
   }
@@ -2557,7 +2557,7 @@ function simpletest_verbose($message, $original_file_directory = NULL) {
     // Clear out the previous log.
     $message = t('Starting verbose log at @time.', array('@time' => format_date(time()))) . "\n";
     $directory = $file_directory . '/simpletest';
-    if (file_check_directory($directory, FILE_CREATE_DIRECTORY)) {
+    if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
       file_put_contents($directory . '/verbose.html', $message);
     }
   }

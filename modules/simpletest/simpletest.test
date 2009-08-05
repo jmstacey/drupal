@@ -13,7 +13,7 @@ class SimpleTestStreamWrapperTest extends DrupalWebTestCase {
 
   function testSimpleTestFolderExists() {
     $dir = 'simpletest://';
-    $this->assertTrue(file_check_directory($dir), t('The base simpletest stream wrapper folder exists.'));
+    $this->assertTrue(file_prepare_directory($dir), t('The base simpletest stream wrapper folder exists.'));
   }
 }
 

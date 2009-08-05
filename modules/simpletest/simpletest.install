@@ -13,7 +13,7 @@ function simpletest_install() {
   drupal_install_schema('simpletest');
   // Check for files directory.
   $path = file_directory_path() . '/simpletest';
-  if (file_check_directory($path, FILE_CREATE_DIRECTORY)) {
+  if (file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
     // Generate binary and text test files.
     $generated = FALSE;
     if (simpletest_get_file_count($path, 'binary') == 0) {

@@ -190,7 +190,7 @@ function system_requirements($phase) {
   // For installer, create the directories if possible.
   foreach ($directories as $directory) {
     if ($phase == 'install') {
-      file_check_directory($directory, FILE_CREATE_DIRECTORY);
+      file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
     }
     $is_writable = is_writable($directory);
     $is_directory = is_dir($directory);

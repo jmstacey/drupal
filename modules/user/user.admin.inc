@@ -325,7 +325,7 @@ function user_admin_settings() {
   // If picture support is enabled, check whether the picture directory exists.
   if (variable_get('user_pictures', 0)) {
     $picture_path = file_create_path(variable_get('user_picture_path', 'pictures'));
-    if (!file_check_directory($picture_path, FILE_CREATE_DIRECTORY)) {
+    if (!file_prepare_directory($picture_path, FILE_CREATE_DIRECTORY)) {
       form_set_error('user_picture_path', t('The directory %directory does not exist or is not writable.', array('%directory' => $picture_path)));
       watchdog('file system', 'The directory %directory does not exist or is not writable.', array('%directory' => $picture_path), WATCHDOG_ERROR);
     }

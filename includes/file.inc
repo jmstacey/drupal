@@ -35,12 +35,12 @@ require_once DRUPAL_ROOT . '/includes/stream_wrappers.inc';
  */
 
 /**
- * Flag used by file_check_directory() -- create directory if not present.
+ * Flag used by file_prepare_directory() -- create directory if not present.
  */
 define('FILE_CREATE_DIRECTORY', 1);
 
 /**
- * Flag used by file_check_directory() -- file permissions may be changed.
+ * Flag used by file_prepare_directory() -- file permissions may be changed.
  */
 define('FILE_MODIFY_PERMISSIONS', 2);
 
@@ -331,7 +331,8 @@ function file_external_url($uri) {
  * @see http://drupal.org/node/515192
  *
  * @param &$directory
- *   A string reference containing the name of a directory path.
+ *   A string reference containing the name of a directory path. A trailing
+ *   slash will be trimmed.
  * @param $mode
  *   A bitmask to indicate if the directory should be created if it does
  *   not exist (FILE_CREATE_DIRECTORY) or made writable if it is read-only
@@ -340,7 +341,7 @@ function file_external_url($uri) {
  *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
-function file_check_directory(&$directory, $mode = 0) {
+function file_prepare_directory(&$directory, $mode = 0) {
   if (!file_stream_wrapper_valid_scheme($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');

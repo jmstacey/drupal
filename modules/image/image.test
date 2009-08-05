@@ -51,7 +51,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     image_style_save(array('name' => $this->style_name));
 
     // Create the directories for the styles.
-    $status = file_check_directory($d = file_directory_path() . '/styles/' . $this->style_name, FILE_CREATE_DIRECTORY);
+    $status = file_prepare_directory($d = file_directory_path() . '/styles/' . $this->style_name, FILE_CREATE_DIRECTORY);
     $this->assertNotIdentical(FALSE, $status, t('Created the directory for the generated images for the test style.' ));
 
     // Create a working copy of the file.
