@@ -1914,7 +1914,12 @@ function drupal_mkdir($uri, $mode = NULL, $recursive = FALSE, $context = NULL) {
     $mode = variable_get('file_chmod_directory', 0775);
   }
 
-  return mkdir($uri, $mode, $recursive, $context);
+  if (is_null($context)) {
+    return mkdir($uri, $mode, $recursive);
+  }
+  else {
+    return mkdir($uri, $mode, $recursive, $context);
+  }
 }
 
 /**
