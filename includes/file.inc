@@ -405,10 +405,10 @@ function file_check_directory(&$directory, $mode = 0) {
  * @param $directory
  *   The directory.
  * @param $private
- *   TRUE indicates that $dir should be private and protected from prying eyes.
- *   The default is FAlSE which indicates an open public directory.
+ *   FALSE indicates that $directory should be an open and public directory.
+ *   The default is TRUE which indicates a private and protected directory.
  */
-function file_create_htaccess($directory, $private = FALSE) {
+function file_create_htaccess($directory, $private = TRUE) {
   $htaccess_path = rtrim($directory, '/') . '/.htaccess';
 
   if (file_exists($htaccess_path)) {
@@ -1911,7 +1911,7 @@ function drupal_dirname($uri) {
 function drupal_mkdir($uri, $mode = NULL, $recursive = FALSE, $context = NULL) {
 
   if (is_null($mode)) {
-    $mode = variable_get('file_chmod_directory', 0775),
+    $mode = variable_get('file_chmod_directory', 0775);
   }
 
   return mkdir($uri, $mode, $recursive, $context);
