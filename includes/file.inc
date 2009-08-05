@@ -1599,7 +1599,7 @@ function file_download() {
  *   should not be passed.
  * @return
  *   Returns an associative array (keyed on the provided key) of objects with
- *   'filepath', 'filename', and 'name' members corresponding to the
+ *   'uri', 'filename', and 'name' members corresponding to the
  *   matching files.
  */
 function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {

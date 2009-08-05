@@ -611,22 +611,22 @@ function drupal_settings_initialize() {
  *   The type of the item (i.e. theme, theme_engine, module).
  * @param $name
  *   The name of the item for which the filename is requested.
- * @param $filename
- *   The filename of the item if it is to be set explicitly rather
+ * @param $filepath
+ *   The filepath of the item if it is to be set explicitly rather
  *   than by consulting the database.
  *
  * @return
- *   The filename of the requested item.
+ *   The filepath of the requested item.
  */
-function drupal_get_filename($type, $name, $filename = NULL) {
+function drupal_get_filename($type, $name, $filepath = NULL) {
   $files = &drupal_static(__FUNCTION__, array());
 
   if (!isset($files[$type])) {
     $files[$type] = array();
   }
 
-  if (!empty($filename) && file_exists($filename)) {
-    $files[$type][$name] = $filename;
+  if (!empty($filepath) && file_exists($filepath)) {
+    $files[$type][$name] = $filepath;
   }
   elseif (isset($files[$type][$name])) {
     // nothing
@@ -665,8 +665,8 @@ function drupal_get_filename($type, $name, $filename = NULL) {
 
       if (drupal_function_exists('drupal_system_listing')) {
         $matches = drupal_system_listing($mask, $dir, 'name', 0);
-        if (!empty($matches[$name]->filepath)) {
-          $files[$type][$name] = $matches[$name]->filepath;
+        if (!empty($matches[$name]->uri)) {
+          $files[$type][$name] = $matches[$name]->uri;
         }
       }
     }
