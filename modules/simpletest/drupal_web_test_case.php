@@ -1,5 +1,5 @@
 <?php
-// $Id: drupal_web_test_case.php,v 1.133 2009-08-03 22:18:59 webchick Exp $
+// $Id: drupal_web_test_case.php,v 1.134 2009-08-05 15:58:35 webchick Exp $
 
 /**
  * Base class for Drupal tests.
@@ -1122,7 +1122,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     file_prepare_directory($private_files_directory, FILE_CREATE_DIRECTORY);
 
-    set_time_limit($this->timeLimit);
+    drupal_set_time_limit($this->timeLimit);
   }
 
   /**
