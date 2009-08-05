@@ -322,7 +322,10 @@ function file_external_url($uri) {
 }
 
 /**
- * Asserts that the directory exists and is writable.
+ * Prepares the directory by making sure it is writable.
+ *
+ * This function will make sure that the directory exists and is writable. It
+ * will also try to create the directories if allowed.
  *
  * Directories need to have execute permissions to be considered a directory by
  * FTP servers, etc.
