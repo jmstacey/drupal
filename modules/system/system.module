@@ -3097,7 +3097,7 @@ function system_image_toolkits() {
  */
 function system_retrieve_file($url, $destination = NULL, $overwrite = TRUE) {
   if (!$destination) {
-    $destination = file_directory_temp();
+    $destination = file_directory_path('temporary');
   }
   $parsed_url = parse_url($url);
   $local = is_dir(file_directory_path() . '/' . $destination) ? $destination . '/' . basename($parsed_url['path']) : $destination;

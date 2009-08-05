@@ -1150,7 +1150,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
 
   // If the destination is not provided, use the temporary directory.
   if (empty($destination)) {
-    $destination = file_directory_temp();
+    $destination = file_directory_path('temporary');
   }
 
   $file->source = $source;
@@ -1487,7 +1487,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  */
 function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   // Write the data to a temporary file.
-  $temp_name = tempnam(file_directory_temp(), 'file');
+  $temp_name = tempnam(file_directory_path('temporary'), 'file');
   if (file_put_contents($temp_name, $data) === FALSE) {
     drupal_set_message(t('The file could not be created.'), 'error');
     return FALSE;
@@ -1652,7 +1652,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  * @return
  *   A string containing a temp directory.
  */
-function file_directory_temp() {
+function file_directory_path('temporary') {
   return file_directory_path('temporary');
 }
 

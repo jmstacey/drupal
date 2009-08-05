@@ -407,7 +407,7 @@ class FileValidatorTest extends DrupalWebTestCase {
     // Maximum size.
     if (image_get_toolkit()) {
       // Copy the image so that the original doesn't get resized.
-      $temp_dir = file_directory_temp();
+      $temp_dir = file_directory_path('temporary');
       copy(drupal_realpath('misc/druplicon.png'), drupal_realpath($temp_dir) . '/druplicon.png');
       $this->image->uri = $temp_dir . '/druplicon.png';
 
@@ -726,12 +726,12 @@ class FileDirectoryTest extends FileTestCase {
   }
 
   /**
-   * Check file_directory_path() and file_directory_temp().
+   * Check file_directory_path() and file_directory_path('temporary').
    */
   function testFileDirectoryTemp() {
     // Temporary directory handling.
     variable_set('file_directory_temp', NULL);
-    $temp = file_directory_temp();
+    $temp = file_directory_path('temporary');
     $this->assertTrue(!is_null($temp), t('Properly set and retrieved temp directory %directory.', array('%directory' => $temp)), 'File');
   }
 
