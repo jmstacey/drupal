@@ -607,6 +607,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // Assert that the source file actually exists.
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
+    // TODO: Replace drupal_set_message() calls with exceptions instead.
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
     return FALSE;
   }
