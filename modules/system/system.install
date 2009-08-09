@@ -1,5 +1,5 @@
 <?php
-// $Id: system.install,v 1.362 2009-08-03 03:04:33 webchick Exp $
+// $Id: system.install,v 1.365 2009-08-08 20:52:32 webchick Exp $
 
 /**
  * @file
@@ -771,8 +771,8 @@ function system_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'hostname' => array(
-        'description' => 'Hostname of the visitor.',
+      'identifier' => array(
+        'description' => 'Identifier of the visitor, such as an IP address or hostname.',
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
@@ -787,7 +787,7 @@ function system_schema() {
     ),
     'primary key' => array('fid'),
     'indexes' => array(
-      'allow' => array('event', 'hostname', 'timestamp'),
+      'allow' => array('event', 'identifier', 'timestamp'),
     ),
   );
 
@@ -945,6 +945,7 @@ function system_schema() {
     'indexes' => array(
       'fit' => array('fit'),
       'tab_parent' => array('tab_parent'),
+      'tab_root_weight_title' => array(array('tab_root', 64), 'weight', 'title'),
     ),
     'primary key' => array('path'),
   );
@@ -1379,7 +1380,7 @@ function system_schema() {
     ),
     'primary key' => array('filename'),
     'indexes' => array(
-      'modules' => array('type', 'status', 'weight', 'filename'),
+      'modules' => array('type', 'status', 'weight', 'name'),
       'type_name' => array('type', 'name'),
     ),
   );
@@ -1966,7 +1967,7 @@ function system_update_7018() {
   $ret = array();
   db_drop_index($ret, 'system', 'modules');
   db_change_field($ret, 'system', 'type', 'type', array('type' => 'varchar', 'length' => 12, 'not null' => TRUE, 'default' => ''));
-  db_add_index($ret, 'system', 'modules', array('type', 'status', 'weight', 'filename'));
+  db_add_index($ret, 'system', 'modules', array('type', 'status', 'weight', 'name'));
   db_add_index($ret, 'system', 'type_name', array('type', 'name'));
   return $ret;
 }
@@ -2236,9 +2237,30 @@ function system_update_7030() {
 }
 
 /**
- * Create the {file} with the unique key on the filepath.
+ * Add a missing index on the {menu_router} table.
  */
 function system_update_7031() {
+  $ret = array();
+  db_add_index($ret, 'menu_router', 'tab_root_weight_title', array(array('tab_root', 64), 'weight', 'title'));
+  return $ret;
+}
+
+/**
+* Alter field hostname to identifier in the {flood} table.
+ */
+function system_update_7032() {
+  $ret = array();
+  db_drop_index($ret, 'flood', 'allow');
+  db_change_field($ret, 'flood', 'hostname', 'identifier', array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
+  db_add_index($ret, 'flood', 'allow', array('event', 'identifier', 'timestamp'));
+  return $ret;
+}
+
+
+/**
+ * Create the {file} with the unique key on the filepath.
+ */
+function system_update_7033() {
 
   /*
     TODO Update the update record when removing the status column
@@ -2318,13 +2340,13 @@ function system_update_7031() {
 /**
  * Migrate the old file_downloads setting to stream_default_scheme.
  */
-function system_update_7032() {
+function system_update_7034() {
   $ret = array();
-  if (variable_get('file_downloads') == 1) {
-    variable_set('stream_default_scheme', 'public');
+  if (variable_get('file_downloads', 1) == 1) {
+    variable_set('file_default_scheme', 'public');
   }
-  elseif (variable_get('file_downloads') == 2) {
-    variable_set('stream_default_scheme', 'private');
+  elseif (variable_get('file_downloads', 1) == 2) {
+    variable_set('file_default_scheme', 'private');
   }
   variable_del('file_downloads');
   return $ret;
