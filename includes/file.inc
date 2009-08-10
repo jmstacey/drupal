@@ -630,7 +630,8 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   }
   else {
     // Perhaps $destination is a dir/file?
-    if (!file_prepare_directory(basename($destination))) {
+    $dirname = drupal_dirname($destination);
+    if (!file_prepare_directory($dirname)) {
       // The destination is not valid.
       drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => $destination)), 'error');
       return FALSE;
