@@ -333,20 +333,19 @@ function file_external_url($uri) {
  * Compatibility: normal paths and stream wrappers.
  * @see http://drupal.org/node/515192
  *
- * @param $directory
- *   A string containing the name of a directory path. A trailing slash will
- *   be trimmed
+ * @param &$directory
+ *   A string reference containing the name of a directory path. A trailing
+ *   slash will be trimmed.
  * @param $mode
  *   A bitmask to indicate if the directory should be created if it does
  *   not exist (FILE_CREATE_DIRECTORY) or made writable if it is read-only
  *   (FILE_MODIFY_PERMISSIONS).
  * @return
- *   Returns a string containing the directory with the trailing slash trimmed.
- *   FALSE is returned if the directory does not exist or is not writable and
- *   could not be made so.
+ *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
+ *   is returned.
  */
-function file_prepare_directory($directory, $mode = 0) {
-  if (!file_stream_wrapper_valid_scheme(file_uri_scheme($directory))) {
+function file_prepare_directory(&$directory, $mode = 0) {
+  if (!file_stream_wrapper_valid_scheme($directory)) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
   }
@@ -631,7 +630,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   }
   else {
     // Perhaps $destination is a dir/file?
-    if (!file_prepare_directory(drupal_dirname($destination))) {
+    if (!file_prepare_directory(basename($destination))) {
       // The destination is not valid.
       drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => $destination)), 'error');
       return FALSE;
