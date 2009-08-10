@@ -372,7 +372,7 @@ function file_prepare_directory($directory, $mode = 0) {
     }
   }
 
-  return $directory;
+  return TRUE;
 }
 
 /**
