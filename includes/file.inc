@@ -601,17 +601,10 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
  * @see file_copy()
  */
 function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
-
   $original_source = $source;
   $original_destination = $destination;
-  // If the destination file is not specified then use the filename of the
-  // source file.
-  if (isset($destination)) {
-    $destination = file_stream_wrapper_uri_normalize($destination);
-  }
-  else {
-    $destination = file_build_uri(basename($source));
-  }
+
+  // Assert that the source file actually exists.
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
     // TODO: Replace drupal_set_message() calls with exceptions instead.
@@ -619,27 +612,45 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     return FALSE;
   }
 
+  // Build a destination URI if necessary.
+  if (!isset($destination)) {
+    $destination = file_build_uri(basename($source));
+  }
+
+  // Assert that the destination contains a valid stream.
   $destination_scheme = file_uri_scheme($destination);
-  $destination_dir = drupal_dirname($destination);
-  // Make sure we at least have a valid destination directory.
-  if (!$destination_scheme || !file_stream_wrapper_valid_scheme($destination_scheme) || !is_dir($destination_dir)) {
-    drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => $destination_dir)), 'error');
-    return FALSE;
+  if (!$destination_scheme || !file_stream_wrapper_valid_scheme($destination_scheme)) {
+    drupal_set_message(t('The specified file %file could not be copied, because the destination %destination is invalid. This is often caused by improper use of file_unmanaged_copy() or a missing stream wrapper.', array('%file' => $original_source, '%destination' => $destination)), 'error');
   }
 
+  // Prepare the destination directory.
+  if (file_prepare_directory($destination)) {
+    // The destination is already a directory, so append the source basename.
+    $destination = file_stream_wrapper_uri_normalize($destination . '/' . basename($source));
+  }
+  else {
+    // Perhaps $destination is a dir/file?
+    if (!file_prepare_directory(basename($destination))) {
+      // The destination is not valid.
+      drupal_set_message(t('The specified file %file could not be copied, because the destination %directory is not properly configured. This is often caused by a problem with file or directory permissions.', array('%file' => $original_source, '%directory' => $destination)), 'error');
+      return FALSE;
+    }
+  }
+
+  // Determine whether or not we can perform this operation based on overwrite rules.
   $destination = file_destination($destination, $replace);
-
   if ($destination === FALSE) {
-    drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $destination_dir)), 'error');
+    drupal_set_message(t('The specified file %file could not be copied because a file by that name already exists in the destination %directory.', array('%file' => $source, '%directory' => $destination)), 'error');
     return FALSE;
   }
-  // Make sure source and destination filenames are not the same, makes no
-  // sense to copy it if they are. In fact copying the file will most likely
-  // result in a 0 byte file. Which is bad. Real bad.
+  
+  // Assert that the source and destination filenames are not the same.
   if (drupal_realpath($source) == drupal_realpath($destination)) {
     drupal_set_message(t('The specified file %file was not copied because it would overwrite itself.', array('%file' => $source)), 'error');
     return FALSE;
   }
+  
+  // Perform the copy operation.
   if (!@copy($source, $destination)) {
     drupal_set_message(t('The specified file %file could not be copied.', array('%file' => $source)), 'error');
     return FALSE;
