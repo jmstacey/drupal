@@ -345,7 +345,7 @@ function file_external_url($uri) {
  *   is returned.
  */
 function file_prepare_directory(&$directory, $flags = 0) {
-  if (!file_stream_wrapper_valid_scheme($directory)) {
+  if (!file_stream_wrapper_valid_scheme(file_uri_scheme($directory))) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
   }
