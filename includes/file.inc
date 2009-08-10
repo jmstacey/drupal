@@ -336,7 +336,7 @@ function file_external_url($uri) {
  * @param &$directory
  *   A string reference containing the name of a directory path. A trailing
  *   slash will be trimmed.
- * @param $flags
+ * @param $options
  *   A bitmask to indicate if the directory should be created if it does
  *   not exist (FILE_CREATE_DIRECTORY) or made writable if it is read-only
  *   (FILE_MODIFY_PERMISSIONS).
@@ -344,7 +344,7 @@ function file_external_url($uri) {
  *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
-function file_prepare_directory(&$directory, $flags = 0) {
+function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS) {
   if (!file_stream_wrapper_valid_scheme(file_uri_scheme($directory))) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
@@ -354,24 +354,18 @@ function file_prepare_directory(&$directory, $flags = 0) {
   if (!is_dir($directory)) {
     // Let mkdir() recursively create directories and use the default directory
     // permissions.
-    if (($flags & FILE_CREATE_DIRECTORY) && @drupal_mkdir($directory, NULL, TRUE)) {
-      drupal_chmod($directory);
+    if (($options & FILE_CREATE_DIRECTORY) && @drupal_mkdir($directory, NULL, TRUE)) {
+      return drupal_chmod($directory);
     }
-    else {
-      return FALSE;
-    }
+    return FALSE;
+  }
+  // The directory exists, so check to see if it is writable.
+  $writable = is_writable($directory);
+  if (!$writable && ($options & FILE_MODIFY_PERMISSIONS)) {
+    return drupal_chmod($directory);
   }
 
-  // Check to see if the directory is writable.
-  if (!is_writable($directory)) {
-    // If not able to modify permissions, or if able to, but chmod
-    // fails, return false.
-    if (!$flags || (($flags & FILE_MODIFY_PERMISSIONS) && !drupal_chmod($directory))) {
-      return FALSE;
-    }
-  }
-
-  return TRUE;
+  return $writable;
 }
 
 /**
