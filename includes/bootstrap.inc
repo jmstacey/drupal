@@ -611,22 +611,22 @@ function drupal_settings_initialize() {
  *   The type of the item (i.e. theme, theme_engine, module).
  * @param $name
  *   The name of the item for which the filename is requested.
- * @param $filepath
- *   The filepath of the item if it is to be set explicitly rather
+ * @param $filename
+ *   The filename of the item if it is to be set explicitly rather
  *   than by consulting the database.
  *
  * @return
- *   The filepath of the requested item.
+ *   The filename of the requested item.
  */
-function drupal_get_filename($type, $name, $filepath = NULL) {
+function drupal_get_filename($type, $name, $filename = NULL) {
   $files = &drupal_static(__FUNCTION__, array());
 
   if (!isset($files[$type])) {
     $files[$type] = array();
   }
 
-  if (!empty($filepath) && file_exists($filepath)) {
-    $files[$type][$name] = $filepath;
+  if (!empty($filename) && file_exists($filename)) {
+    $files[$type][$name] = $filename;
   }
   elseif (isset($files[$type][$name])) {
     // nothing
