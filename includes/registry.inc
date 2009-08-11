@@ -1,5 +1,5 @@
 <?php
-// $Id: registry.inc,v 1.18 2009-06-10 16:14:49 dries Exp $
+// $Id: registry.inc,v 1.20 2009-08-04 05:09:40 webchick Exp $
 
 /**
  * @file
@@ -38,8 +38,7 @@ function _registry_rebuild() {
   _registry_get_resource_name();
 
   // Get current list of modules and their files.
-  $modules = drupal_system_listing('/\.module$/', 'modules', 'name', 0);
-  system_get_files_database($modules, 'module');
+  $modules = system_get_module_data();
   // Get the list of files we are going to parse.
   $files = array();
   foreach ($modules as &$module) {
@@ -47,11 +46,6 @@ function _registry_rebuild() {
 
     // Store the module directory for use in hook_registry_files_alter().
     $module->dir = $dir;
-
-    // Parse the .info file for all modules, reguardless of their status so the
-    // list of files can then be used in hook_registry_files_alter()
-    // implementations.
-    $module->info = drupal_parse_info_file($dir . '/' . $module->name . '.info');
 
     if ($module->status) {
       // Add files for enabled modules to the registry.
@@ -71,9 +65,11 @@ function _registry_rebuild() {
   // or modify attributes of a file.
   drupal_alter('registry_files', $files, $modules);
   foreach (registry_get_parsed_files() as $filename => $file) {
-    // Add the md5 to those files we've already parsed.
+    // Add the file creation and modification dates to those files we have
+    // already parsed.
     if (isset($files[$filename])) {
-      $files[$filename]['md5'] = $file['md5'];
+      $files[$filename]['filectime'] = $file['filectime'];
+      $files[$filename]['filemtime'] = $file['filemtime'];
     }
     else {
       // Flush the registry of resources in files that are no longer on disc
@@ -131,18 +127,23 @@ function registry_get_parsed_files() {
 function _registry_parse_files($files) {
   $parsed_files = array();
   foreach ($files as $filename => $file) {
-    $contents = file_get_contents($filename);
-    $md5 = md5($contents);
-    $new_file = !isset($file['md5']);
-    if ($new_file || $md5 != $file['md5']) {
+    $filectime = filectime($filename);
+    $filemtime = filemtime($filename);
+    $modified_file = !isset($file['filectime']) || !isset($file['filemtime'])
+                || $filectime != $file['filectime'] || $filemtime != $file['filemtime'];
+    if ($modified_file) {
+      $contents = file_get_contents($filename);
       $parsed_files[] = $filename;
-      // We update the md5 after we've saved the files resources rather than here, so if we
-      // don't make it through this rebuild, the next run will reparse the file.
+      // We update the filectime/filemtime after we've saved the files resources
+      // rather than here, so if we don't make it through this rebuild, the next
+      // run will reparse the file.
       _registry_parse_file($filename, $contents, $file['module'], $file['weight']);
-      $file['md5'] = $md5;
       db_merge('registry_file')
         ->key(array('filename' => $filename))
-        ->fields(array('md5' => $md5))
+        ->fields(array(
+          'filectime' => $filectime,
+          'filemtime' => $filemtime,
+        ))
         ->execute();
     }
   }

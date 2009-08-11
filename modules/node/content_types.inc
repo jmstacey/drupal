@@ -1,5 +1,5 @@
 <?php
-// $Id: content_types.inc,v 1.82 2009-07-20 18:51:33 dries Exp $
+// $Id: content_types.inc,v 1.85 2009-08-09 01:15:33 webchick Exp $
 
 /**
  * @file
@@ -37,8 +37,14 @@ function node_overview_types() {
   if (empty($rows)) {
     $rows[] = array(array('data' => t('No content types available. <a href="@link">Add content type</a>.', array('@link' => url('admin/structure/types/add'))), 'colspan' => '5', 'class' => 'message'));
   }
+  
+  $build['node_table'] = array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows
+  );
 
-  return theme('table', $header, $rows);
+  return $build;
 }
 
 function theme_node_admin_overview($name, $type) {
@@ -102,7 +108,6 @@ function node_type_form(&$form_state, $type = NULL) {
     '#title' => t('Description'),
     '#type' => 'textarea',
     '#default_value' => $type->description,
-    '#description' => t('A brief description of this content type. This text will be displayed as part of the list on the <em>add new content</em> page.'),
     );
 
   $form['submission'] = array(
@@ -127,31 +132,23 @@ function node_type_form(&$form_state, $type = NULL) {
     '#title' => t('Body field label'),
     '#type' => 'textfield',
     '#default_value' => isset($type->body_label) ? $type->body_label : '',
-    '#description' => t('To omit the body field for this content type, remove any text and leave this field blank.'),
-  );
-  $form['submission']['min_word_count'] = array(
-    '#type' => 'select',
-    '#title' => t('Minimum number of words'),
-    '#default_value' => $type->min_word_count,
-    '#options' => drupal_map_assoc(array(0, 1, 10, 25, 50, 75, 100, 125, 150, 175, 200)),
-    '#description' => t('The minimum number of words for the body field to be considered valid for this content type. This can be useful to rule out submissions that do not meet the site\'s standards, such as short test posts.')
+    '#description' => t('To remove the body field, remove text and leave blank.'),
   );
   $form['submission']['node_preview'] = array(
     '#type' => 'radios',
-    '#title' => t('Preview post'),
+    '#title' => t('Preview before submitting'),
     '#default_value' => variable_get('node_preview_' . $type->type, DRUPAL_OPTIONAL),
     '#options' => array(
       DRUPAL_DISABLED => t('Disabled'),
       DRUPAL_OPTIONAL => t('Optional'),
       DRUPAL_REQUIRED => t('Required'),
     ),
-    '#description' => t('Should users preview posts before submitting?'),
     );
   $form['submission']['help']  = array(
     '#type' => 'textarea',
     '#title' => t('Explanation or submission guidelines'),
     '#default_value' => $type->help,
-    '#description' => t('This text will be displayed at the top of the submission form for this content type. It is useful for helping or instructing your users.')
+    '#description' => t('This text will be displayed at the top of the submission form for this content type.')
   );
   $form['workflow'] = array(
     '#type' => 'fieldset',
@@ -289,7 +286,6 @@ function node_type_form_submit($form, &$form_state) {
 
   $type->description = $form_state['values']['description'];
   $type->help = $form_state['values']['help'];
-  $type->min_word_count = $form_state['values']['min_word_count'];
   $type->title_label = $form_state['values']['title_label'];
   $type->body_label = $form_state['values']['body_label'];
 
@@ -398,7 +394,7 @@ function node_type_delete_confirm(&$form_state, $type) {
 
   $num_nodes = db_query("SELECT COUNT(*) FROM {node} WHERE type = :type", array(':type' => $type->type))->fetchField();
   if ($num_nodes) {
-    $caption .= '<p>' . format_plural($num_nodes, '<strong>Warning:</strong> there is currently 1 %type post on your site. It may not be able to be displayed or edited correctly, once you have removed this content type.', '<strong>Warning:</strong> there are currently @count %type posts on your site. They may not be able to be displayed or edited correctly, once you have removed this content type.', array('%type' => $type->name)) . '</p>';
+    $caption .= '<p>' . format_plural($num_nodes, '<strong>Warning:</strong> there is currently 1 %type post on your site. It may not be able to be displayed or edited correctly once you have removed this content type.', '<strong>Warning:</strong> there are currently @count %type posts on your site. They may not be able to be displayed or edited correctly once you have removed this content type.', array('%type' => $type->name)) . '</p>';
   }
 
   $caption .= '<p>' . t('This action cannot be undone.') . '</p>';

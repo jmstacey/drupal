@@ -1,5 +1,5 @@
 <?php
-// $Id: page.tpl.php,v 1.24 2009-07-04 05:21:15 dries Exp $
+// $Id: page.tpl.php,v 1.27 2009-08-03 03:04:33 webchick Exp $
 
 /**
  * @file
@@ -46,10 +46,10 @@
  *   - node-type-[node type]: When viewing a single node, the type of that node.
  *     For example, if the node is a "Blog entry" it would result in "node-type-blog".
  *     Note that the machine name will often be in a short form of the human readable label.
- *   The following only apply with the default 'left' and 'right' block regions:
+ *   The following only apply with the default 'sidebar_first' and 'sidebar_second' block regions:
  *     - two-sidebars: When both sidebars have content.
  *     - no-sidebars: When no sidebar content exists.
- *     - one-sidebar and sidebar-left or sidebar-right: A combination of the two classes
+ *     - one-sidebar and sidebar-first or sidebar-second: A combination of the two classes
  *       when only one of the two sidebars have content.
  *
  * Site identity:
@@ -77,14 +77,18 @@
  * - $help: Dynamic help text, mostly for admin pages.
  * - $content: The main content of the current page.
  * - $feed_icons: A string of all feed icons for the current page.
- * - $left: Items for the left sidebar.
- * - $right: Items for the right sidebar.
+ * - $sidebar_first: Items for the first sidebar.
+ * - $sidebar_second: Items for the second sidebar.
  * - $highlight: Items for the highlighted content region.
  *
- * Footer/closing data:
+ * Opening and closing data:
+ * - $page_top: Initial markup from any modules that have altered the
+ *   page. This variable should always be output first, before all other dynamic
+ *   content.
  * - $footer : The footer region.
- * - $closure: Final closing markup from any modules that have altered the page.
- *   This variable should always be output last, after all other dynamic content.
+ * - $page_bottom: Final closing markup from any modules that have altered the
+ *   page. This variable should always be output last, after all other dynamic
+ *   content.
  *
  * @see template_preprocess()
  * @see template_preprocess_page()
@@ -104,11 +108,8 @@
 </head>
 <body class="<?php print $classes; ?>">
 
-  <?php if ($page_top): ?>
-    <div id="page-top-region" class="clearfix">
-      <?php print $page_top; ?>
-    </div>
-  <?php endif; ?>
+  <?php print $page_top; ?>
+
   <div id="page-wrapper"><div id="page">
 
     <div id="header"><div class="section clearfix">
@@ -176,16 +177,16 @@
         <?php print $feed_icons; ?>
       </div></div> <!-- /.section, /#content -->
 
-      <?php if ($left): ?>
-        <div id="sidebar-left" class="column sidebar"><div class="section region">
-          <?php print $left; ?>
-        </div></div> <!-- /.section, /#sidebar-left -->
+      <?php if ($sidebar_first): ?>
+        <div id="sidebar-first" class="column sidebar"><div class="section region">
+          <?php print $sidebar_first; ?>
+        </div></div> <!-- /.section, /#sidebar-first -->
       <?php endif; ?>
 
-      <?php if ($right): ?>
-        <div id="sidebar-right" class="column sidebar"><div class="section region">
-          <?php print $right; ?>
-        </div></div> <!-- /.section, /#sidebar-right -->
+      <?php if ($sidebar_second): ?>
+        <div id="sidebar-second" class="column sidebar"><div class="section region">
+          <?php print $sidebar_second; ?>
+        </div></div> <!-- /.section, /#sidebar-second -->
       <?php endif; ?>
 
     </div></div> <!-- /#main, /#main-wrapper -->
@@ -197,7 +198,7 @@
 
   </div></div> <!-- /#page, /#page-wrapper -->
 
-  <?php print $closure; ?>
+  <?php print $page_bottom; ?>
 
 </body>
 </html>

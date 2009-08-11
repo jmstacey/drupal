@@ -1,5 +1,5 @@
 <?php
-// $Id: page.tpl.php,v 1.28 2009-07-04 05:21:15 dries Exp $
+// $Id: page.tpl.php,v 1.31 2009-08-03 03:04:34 webchick Exp $
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
   "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language ?>" dir="<?php print $language->dir ?>"
@@ -15,11 +15,7 @@
   </head>
   <body class="<?php print $classes ?>">
 
-  <?php if ($page_top): ?>
-    <div id="page-top-region" class="clearfix">
-      <?php print $page_top; ?>
-    </div>
-  <?php endif; ?>
+  <?php print $page_top; ?>
 
   <div id="header-region" class="clearfix"><?php print $header ?></div>
 
@@ -42,10 +38,10 @@
         <?php if ($secondary_nav): print $secondary_nav; endif; ?>
       </div> <!-- /#header -->
 
-      <?php if ($left): ?>
-        <div id="sidebar-left" class="sidebar">
+      <?php if ($sidebar_first): ?>
+        <div id="sidebar-first" class="sidebar">
           <?php if ($search_box): ?><div class="block block-theme"><?php print $search_box ?></div><?php endif; ?>
-          <?php print $left ?>
+          <?php print $sidebar_first ?>
         </div>
       <?php endif; ?>
 
@@ -65,16 +61,16 @@
           <div id="footer"><?php print $footer ?></div>
       </div></div></div></div> <!-- /.left-corner, /.right-corner, /#squeeze, /#center -->
 
-      <?php if ($right): ?>
-        <div id="sidebar-right" class="sidebar">
-          <?php if (!$left && $search_box): ?><div class="block block-theme"><?php print $search_box ?></div><?php endif; ?>
-          <?php print $right ?>
+      <?php if ($sidebar_second): ?>
+        <div id="sidebar-second" class="sidebar">
+          <?php if (!$sidebar_first && $search_box): ?><div class="block block-theme"><?php print $search_box ?></div><?php endif; ?>
+          <?php print $sidebar_second ?>
         </div>
       <?php endif; ?>
 
     </div> <!-- /#container -->
   </div> <!-- /#wrapper -->
 
-  <?php print $closure ?>
+  <?php print $page_bottom; ?>
   </body>
 </html>

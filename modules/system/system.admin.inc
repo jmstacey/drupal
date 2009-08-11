@@ -1,5 +1,5 @@
 <?php
-// $Id: system.admin.inc,v 1.163 2009-07-20 18:51:34 dries Exp $
+// $Id: system.admin.inc,v 1.170 2009-08-11 11:52:46 dries Exp $
 
 /**
  * @file
@@ -59,6 +59,51 @@ function system_main_admin_page($arg = NULL) {
   }
 }
 
+/**
+ * Menu callback; Provide the administration overview page.
+ */
+function system_admin_config_page() {
+  // Check for status report errors.
+  if (system_status(TRUE) && user_access('administer site configuration')) {
+    drupal_set_message(t('One or more problems were detected with your Drupal installation. Check the <a href="@status">status report</a> for more information.', array('@status' => url('admin/reports/status'))), 'error');
+  }
+  $blocks = array();
+  if ($admin = db_query("SELECT menu_name, mlid FROM {menu_links} WHERE link_path = 'admin/config' AND module = 'system'")->fetchAssoc()) {
+    $result = db_query("
+      SELECT m.*, ml.*
+      FROM {menu_links} ml
+      INNER JOIN {menu_router} m ON ml.router_path = m.path
+      WHERE ml.link_path != 'admin/help' AND menu_name = :menu_name AND ml.plid = :mlid AND hidden = 0", $admin, array('fetch' => PDO::FETCH_ASSOC));
+    foreach ($result as $item) {
+      _menu_link_translate($item);
+      if (!$item['access']) {
+        continue;
+      }
+      // The link 'description' either derived from the hook_menu 'description'
+      // or entered by the user via menu module is saved as the title attribute.
+      if (!empty($item['localized_options']['attributes']['title'])) {
+        $item['description'] = $item['localized_options']['attributes']['title'];
+      }
+      $block = $item;
+      $block['content'] = '';
+      if ($item['block_callback'] && function_exists($item['block_callback'])) {
+        $function = $item['block_callback'];
+        $block['content'] .= $function();
+      }
+      $block['content'] .= theme('admin_block_content', system_admin_menu_block($item));
+      // Prepare for sorting as in function _menu_tree_check_access().
+      // The weight is offset so it is always positive, with a uniform 5-digits.
+      $blocks[(50000 + $item['weight']) . ' ' . $item['title'] . ' ' . $item['mlid']] = $block;
+    }
+  }
+  if ($blocks) {
+    ksort($blocks);
+    return theme('admin_page', $blocks);
+  }
+  else {
+    return t('You do not have any administrative items.');
+  }
+}
 
 /**
  * Provide a single block from the administration menu as a page.
@@ -149,13 +194,19 @@ function system_themes_form() {
 
   foreach ($themes as $theme) {
     $screenshot = NULL;
-    $theme_key = $theme->name;
-    while ($theme_key) {
-      if (file_exists($themes[$theme_key]->info['screenshot'])) {
+    // Create a list which includes the current theme and all its base themes.
+    if (isset($themes[$theme->name]->base_themes)) {
+      $theme_keys = array_keys($themes[$theme->name]->base_themes) + array($theme->name);
+    }
+    else {
+      $theme_keys = array($theme->name);
+    }
+    // Look for a screenshot in the current theme or in its closest ancestor.
+    foreach (array_reverse($theme_keys) as $theme_key) {
+      if (isset($themes[$theme_key]) && file_exists($themes[$theme_key]->info['screenshot'])) {
         $screenshot = $themes[$theme_key]->info['screenshot'];
         break;
       }
-      $theme_key = isset($themes[$theme_key]->info['base theme']) ? $themes[$theme_key]->info['base theme'] : NULL;
     }
     $screenshot = $screenshot ? theme('image', $screenshot, t('Screenshot for %theme theme', array('%theme' => $theme->info['name'])), '', array('class' => 'screenshot'), FALSE) : t('no screenshot');
 
@@ -167,7 +218,7 @@ function system_themes_form() {
     $options[$theme->name] = $theme->info['name'];
 
     if (!empty($theme->status) || $theme->name == variable_get('admin_theme', 0)) {
-      $form[$theme->name]['operations'] = array('#markup' => l(t('configure'), 'admin/structure/themes/settings/' . $theme->name) );
+      $form[$theme->name]['operations'] = array('#markup' => l(t('configure'), 'admin/appearance/settings/' . $theme->name) );
     }
     else {
       // Dummy element for drupal_render. Cleaner than adding a check in the theme function.
@@ -293,7 +344,7 @@ function system_themes_form_submit($form, &$form_state) {
   menu_rebuild();
   drupal_theme_rebuild();
   drupal_set_message(t('The configuration options have been saved.'));
-  $form_state['redirect'] = 'admin/structure/themes';
+  $form_state['redirect'] = 'admin/appearance';
 
   // Notify locale module about new themes being enabled, so translations can
   // be imported. This might start a batch, and only return to the redirect
@@ -507,6 +558,13 @@ function system_theme_settings(&$form_state, $key = '') {
  */
 function system_theme_settings_submit($form, &$form_state) {
   $values = $form_state['values'];
+  if (empty($values['default_favicon']) && !empty($values['favicon_path'])) {
+    $mimetype = file_get_mimetype($values['favicon_path']);
+    // Use the default MIME type for favicons if no other was found.
+    if ($mimetype != 'application/octet-stream') {
+      $values['favicon_mimetype'] = $mimetype;
+    }
+  }
   $key = $values['var'];
 
   // Exclude unnecessary elements before saving.
@@ -598,13 +656,32 @@ function system_modules($form_state = array()) {
     foreach ($module->requires as $requires => $v) {
       if (!isset($files[$requires])) {
         $extra['requires'][$requires] = t('@module (<span class="admin-missing">missing</span>)', array('@module' => drupal_ucfirst($requires)));
-          $extra['disabled'] = TRUE;
+        $extra['disabled'] = TRUE;
+      }
+      else {
+        $requires_name = $files[$requires]->info['name'];
+        if ($v) {
+          $requires_name .= $v['original_version'];
+          $current_version = str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', $files[$requires]->info['version']);
+          foreach ($v['versions'] as $required_version) {
+            if ((isset($required_version['op']) && !version_compare($current_version, $required_version['version'], $required_version['op'])) ||
+                (isset($required_version['preg']) && !preg_match($required_version['preg'], $current_version))) {
+              $extra['requires'][$requires] = t('@module (<span class="admin-missing">incompatible with</span> version @version)', array(
+                '@module' => $requires_name,
+                '@version' => $files[$requires]->info['version'],
+              ));
+              $extra['disabled'] = TRUE;
+            }
+          }
         }
-      elseif (!$files[$requires]->status) {
-        $extra['requires'][$requires] = t('@module (<span class="admin-disabled">disabled</span>)', array('@module' => $files[$requires]->info['name']));
+        if (!isset($extra['requires'][$requires])) {
+          if ($files[$requires]->status) {
+            $extra['requires'][$requires] = t('@module (<span class="admin-enabled">enabled</span>)', array('@module' => $requires_name));
+          }
+          else {
+            $extra['requires'][$requires] = t('@module (<span class="admin-disabled">disabled</span>)', array('@module' => $requires_name));
+          }
         }
-        else {
-        $extra['requires'][$requires] = t('@module (<span class="admin-enabled">enabled</span>)', array('@module' => $files[$requires]->info['name']));
       }
     }
     // Generate link for module's help page, if there is one.
@@ -1088,7 +1165,11 @@ function system_ip_blocking() {
 
   $build['system_ip_blocking_form'] = drupal_get_form('system_ip_blocking_form');
 
-  $build['system_ip_blocking_table'] = array('#markup' => theme('table', $header, $rows));
+  $build['system_ip_blocking_table'] = array(
+    '#theme' => 'table', 
+    '#header' => $header, 
+    '#rows' => $rows,
+  );
 
   return $build;
 }
@@ -2120,28 +2201,6 @@ function theme_system_modules_uninstall($form) {
   $output  = theme('table', $header, $rows);
   $output .= drupal_render_children($form);
 
-  return $output;
-}
-
-/**
- * Theme the theme select form.
- * @param $form
- *   An associative array containing the structure of the form.
- * @ingroup themeable
- */
-function theme_system_theme_select_form($form) {
-  foreach (element_children($form) as $key) {
-    $row = array();
-    if (isset($form[$key]['description']) && is_array($form[$key]['description'])) {
-      $row[] = drupal_render($form[$key]['screenshot']);
-      $row[] = drupal_render($form[$key]['description']);
-      $row[] = drupal_render($form['theme'][$key]);
-    }
-    $rows[] = $row;
-  }
-
-  $header = array(t('Screenshot'), t('Name'), t('Selected'));
-  $output = theme('table', $header, $rows);
   return $output;
 }
 

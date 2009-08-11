@@ -1,5 +1,5 @@
 <?php
-// $Id: field.crud.inc,v 1.21 2009-07-14 10:27:29 dries Exp $
+// $Id: field.crud.inc,v 1.23 2009-08-10 21:19:42 dries Exp $
 
 /**
  * @file
@@ -208,11 +208,17 @@ function field_create_field($field) {
     throw new FieldException('Attempt to create a field with no type.');
   }
   // Field name cannot contain invalid characters.
-  if (preg_match('/[^a-z0-9_]/', $field['field_name'])) {
-    throw new FieldException('Attempt to create a field with invalid characters. Only alphanumeric characters and underscores are allowed.');
+  if (!preg_match('/^[_a-z]+[_a-z0-9]*$/', $field['field_name'])) {
+    throw new FieldException('Attempt to create a field with invalid characters. Only lowercase alphanumeric characters and underscores are allowed, and only lowercase letters and underscore are allowed as the first character');
   }
 
-  // TODO: check that field_name < 32 chars.
+  // Field name cannot be longer than 32 characters. We use drupal_strlen()
+  // because the DB layer assumes that column widths are given in characters,
+  // not bytes.
+  if (drupal_strlen($field['field_name']) > 32) {
+    throw new FieldException(t('Attempt to create a field with a name longer than 32 characters: %name',
+      array('%name' => $field['field_name'])));
+  }
 
   // Check that the field type is known.
   $field_type = field_info_field_types($field['type']);
@@ -233,6 +239,7 @@ function field_create_field($field) {
     'locked' => FALSE,
     'settings' => array(),
   );
+
   // Create all per-field-type properties (needed here as long as we have
   // settings that impact column definitions).
   $field['settings'] += field_info_field_settings($field['type']);
@@ -338,10 +345,6 @@ function field_read_fields($params = array(), $include_additional = array()) {
     $data = unserialize($field['data']);
     unset($field['data']);
     $field += $data;
-
-    // Make sure all settings expected in the current execution context are
-    // present.
-    $field['settings'] += field_info_field_settings($field['type']);
 
     module_invoke_all('field_read_field', $field);
 
@@ -624,7 +627,6 @@ function field_read_instances($params = array(), $include_additional = array()) 
   $query = db_select('field_config_instance', 'fci', array('fetch' => PDO::FETCH_ASSOC));
   $query->join('field_config', 'fc', 'fc.id = fci.field_id');
   $query->fields('fci');
-  $query->fields('fc', array('type'));
 
   // Turn the conditions into a query.
   foreach ($params as $key => $value) {
@@ -653,14 +655,6 @@ function field_read_instances($params = array(), $include_additional = array()) 
     $instance['widget']['type'] = $record['widget_type'];
     $instance['widget']['module'] = $record['widget_module'];
     $instance['widget']['active'] = $record['widget_active'];
-
-    // Make sure all settings expected in the current execution context are
-    // present.
-    $instance['settings'] += field_info_instance_settings($record['type']);
-    $instance['widget']['settings'] += field_info_widget_settings($instance['widget']['type']);
-    foreach ($instance['display'] as $build_mode => $display) {
-      $instance['display'][$build_mode]['settings'] += field_info_formatter_settings($display['type']);
-    }
 
     module_invoke_all('field_read_instance', $instance);
     $instances[] = $instance;

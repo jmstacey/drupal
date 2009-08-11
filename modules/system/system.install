@@ -1,5 +1,5 @@
 <?php
-// $Id: system.install,v 1.356 2009-07-21 07:27:00 webchick Exp $
+// $Id: system.install,v 1.365 2009-08-08 20:52:32 webchick Exp $
 
 /**
  * @file
@@ -266,6 +266,17 @@ function system_requirements($phase) {
   include_once DRUPAL_ROOT . '/includes/unicode.inc';
   $requirements = array_merge($requirements, unicode_requirements());
 
+  // Verify if the DOM PHP 5 extension is available.
+  $has_dom = class_exists('DOMDocument');
+  if (!$has_dom) {
+    $requirements['php_dom'] = array(
+      'title' => $t('PHP DOM Extension'),
+      'value' => $t('Not found'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t("The DOM extension is part of PHP 5 core, but doesn't seem to be enabled on your system. You need to enable the DOM extension on your PHP installation."),
+    );
+  }
+
   if ($phase == 'runtime') {
     // Check for update status module.
     if (!module_exists('update')) {
@@ -300,52 +311,6 @@ function system_requirements($phase) {
  * Implement hook_install().
  */
 function system_install() {
-  if (db_driver() == 'pgsql') {
-    // We create some functions using global names instead of prefixing them
-    // like we do with table names. If this function is ever called again (for
-    // example, by the test framework when creating prefixed test databases),
-    // the global names will already exist. We therefore avoid trying to create
-    // them again in that case.
-
-    // Create functions.
-    db_query('CREATE OR REPLACE FUNCTION "greatest"(numeric, numeric) RETURNS numeric AS
-      \'SELECT CASE WHEN (($1 > $2) OR ($2 IS NULL)) THEN $1 ELSE $2 END;\'
-      LANGUAGE \'sql\''
-    );
-    db_query('CREATE OR REPLACE FUNCTION "greatest"(numeric, numeric, numeric) RETURNS numeric AS
-      \'SELECT greatest($1, greatest($2, $3));\'
-      LANGUAGE \'sql\''
-    );
-    // Don't use {} around pg_proc table.
-    if (!db_query("SELECT COUNT(*) FROM pg_proc WHERE proname = 'rand'")->fetchField()) {
-      db_query('CREATE OR REPLACE FUNCTION "rand"() RETURNS float AS
-        \'SELECT random();\'
-        LANGUAGE \'sql\''
-      );
-    }
-
-    // Don't use {} around pg_proc table.
-    if (!db_query("SELECT COUNT(*) FROM pg_proc WHERE proname = 'concat'")->fetchField()) {
-      db_query('CREATE OR REPLACE FUNCTION "concat"(text, text) RETURNS text AS
-        \'SELECT $1 || $2;\'
-        LANGUAGE \'sql\''
-      );
-    }
-    db_query('CREATE OR REPLACE FUNCTION "if"(boolean, text, text) RETURNS text AS
-      \'SELECT CASE WHEN $1 THEN $2 ELSE $3 END;\'
-      LANGUAGE \'sql\''
-    );
-    db_query('CREATE OR REPLACE FUNCTION "if"(boolean, integer, integer) RETURNS integer AS
-      \'SELECT CASE WHEN $1 THEN $2 ELSE $3 END;\'
-      LANGUAGE \'sql\''
-    );
-
-    db_query('CREATE OR REPLACE FUNCTION "substring_index"(text, text, integer) RETURNS text AS
-      \'SELECT array_to_string((string_to_array($1, $2)) [1:$3], $2);\'
-      LANGUAGE \'sql\''
-    );
-  }
-
   // Create tables.
   $modules = array('system', 'filter', 'user', 'node');
   foreach ($modules as $module) {
@@ -373,13 +338,11 @@ function system_install() {
 
   // Built-in roles.
   $rid_anonymous = db_insert('role')
-    ->fields(array('name'))
-    ->values(array('name' => 'anonymous user'))
+    ->fields(array('name' => 'anonymous user'))
     ->execute();
 
   $rid_authenticated = db_insert('role')
-    ->fields(array('name'))
-    ->values(array('name' => 'authenticated user'))
+    ->fields(array('name' => 'authenticated user'))
     ->execute();
 
   // Sanity check to ensure the anonymous and authenticated role IDs are the
@@ -796,8 +759,8 @@ function system_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'hostname' => array(
-        'description' => 'Hostname of the visitor.',
+      'identifier' => array(
+        'description' => 'Identifier of the visitor, such as an IP address or hostname.',
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
@@ -812,7 +775,7 @@ function system_schema() {
     ),
     'primary key' => array('fid'),
     'indexes' => array(
-      'allow' => array('event', 'hostname', 'timestamp'),
+      'allow' => array('event', 'identifier', 'timestamp'),
     ),
   );
 
@@ -970,6 +933,7 @@ function system_schema() {
     'indexes' => array(
       'fit' => array('fit'),
       'tab_parent' => array('tab_parent'),
+      'tab_root_weight_title' => array(array('tab_root', 64), 'weight', 'title'),
     ),
     'primary key' => array('path'),
   );
@@ -1278,11 +1242,17 @@ function system_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
-      'md5'  => array(
-        'description' => "Md5 hash of the file's contents when last parsed.",
-        'type' => 'varchar',
-        'length' => 32,
+      'filectime'  => array(
+        'description' => "The creation time of the file when last parsed.",
+        'type' => 'int',
         'not null' => TRUE,
+        'default' => 0,
+      ),
+      'filemtime'  => array(
+        'description' => "The modification time of the file when last parsed.",
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
     'primary key' => array('filename'),
@@ -1398,7 +1368,7 @@ function system_schema() {
     ),
     'primary key' => array('filename'),
     'indexes' => array(
-      'modules' => array('type', 'status', 'weight', 'filename'),
+      'modules' => array('type', 'status', 'weight', 'name'),
       'type_name' => array('type', 'name'),
     ),
   );
@@ -1538,7 +1508,7 @@ function system_update_7003() {
     ':status' => 0,
     ':type' => $type,
   ));
-  while ($blocked = db_fetch_object($result)) {
+  foreach ($result as $blocked) {
     if (filter_var($blocked->mask, FILTER_VALIDATE_IP, FILTER_FLAG_NO_RES_RANGE) !== FALSE) {
       $ret[] = update_sql("INSERT INTO {blocked_ips} (ip) VALUES ('$blocked->mask')");
     }
@@ -1706,8 +1676,9 @@ function system_update_7006() {
   );
   $schema['registry_file'] = array(
     'fields' => array(
-      'filename'   => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
-      'md5'   => array('type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => ''),
+      'filename'   => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+      'filectime'  => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'filemtime'  => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
     ),
     'primary key' => array('filename'),
   );
@@ -1984,7 +1955,7 @@ function system_update_7018() {
   $ret = array();
   db_drop_index($ret, 'system', 'modules');
   db_change_field($ret, 'system', 'type', 'type', array('type' => 'varchar', 'length' => 12, 'not null' => TRUE, 'default' => ''));
-  db_add_index($ret, 'system', 'modules', array('type', 'status', 'weight', 'filename'));
+  db_add_index($ret, 'system', 'modules', array('type', 'status', 'weight', 'name'));
   db_add_index($ret, 'system', 'type_name', array('type', 'name'));
   return $ret;
 }
@@ -2016,6 +1987,10 @@ function system_update_7021() {
     // Add new system generated main page content block.
     $ret[] = update_sql("INSERT INTO {block} (module, delta, theme, status, weight, region, pages, cache) VALUES ('system', 'main', '" . $theme->name . "', 1, 0, 'content', '', -1)");
   }
+
+  // Migrate blocks from left/right regions to first/second regions.
+  $ret[] = update_sql("UPDATE {block} SET region = 'sidebar_first' WHERE region = 'left'");
+  $ret[] = update_sql("UPDATE {block} SET region = 'sidebar_second' WHERE region = 'right'");
 
   // Migrate contact form information.
   if ($contact_help = variable_get('contact_form_information', '')) {
@@ -2237,6 +2212,35 @@ function system_update_7029() {
       'permission' => 'view own unpublished content',
     ))
     ->execute();
+  return $ret;
+}
+
+/**
+ * Add an index to node_comment_statistics on comment_count.
+ */
+function system_update_7030() {
+  $ret = array();
+  db_add_index($ret, 'node_comment_statistics', 'comment_count', array('comment_count'));
+  return $ret;
+}
+
+/**
+ * Add a missing index on the {menu_router} table.
+ */
+function system_update_7031() {
+  $ret = array();
+  db_add_index($ret, 'menu_router', 'tab_root_weight_title', array(array('tab_root', 64), 'weight', 'title'));
+  return $ret;
+}
+
+/**
+* Alter field hostname to identifier in the {flood} table.
+ */
+function system_update_7032() {
+  $ret = array();
+  db_drop_index($ret, 'flood', 'allow');
+  db_change_field($ret, 'flood', 'hostname', 'identifier', array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
+  db_add_index($ret, 'flood', 'allow', array('event', 'identifier', 'timestamp'));
   return $ret;
 }
 

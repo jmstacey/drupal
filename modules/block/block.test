@@ -1,5 +1,5 @@
 <?php
-// $Id: block.test,v 1.22 2009-07-20 18:51:32 dries Exp $
+// $Id: block.test,v 1.25 2009-08-03 03:04:33 webchick Exp $
 
 /**
  * @file
@@ -27,9 +27,9 @@ class BlockTestCase extends DrupalWebTestCase {
     // Define the existing regions
     $this->regions = array();
     $this->regions[] = array('name' => 'header', 'id' => 'header-region');
-    $this->regions[] = array('name' => 'left', 'id' => 'sidebar-left');
+    $this->regions[] = array('name' => 'sidebar_first', 'id' => 'sidebar-first');
     $this->regions[] = array('name' => 'content', 'id' => 'center');
-    $this->regions[] = array('name' => 'right', 'id' => 'sidebar-right');
+    $this->regions[] = array('name' => 'sidebar_second', 'id' => 'sidebar-second');
     $this->regions[] = array('name' => 'footer');
   }
 
@@ -80,7 +80,7 @@ class BlockTestCase extends DrupalWebTestCase {
     // Set the created box to a specific region.
     $bid = db_query("SELECT bid FROM {box} WHERE info = :info", array(':info' => $box['info']))->fetchField();
     $edit = array();
-    $edit['block_' . $bid . '[region]'] = 'left';
+    $edit['block_' . $bid . '[region]'] = $this->regions[1]['name'];
     $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
 
     // Confirm that the box is being displayed using configured text format.
@@ -115,7 +115,7 @@ class BlockTestCase extends DrupalWebTestCase {
     $edit['roles[2]'] = TRUE;
     $this->drupalPost('admin/structure/block/configure/' . $block['module'] . '/' . $block['delta'], $edit, t('Save block'));
 
-    // Move block to the left sidebar.
+    // Move block to the first sidebar.
     $this->moveBlockToRegion($block, $this->regions[1]);
 
     $this->drupalGet('');
@@ -171,9 +171,9 @@ class BlockTestCase extends DrupalWebTestCase {
 
     // For convenience of developers, put the navigation block back.
     $edit = array();
-    $edit[$block['module'] . '_' . $block['delta'] . '[region]'] = 'left';
+    $edit[$block['module'] . '_' . $block['delta'] . '[region]'] = $this->regions[1]['name'];
     $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
-    $this->assertText(t('The block settings have been updated.'), t('Block successfully move to left region.'));
+    $this->assertText(t('The block settings have been updated.'), t('Block successfully move to first sidebar region.'));
 
     $this->drupalPost('admin/structure/block/configure/' . $block['module'] . '/' . $block['delta'], array('title' => 'Navigation'), t('Save block'));
     $this->assertText(t('The block configuration has been saved.'), t('Block title set.'));
@@ -217,7 +217,7 @@ class NonDefaultBlockAdmin extends DrupalWebTestCase {
   function testNonDefaultBlockAdmin() {
     $admin_user = $this->drupalCreateUser(array('administer blocks', 'administer site configuration'));
     $this->drupalLogin($admin_user);
-    $this->drupalPost('admin/structure/themes', array('status[stark]' => 1), t('Save configuration'));
+    $this->drupalPost('admin/appearance', array('status[stark]' => 1), t('Save configuration'));
     $this->drupalGet('admin/structure/block/list/stark');
     $this->assertRaw('stark/layout.css', t('Stark CSS found'));
   }
@@ -244,12 +244,12 @@ class NewDefaultThemeBlocks extends DrupalWebTestCase {
     $this->drupalLogin($admin_user);
 
     // Ensure no other theme's blocks are in the block table yet.
-    $count = db_query_range("SELECT 1 FROM {block} WHERE theme != 'garland'", 0, 1)->fetchField();
-    $this->assertFalse($count, t('Only Garland has blocks.'));
+    $count = db_query_range("SELECT 1 FROM {block} WHERE theme NOT IN ('garland', 'seven')", 0, 1)->fetchField();
+    $this->assertFalse($count, t('Only Garland and Seven have blocks.'));
 
     // Populate list of all blocks for matching against new theme.
     $blocks = array();
-    $result = db_query('SELECT * FROM {block}');
+    $result = db_query("SELECT * FROM {block} WHERE theme = 'garland'");
     foreach ($result as $block) {
       // $block->theme and $block->bid will not match, so remove them.
       unset($block->theme, $block->bid);
@@ -258,11 +258,11 @@ class NewDefaultThemeBlocks extends DrupalWebTestCase {
 
     // Turn on the Stark theme and ensure that it contains all of the blocks
     // that Garland did.
-    $this->drupalPost('admin/structure/themes', array('theme_default' => 'stark'), t('Save configuration'));
+    $this->drupalPost('admin/appearance', array('theme_default' => 'stark'), t('Save configuration'));
     $result = db_query("SELECT * FROM {block} WHERE theme='stark'");
     foreach ($result as $block) {
       unset($block->theme, $block->bid);
-      $this->assertEqual($blocks[$block->module][$block->delta], $block, t('Block matched'));
+      $this->assertEqual($blocks[$block->module][$block->delta], $block, t('Block %name matched', array('%name' => $block->module . '-' . $block->delta)));
     }
   }
 }
@@ -293,7 +293,7 @@ class BlockAdminThemeTestCase extends DrupalWebTestCase {
 
     // Enable admin theme and confirm that tab is accessible.
     $edit['admin_theme'] = 'stark';
-    $this->drupalPost('admin/structure/themes', $edit, t('Save configuration'));
+    $this->drupalPost('admin/appearance', $edit, t('Save configuration'));
     $this->drupalGet('admin/structure/block/list/stark');
     $this->assertResponse(200, t('The block admin page for the admin theme can be accessed'));
   }

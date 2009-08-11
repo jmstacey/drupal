@@ -1,5 +1,5 @@
 <?php
-// $Id: bootstrap.inc,v 1.291 2009-07-22 04:45:35 dries Exp $
+// $Id: bootstrap.inc,v 1.293 2009-08-04 04:02:25 webchick Exp $
 
 /**
  * @file
@@ -391,6 +391,66 @@ function conf_path($require_settings = TRUE, $reset = FALSE) {
 }
 
 /**
+ * Set appropriate server variables needed for command line scripts to work.
+ *
+ * This function can be called by command line scripts before bootstrapping
+ * Drupal, to ensure that the page loads with the desired server parameters.
+ * This is because many parts of Drupal assume that they are running in a web
+ * browser and therefore use information from the global PHP $_SERVER variable
+ * that does not get set when Drupal is run from the command line.
+ *
+ * In many cases, the default way in which this function populates the $_SERVER
+ * variable is sufficient, and it can therefore be called without passing in
+ * any input. However, command line scripts running on a multisite installation
+ * (or on any installation that has settings.php stored somewhere other than
+ * the sites/default folder) need to pass in the URL of the site to allow
+ * Drupal to detect the correct location of the settings.php file. Passing in
+ * the 'url' parameter is also required for functions like request_uri() to
+ * return the expected values.
+ *
+ * Most other parameters do not need to be passed in, but may be necessary in
+ * some cases; for example, if Drupal's ip_address() function needs to return
+ * anything but the standard localhost value ('127.0.0.1'), the command line
+ * script should pass in the desired value via the 'REMOTE_ADDR' key.
+ *
+ * @param $variables
+ *   (optional) An associative array of variables within $_SERVER that should
+ *   be replaced. If the special element 'url' is provided in this array, it
+ *   will be used to populate some of the server defaults; it should be set to
+ *   the URL of the current page request, excluding any $_GET request but
+ *   including the script name (e.g., http://www.example.com/mysite/index.php).
+ *
+ * @see conf_path()
+ * @see request_uri()
+ * @see ip_address()
+ */
+function drupal_override_server_variables($variables = array()) {
+  // Set defaults based on the provided URL.
+  if (isset($variables['url'])) {
+    $url = parse_url($variables['url']);
+    unset($variables['url']);
+  }
+  else {
+    $url = array();
+  }
+  $url += array(
+    'path' => '',
+    'host' => 'localhost',
+  );
+  $defaults = array(
+    'HTTP_HOST' => $url['host'],
+    'SCRIPT_NAME' => $url['path'],
+    'REMOTE_ADDR' => '127.0.0.1',
+    'REQUEST_METHOD' => 'GET',
+    'SERVER_NAME' => NULL,
+    'SERVER_SOFTWARE' => 'PHP CLI',
+    'HTTP_USER_AGENT' => NULL,
+  );
+  // Replace elements of the $_SERVER array, as appropriate.
+  $_SERVER = $variables + $_SERVER + $defaults;
+}
+
+/**
  * Initialize PHP environment.
  */
 function drupal_environment_initialize() {
@@ -575,20 +635,39 @@ function drupal_get_filename($type, $name, $filename = NULL) {
   // the database. This is required because this function is called both
   // before we have a database connection (i.e. during installation) and
   // when a database connection fails.
-  elseif (db_is_active() && (($file = db_query("SELECT filename FROM {system} WHERE name = :name AND type = :type", array(':name' => $name, ':type' => $type))->fetchField()) && file_exists($file))) {
-    $files[$type][$name] = $file;
-  }
   else {
-    // Fallback to searching the filesystem if the database connection is
-    // not established or the requested file is not found.
-    $config = conf_path();
-    $dir = (($type == 'theme_engine') ? 'themes/engines' : "${type}s");
-    $file = (($type == 'theme_engine') ? "$name.engine" : "$name.$type");
-
-    foreach (array("$config/$dir/$file", "$config/$dir/$name/$file", "$dir/$file", "$dir/$name/$file") as $file) {
+    try {
+      $file = db_query("SELECT filename FROM {system} WHERE name = :name AND type = :type", array(':name' => $name, ':type' => $type))->fetchField();
       if (file_exists($file)) {
         $files[$type][$name] = $file;
-        break;
+      }
+    }
+    catch (PDOException $e) {
+      // The database table may not exist because Drupal is not yet installed,
+      // or the database might be down. We have a fallback for this case so we
+      // hide the error completely.
+    }
+    // Fallback to searching the filesystem if the database could not find the
+    // file or the file returned by the database is not found.
+    if (!isset($files[$type][$name])) {
+      // We have a consistent directory naming: modules, themes...
+      $dir = $type . 's';
+      if ($type == 'theme_engine') {
+        $dir = 'themes/engines';
+        $mask = "/$name\.engine$/";
+      }
+      elseif ($type == 'theme') {
+        $mask = "/$name\.info$/";
+      }
+      else {
+        $mask = "/$name\.$type$/";
+      }
+
+      if (drupal_function_exists('drupal_system_listing')) {
+        $matches = drupal_system_listing($mask, $dir, 'name', 0);
+        if (!empty($matches[$name]->filepath)) {
+          $files[$type][$name] = $matches[$name]->filepath;
+        }
       }
     }
   }
@@ -1488,6 +1567,13 @@ function drupal_maintenance_theme() {
 }
 
 /**
+ * Return TRUE if a Drupal installation is currently being attempted.
+ */
+function drupal_installation_attempted() {
+  return defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'install';
+}
+
+/**
  * Return the name of the localization function. Use in code that needs to
  * run both during installation and normal operation.
  */
@@ -1496,7 +1582,7 @@ function get_t() {
   // This is not converted to drupal_static because there is no point in
   // resetting this as it can not change in the course of a request.
   if (!isset($t)) {
-    $t = function_exists('install_main') ? 'st' : 't';
+    $t = drupal_installation_attempted() ? 'st' : 't';
   }
   return $t;
 }

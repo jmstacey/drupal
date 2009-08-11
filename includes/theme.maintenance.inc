@@ -1,5 +1,5 @@
 <?php
-// $Id: theme.maintenance.inc,v 1.32 2009-07-14 10:22:17 dries Exp $
+// $Id: theme.maintenance.inc,v 1.34 2009-08-04 07:04:21 webchick Exp $
 
 /**
  * @file
@@ -216,11 +216,7 @@ function template_preprocess_maintenance_page(&$variables) {
   // Add favicon
   if (theme_get_setting('toggle_favicon')) {
     $favicon = theme_get_setting('favicon');
-    $type = file_get_mimetype($favicon);
-    // Use the genereic MIME type for favicons if no other was found.
-    if ($type == 'application/octet-stream') {
-      $type = 'image/x-icon';
-    }
+    $type = theme_get_setting('favicon_mimetype');
     drupal_add_html_head('<link rel="shortcut icon" href="' . check_url($favicon) . '" type="' . check_plain($type) . '" />');
   }
 
@@ -238,11 +234,11 @@ function template_preprocess_maintenance_page(&$variables) {
 
   // Setup layout variable.
   $variables['layout'] = 'none';
-  if (!empty($variables['left'])) {
-    $variables['layout'] = 'left';
+  if (!empty($variables['sidebar_first'])) {
+    $variables['layout'] = 'first';
   }
-  if (!empty($variables['right'])) {
-    $variables['layout'] = ($variables['layout'] == 'left') ? 'both' : 'right';
+  if (!empty($variables['sidebar_second'])) {
+    $variables['layout'] = ($variables['layout'] == 'first') ? 'both' : 'second';
   }
 
   // Construct page title

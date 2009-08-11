@@ -1,5 +1,5 @@
 <?php
-// $Id: schema.inc,v 1.21 2009-07-09 10:12:14 dries Exp $
+// $Id: schema.inc,v 1.23 2009-08-10 21:00:31 dries Exp $
 
 /**
  * @file
@@ -286,8 +286,8 @@ class DatabaseSchema_mysql extends DatabaseSchema {
     $ret[] = update_sql($query);
     if (isset($spec['initial'])) {
       // All this because update_sql does not support %-placeholders.
-      $sql = 'UPDATE {' . $table . '} SET ' . $field . ' = ' . db_type_placeholder($spec['type']);
-      $result = db_query($sql, $spec['initial']);
+      $sql = 'UPDATE {' . $table . '} SET ' . $field . ' = :value';
+      $result = db_query($sql, array(':value' => $spec['initial']));
       $ret[] = array('success' => $result !== FALSE, 'query' => check_plain($sql . ' (' . $spec['initial'] . ')'));
     }
     if ($fixnull) {
@@ -349,9 +349,6 @@ class DatabaseSchema_mysql extends DatabaseSchema {
   }
 
   public function prepareComment($comment, $length = NULL) {
-    // Decode HTML-encoded comments.
-    $comment = decode_entities(strip_tags($comment));
-
     // Work around a bug in some versions of PDO, see http://bugs.php.net/bug.php?id=41125
     $comment = str_replace("'", '’', $comment);
 

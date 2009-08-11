@@ -1,5 +1,5 @@
 <?php
-// $Id: theme.inc,v 1.499 2009-07-15 17:40:17 dries Exp $
+// $Id: theme.inc,v 1.503 2009-08-04 07:04:21 webchick Exp $
 
 /**
  * @file
@@ -132,7 +132,7 @@ function _drupal_theme_initialize($theme, $base_theme = array(), $registry_callb
   // And now add the stylesheets properly
   foreach ($final_stylesheets as $media => $stylesheets) {
     foreach ($stylesheets as $stylesheet) {
-      drupal_add_css($stylesheet, array('type' => 'theme', 'media' => $media));
+      drupal_add_css($stylesheet, array('weight' => CSS_THEME, 'media' => $media));
     }
   }
 
@@ -1041,6 +1041,8 @@ function theme_get_settings($key = NULL) {
     'logo_path'                        =>  '',
     'default_favicon'                  =>  1,
     'favicon_path'                     =>  '',
+    // Use the IANA-registered MIME type for ICO files as default.
+    'favicon_mimetype'                 =>  'image/vnd.microsoft.icon',
     'main_menu'                        =>  1,
     'secondary_menu'                   =>  1,
     'toggle_logo'                      =>  1,
@@ -1703,20 +1705,6 @@ function theme_more_link($url, $title) {
 }
 
 /**
- * Execute hook_footer() which is run at the end of the page right before the
- * close of the body tag.
- *
- * @param $main (optional)
- *   Whether the current page is the front page of the site.
- * @return
- *   A string containing the results of the hook_footer() calls.
- */
-function theme_closure($main = 0) {
-  $footer = module_invoke_all('footer', $main);
-  return implode("\n", $footer) . drupal_get_js('footer');
-}
-
-/**
  * Format a username.
  *
  * @param $object
@@ -1902,21 +1890,17 @@ function template_preprocess_page(&$variables) {
   // Add favicon.
   if (theme_get_setting('toggle_favicon')) {
     $favicon = theme_get_setting('favicon');
-    $type = file_get_mimetype($favicon);
-    // Use the genereic MIME type for favicons if no other was found.
-    if ($type == 'application/octet-stream') {
-      $type = 'image/x-icon';
-    }
+    $type = theme_get_setting('favicon_mimetype');
     drupal_add_html_head('<link rel="shortcut icon" href="' . check_url($favicon) . '" type="' . check_plain($type) . '" />');
   }
 
   // Set up layout variable.
   $variables['layout'] = 'none';
-  if (!empty($variables['page']['left'])) {
-    $variables['layout'] = 'left';
+  if (!empty($variables['page']['sidebar_first'])) {
+    $variables['layout'] = 'first';
   }
-  if (!empty($variables['page']['right'])) {
-    $variables['layout'] = ($variables['layout'] == 'left') ? 'both' : 'right';
+  if (!empty($variables['page']['sidebar_second'])) {
+    $variables['layout'] = ($variables['layout'] == 'first') ? 'both' : 'second';
   }
 
   // Construct page title
@@ -1950,8 +1934,6 @@ function template_preprocess_page(&$variables) {
   // using an associated GRDDL profile.
   $variables['rdf_namespaces']    = drupal_get_rdf_namespaces();
   $variables['grddl_profile']     = 'http://ns.inria.fr/grddl/rdfa/';
-  // Closure should be filled last.
-  $variables['closure']           = theme('closure');
 
   if ($node = menu_get_object()) {
     $variables['node'] = $node;
@@ -2009,6 +1991,8 @@ function template_process_page(&$variables) {
   foreach (system_region_list($GLOBALS['theme']) as $region_key => $region_name) {
     $variables[$region_key] = drupal_render($variables['page'][$region_key]);
   }
+  // Append javascript to $page_bottom
+  $variables['page_bottom'] .= drupal_get_js('footer');
 
   $variables['head']    = drupal_get_html_head();
   $variables['css']     = drupal_add_css();

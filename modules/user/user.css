@@ -1,4 +1,4 @@
-/* $Id: user.css,v 1.11 2009-06-14 08:04:25 dries Exp $ */
+/* $Id: user.css,v 1.13 2009-08-06 05:06:00 webchick Exp $ */
 
 #permissions td.module {
   font-weight: bold;
@@ -14,6 +14,7 @@
 }
 #user-admin-filter ul {
   list-style-type: none;
+  list-style-image: none;
   padding: 0;
   margin: 0;
   width: 100%;
@@ -33,7 +34,7 @@
   clear: both;
   margin: 1em 0;
 }
-.profile .picture {
+.profile .user-picture {
   float: right; /* LTR */
   margin: 0 1em 1em 0; /* LTR */
 }

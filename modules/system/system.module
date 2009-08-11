@@ -1,5 +1,5 @@
 <?php
-// $Id: system.module,v 1.727 2009-07-20 18:51:34 dries Exp $
+// $Id: system.module,v 1.738 2009-08-11 11:52:46 dries Exp $
 
 /**
  * @file
@@ -93,7 +93,7 @@ function system_help($path, $arg) {
       $output = '<p>' . t('The system module is at the foundation of your Drupal website, and provides basic but extensible functionality for use by other modules and themes. Some integral elements of Drupal are contained in and managed by the system module, including caching, enabling or disabling of modules and themes, preparing and displaying the administrative page, and configuring fundamental site settings. A number of key system maintenance operations are also part of the system module.') . '</p>';
       $output .= '<p>' . t('The system module provides:') . '</p>';
       $output .= '<ul><li>' . t('support for enabling and disabling <a href="@modules">modules</a>. Drupal comes packaged with a number of core modules; each module provides a discrete set of features and may be enabled depending on the needs of your site. A wide array of additional modules contributed by members of the Drupal community are available for download at the <a href="@drupal-modules">Drupal.org module page</a>.', array('@modules' => url('admin/structure/modules'), '@drupal-modules' => 'http://drupal.org/project/modules')) . '</li>';
-      $output .= '<li>' . t('support for enabling and disabling <a href="@themes">themes</a>, which determine the design and presentation of your site. Drupal comes packaged with several core themes and additional contributed themes are available at the <a href="@drupal-themes">Drupal.org theme page</a>.', array('@themes' => url('admin/structure/themes'), '@drupal-themes' => 'http://drupal.org/project/themes')) . '</li>';
+      $output .= '<li>' . t('support for enabling and disabling <a href="@themes">themes</a>, which determine the design and presentation of your site. Drupal comes packaged with several core themes and additional contributed themes are available at the <a href="@drupal-themes">Drupal.org theme page</a>.', array('@themes' => url('admin/appearance'), '@drupal-themes' => 'http://drupal.org/project/themes')) . '</li>';
       $output .= '<li>' . t('a robust <a href="@cache-settings">caching system</a> that allows the efficient re-use of previously-constructed web pages and web page components. Drupal stores the pages requested by anonymous users in a compressed format; depending on your site configuration and the amount of your web traffic tied to anonymous visitors, Drupal\'s caching system may significantly increase the speed of your site.', array('@cache-settings' => url('admin/settings/performance'))) . '</li>';
       $output .= '<li>' . t('a set of routine administrative operations that rely on a correctly-configured <a href="@cron">cron maintenance task</a> to run automatically. A number of other modules, including the feed aggregator, and search also rely on <a href="@cron">cron maintenance tasks</a>. For more information, see the online handbook entry for <a href="@handbook">configuring cron jobs</a>.', array('@cron' => url('admin/reports/status'), '@handbook' => 'http://drupal.org/cron')) . '</li>';
       $output .= '<li>' . t('basic configuration options for your site, including <a href="@regional-settings">date and time settings</a>, <a href="@file-system">file system settings</a>, <a href="@clean-url">clean URL support</a>, <a href="@site-info">site name and other information</a>, and a <a href="@maintenance-mode">maintenance mode</a> for taking your site temporarily offline.', array('@regional-settings' => url('admin/settings/regional-settings'), '@file-system' => url('admin/settings/file-system'), '@clean-url' => url('admin/settings/clean-urls'), '@site-info' => url('admin/settings/site-information'), '@maintenance-mode' => url('admin/settings/maintenance-mode'))) . '</li></ul>';
@@ -101,19 +101,19 @@ function system_help($path, $arg) {
       return $output;
     case 'admin/by-module':
       return '<p>' . t('This page shows you all available administration tasks for each module.') . '</p>';
-    case 'admin/structure/themes':
+    case 'admin/appearance':
       $output = '<p>' . t('Select which themes are available to your users and specify the default theme. To configure site-wide display settings, click the "configure" task above. Alternatively, to override these settings in a specific theme, click the "configure" link for that theme. Note that different themes may have different regions available for displaying content; for consistency in presentation, you may wish to enable only one theme.') . '</p>';
       $output .= '<p>' . t('To change the appearance of your site, a number of <a href="@themes">contributed themes</a> are available.', array('@themes' => 'http://drupal.org/project/themes')) . '</p>';
       return $output;
-    case 'admin/structure/themes/settings/' . $arg[4]:
+    case 'admin/appearance/settings/' . $arg[4]:
       $reference = explode('.', $arg[4], 2);
       $theme = array_pop($reference);
-      return '<p>' . t('These options control the display settings for the <code>%template</code> theme. When your site is displayed using this theme, these settings will be used. By clicking "Reset to defaults," you can choose to use the <a href="@global">global settings</a> for this theme.', array('%template' => $theme, '@global' => url('admin/structure/themes/settings'))) . '</p>';
-    case 'admin/structure/themes/settings':
+      return '<p>' . t('These options control the display settings for the <code>%template</code> theme. When your site is displayed using this theme, these settings will be used. By clicking "Reset to defaults," you can choose to use the <a href="@global">global settings</a> for this theme.', array('%template' => $theme, '@global' => url('admin/appearance/settings'))) . '</p>';
+    case 'admin/appearance/settings':
       return '<p>' . t('These options control the default display settings for your entire site, across all themes. Unless they have been overridden by a specific theme, these settings will be used.') . '</p>';
     case 'admin/structure/modules':
-      $output = '<p>' . t('Modules are plugins that extend Drupal\'s core functionality. To further extend your site\'s functionality, a number of <a href="@modules">contributed modules</a> are available for download.', array('@permissions' => url('admin/user/permissions'), '@modules' => 'http://drupal.org/project/modules')) . '</p>';
-      $output .= '<p>' . t('Module-related tasks can be located on the <a href="@by-module">administration by module page</a>. New <a href="@permissions">module-related permissions</a> may also become available as new modules are enabled.', array('@by-module' => url('admin/by-module'), '@permissions' => url('admin/user/permissions'))) . '</p>';
+      $output = '<p>' . t('Modules are plugins that extend Drupal\'s core functionality. To further extend your site\'s functionality, a number of <a href="@modules">contributed modules</a> are available for download.', array('@permissions' => url('admin/settings/permissions'), '@modules' => 'http://drupal.org/project/modules')) . '</p>';
+      $output .= '<p>' . t('Module-related tasks can be located on the <a href="@by-module">administration by module page</a>. New <a href="@permissions">module-related permissions</a> may also become available as new modules are enabled.', array('@by-module' => url('admin/by-module'), '@permissions' => url('admin/settings/permissions'))) . '</p>';
       $output .= '<p>' . t('Each time a module is updated, it is important that <a href="@update-php">update.php</a> is run. To help manage the update process, the <em>Update status</em> module, if enabled, provides <a href="@updates">information on new versions of modules (and themes)</a> as they are released. Regular review of the <a href="@updates">available updates page</a> is essential to maintaining a secure and current site.', array('@update-php' => $base_url . '/update.php', '@updates' => url('admin/reports/updates'))) . '</p>';
       return $output;
     case 'admin/structure/modules/uninstall':
@@ -150,10 +150,6 @@ function system_help($path, $arg) {
  */
 function system_theme() {
   return array_merge(drupal_common_theme(), array(
-    'system_theme_select_form' => array(
-      'arguments' => array('form' => NULL),
-      'file' => 'system.admin.inc',
-    ),
     'system_themes_form' => array(
       'arguments' => array('form' => NULL),
       'file' => 'system.admin.inc',
@@ -266,7 +262,7 @@ function system_elements() {
   $type['form'] = array(
     '#method' => 'post',
     '#action' => request_uri(),
-    '#theme_wrapper' => 'form',
+    '#theme_wrappers' => array('form'),
   );
 
   $type['page'] = array(
@@ -291,7 +287,7 @@ function system_elements() {
     '#button_type' => 'submit',
     '#executes_submit_callback' => TRUE,
     '#process' => array('form_process_ahah'),
-    '#theme_wrapper' => 'button',
+    '#theme_wrappers' => array('button'),
   );
 
   $type['button'] = array(
@@ -300,7 +296,7 @@ function system_elements() {
     '#button_type' => 'submit',
     '#executes_submit_callback' => FALSE,
     '#process' => array('form_process_ahah'),
-    '#theme_wrapper' => 'button',
+    '#theme_wrappers' => array('button'),
   );
 
   $type['image_button'] = array(
@@ -311,7 +307,7 @@ function system_elements() {
     '#return_value' => TRUE,
     '#has_garbage_value' => TRUE,
     '#src' => NULL,
-    '#theme_wrapper' => 'image_button',
+    '#theme_wrappers' => array('image_button'),
   );
 
   $type['textfield'] = array(
@@ -321,7 +317,7 @@ function system_elements() {
     '#autocomplete_path' => FALSE,
     '#process' => array('form_process_text_format', 'form_process_ahah'),
     '#theme' => 'textfield',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['password'] = array(
@@ -330,13 +326,13 @@ function system_elements() {
     '#maxlength' => 128,
     '#process' => array('form_process_ahah'),
     '#theme' => 'password',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['password_confirm'] = array(
     '#input' => TRUE,
     '#process' => array('form_process_password_confirm'),
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['textarea'] = array(
@@ -346,13 +342,13 @@ function system_elements() {
     '#resizable' => TRUE,
     '#process' => array('form_process_text_format', 'form_process_ahah'),
     '#theme' => 'textarea',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['radios'] = array(
     '#input' => TRUE,
     '#process' => array('form_process_radios'),
-    '#theme_wrapper' => 'radios',
+    '#theme_wrappers' => array('radios'),
     '#pre_render' => array('form_pre_render_conditional_form_element'),
   );
 
@@ -361,7 +357,7 @@ function system_elements() {
     '#default_value' => NULL,
     '#process' => array('form_process_ahah'),
     '#theme' => 'radio',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
     '#form_element_skip_title' => TRUE,
   );
 
@@ -369,7 +365,7 @@ function system_elements() {
     '#input' => TRUE,
     '#tree' => TRUE,
     '#process' => array('form_process_checkboxes'),
-    '#theme_wrapper' => 'checkboxes',
+    '#theme_wrappers' => array('checkboxes'),
     '#pre_render' => array('form_pre_render_conditional_form_element'),
   );
 
@@ -378,7 +374,7 @@ function system_elements() {
     '#return_value' => 1,
     '#process' => array('form_process_ahah'),
     '#theme' => 'checkbox',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
     '#form_element_skip_title' => TRUE,
   );
 
@@ -388,7 +384,7 @@ function system_elements() {
     '#multiple' => FALSE,
     '#process' => array('form_process_ahah'),
     '#theme' => 'select',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['weight'] = array(
@@ -403,14 +399,14 @@ function system_elements() {
     '#element_validate' => array('date_validate'),
     '#process' => array('form_process_date'),
     '#theme' => 'date',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['file'] = array(
     '#input' => TRUE,
     '#size' => 60,
     '#theme' => 'file',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['tableselect'] = array(
@@ -429,7 +425,7 @@ function system_elements() {
   $type['item'] = array(
     '#markup' => '',
     '#theme' => 'markup',
-    '#theme_wrapper' => 'form_element',
+    '#theme_wrappers' => array('form_element'),
   );
 
   $type['hidden'] = array(
@@ -453,11 +449,11 @@ function system_elements() {
     '#value' => NULL,
     '#process' => array('form_process_fieldset', 'form_process_ahah'),
     '#pre_render' => array('form_pre_render_fieldset'),
-    '#theme_wrapper' => 'fieldset',
+    '#theme_wrappers' => array('fieldset'),
   );
 
   $type['vertical_tabs'] = array(
-    '#theme_wrapper' => 'vertical_tabs',
+    '#theme_wrappers' => array('vertical_tabs'),
     '#default_tab' => '',
     '#process' => array('form_process_vertical_tabs'),
   );
@@ -518,64 +514,62 @@ function system_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   );
-  $items['admin/content'] = array(
-    'title' => 'Content management',
-    'description' => "Manage your site's content.",
-    'position' => 'left',
-    'weight' => -10,
-    'page callback' => 'system_admin_menu_block_page',
-    'access callback' => 'system_admin_menu_block_access',
-    'access arguments' => array('admin/content', 'access administration pages'),
-  );
 
   // Menu items that are basically just menu blocks.
   $items['admin/settings'] = array(
     'title' => 'Site configuration',
     'description' => 'Configure site settings.',
     'position' => 'right',
-    'weight' => -5,
+    'weight' => -2,
     'page callback' => 'system_settings_overview',
     'access callback' => 'system_admin_menu_block_access',
     'access arguments' => array('admin/settings', 'access administration pages'),
+  );
+  $items['admin/config'] = array(
+    'title' => 'Configuration and modules',
+    'page callback' => 'system_admin_config_page',
+    'position' => 'right',
+    'access callback' => array('system_admin_menu_block_access'),
+    'access arguments' => array('admin/config', 'access administration pages'),
   );
   $items['admin/structure'] = array(
     'title' => 'Structure',
     'description' => 'Control how your site looks and feels.',
     'position' => 'right',
-    'weight' => -10,
+    'weight' => -8,
     'page callback' => 'system_admin_menu_block_page',
     'access callback' => 'system_admin_menu_block_access',
     'access arguments' => array('admin/structure', 'access administration pages'),
   );
-  // Themes.
-  $items['admin/structure/themes'] = array(
-    'title' => 'Themes',
-    'description' => 'Change which theme your site uses or allows users to set.',
+  // Appearance.
+  $items['admin/appearance'] = array(
+    'title' => 'Appearance',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('system_themes_form'),
     'access arguments' => array('administer site configuration'),
+    'weight' => -6,
   );
-  $items['admin/structure/themes/select'] = array(
+  $items['admin/appearance/select'] = array(
     'title' => 'List',
     'description' => 'Select the default theme for your site.',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -1,
   );
-  $items['admin/structure/themes/settings'] = array(
+  $items['admin/appearance/settings'] = array(
     'title' => 'Configure',
     'page arguments' => array('system_theme_settings'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_LOCAL_TASK,
   );
   // Theme configuration subtabs.
-  $items['admin/structure/themes/settings/global'] = array(
+  $items['admin/appearance/settings/global'] = array(
     'title' => 'Global settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -1,
   );
 
   foreach (list_themes() as $theme) {
-    $items['admin/structure/themes/settings/' . $theme->name] = array(
+    $items['admin/appearance/settings/' . $theme->name] = array(
       'title' => $theme->info['name'],
       'page arguments' => array('system_theme_settings', $theme->name),
       'type' => MENU_LOCAL_TASK,
@@ -724,7 +718,7 @@ function system_menu() {
     'page arguments' => array('system_image_toolkit_settings'),
     'access arguments' => array('administer site configuration'),
   );
-  $items['admin/content/rss-publishing'] = array(
+  $items['admin/settings/rss-publishing'] = array(
     'title' => 'RSS publishing',
     'description' => 'Configure the site description, the number of items per feed and whether feeds should be titles/teasers/full-text.',
     'page callback' => 'drupal_get_form',
@@ -1158,6 +1152,29 @@ function system_library() {
 }
 
 /**
+ * Implement hook_stream_wrappers().
+ */
+function system_stream_wrappers() {
+  return array(
+    'public' => array(
+      'name' => t('Public files'),
+      'class' => 'DrupalPublicStreamWrapper',
+      'description' => t('Public local files served by the webserver.'),
+    ),
+    'private' => array(
+      'name' => t('Private files'),
+      'class' => 'DrupalPrivateStreamWrapper',
+      'description' => t('Private local files served by Drupal.'),
+    ),
+    'temporary' => array(
+      'name' => t('Temporary files'),
+      'class' => 'DrupalTemporaryStreamWrapper',
+      'description' => t('Temporary local files for upload and previews.'),
+    )
+  );
+}
+
+/**
  * Retrieve a blocked IP address from the database.
  *
  * @param $iid integer
@@ -1313,13 +1330,13 @@ function system_init() {
   if (arg(0) == 'admin' || (variable_get('node_admin_theme', '0') && arg(0) == 'node' && (arg(1) == 'add' || arg(2) == 'edit'))) {
     global $custom_theme;
     $custom_theme = variable_get('admin_theme', 0);
-    drupal_add_css(drupal_get_path('module', 'system') . '/admin.css');
+    drupal_add_css(drupal_get_path('module', 'system') . '/admin.css', array('weight' => CSS_SYSTEM));
   }
 
   // Add the CSS for this module.
-  drupal_add_css(drupal_get_path('module', 'system') . '/defaults.css');
-  drupal_add_css(drupal_get_path('module', 'system') . '/system.css');
-  drupal_add_css(drupal_get_path('module', 'system') . '/system-menus.css');
+  drupal_add_css(drupal_get_path('module', 'system') . '/defaults.css', array('weight' => CSS_SYSTEM));
+  drupal_add_css(drupal_get_path('module', 'system') . '/system.css', array('weight' => CSS_SYSTEM));
+  drupal_add_css(drupal_get_path('module', 'system') . '/system-menus.css', array('weight' => CSS_SYSTEM));
 
 
   // Ignore slave database servers for this request.
@@ -1345,7 +1362,6 @@ function system_init() {
   }
 }
 
-
 /**
  * Implement MODULE_preprocess_HOOK().
  */
@@ -1367,7 +1383,6 @@ function system_preprocess_page(&$variables) {
  */
 function system_user_form(&$edit, &$user, $category = NULL) {
   if ($category == 'account') {
-    $form['theme_select'] = system_theme_select_form(t('Selecting a different theme will change the look and feel of the site.'), isset($edit['theme']) ? $edit['theme'] : NULL, 2);
     if (variable_get('configurable_timezones', 1)) {
       system_user_timezone($edit, $form);
     }
@@ -1573,68 +1588,6 @@ function system_admin_menu_block($item) {
 }
 
 /**
- * Returns a fieldset containing the theme select form.
- *
- * @param $description
- *    description of the fieldset
- * @param $default_value
- *    default value of theme radios
- * @param $weight
- *    weight of the fieldset
- * @return
- *    a form array
- */
-function system_theme_select_form($description = '', $default_value = '', $weight = 0) {
-  if (user_access('select different theme')) {
-    $enabled = array();
-    $themes = list_themes();
-
-    foreach ($themes as $theme) {
-      if ($theme->status) {
-        $enabled[] = $theme;
-      }
-    }
-
-    if (count($enabled) > 1) {
-      ksort($enabled);
-
-      $form['themes'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Theme configuration'),
-        '#description' => $description,
-        '#collapsible' => TRUE,
-        '#theme' => 'system_theme_select_form'
-      );
-
-      foreach ($enabled as $info) {
-        // For the default theme, revert to an empty string so the user's theme updates when the site theme is changed.
-        $info->key = $info->name == variable_get('theme_default', 'garland') ? '' : $info->name;
-
-        $screenshot = NULL;
-        $theme_key = $info->name;
-        while ($theme_key) {
-          if (file_exists($themes[$theme_key]->info['screenshot'])) {
-            $screenshot = $themes[$theme_key]->info['screenshot'];
-            break;
-          }
-          $theme_key = isset($themes[$theme_key]->info['base theme']) ? $themes[$theme_key]->info['base theme'] : NULL;
-        }
-
-        $screenshot = $screenshot ? theme('image', $screenshot, t('Screenshot for %theme theme', array('%theme' => $info->name)), '', array('class' => 'screenshot'), FALSE) : t('no screenshot');
-
-        $form['themes'][$info->key]['screenshot'] = array('#markup' => $screenshot);
-        $form['themes'][$info->key]['description'] = array('#type' => 'item', '#title' => $info->name, '#markup' => dirname($info->filename) . ($info->name == variable_get('theme_default', 'garland') ? '<br /> <em>' . t('(site default theme)') . '</em>' : ''));
-        $options[$info->key] = '';
-      }
-
-      $form['themes']['theme'] = array('#type' => 'radios', '#options' => $options, '#default_value' => $default_value ? $default_value : '');
-      $form['#weight'] = $weight;
-      return $form;
-    }
-  }
-}
-
-/**
  * Checks the existence of the directory specified in $form_element. This
  * function is called from the system_settings form to check both the
  * file_directory_path and file_directory_temp directories. If validation
@@ -1828,14 +1781,15 @@ function _system_get_theme_data() {
     // Set defaults for theme info.
     $defaults = array(
       'regions' => array(
-        'left' => 'Left sidebar',
-        'right' => 'Right sidebar',
+        'sidebar_first' => 'Left sidebar',
+        'sidebar_second' => 'Right sidebar',
         'content' => 'Content',
         'header' => 'Header',
         'footer' => 'Footer',
         'highlight' => 'Highlighted content',
         'help' => 'Help',
         'page_top' => 'Page top',
+        'page_bottom' => 'Page bottom',
       ),
       'description' => '',
       'features' => array(
@@ -1911,9 +1865,14 @@ function _system_get_theme_data() {
     // Now that we've established all our master themes, go back and fill in
     // data for subthemes.
     foreach ($sub_themes as $key) {
-      $base_key = system_find_base_theme($themes, $key);
-      if (!$base_key) {
+      $themes[$key]->base_themes = system_find_base_themes($themes, $key);
+      // Don't proceed if there was a problem with the root base theme.
+      if (!current($themes[$key]->base_themes)) {
         continue;
+      }
+      $base_key = key($themes[$key]->base_themes);
+      foreach (array_keys($themes[$key]->base_themes) as $base_theme) {
+        $themes[$base_theme]->sub_themes[$key] = $themes[$key]->info['name'];
       }
       // Copy the 'owner' and 'engine' over if the top level theme uses a
       // theme engine.
@@ -1950,8 +1909,9 @@ function system_get_theme_data() {
 }
 
 /**
- * Recursive function to find the top level base theme. Themes can inherit
- * templates and function implementations from earlier themes.
+ * Find all the base themes for the specified theme.
+ *
+ * Themes can inherit templates and function implementations from earlier themes.
  *
  * @param $themes
  *   An array of available themes.
@@ -1960,26 +1920,33 @@ function system_get_theme_data() {
  * @param $used_keys
  *   A recursion parameter preventing endless loops.
  * @return
- *   Returns the top level parent that has no ancestor or returns NULL if there isn't a valid parent.
+ *   Returns an array of all of the theme's ancestors; the first element's value
+ *   will be NULL if an error occurred.
  */
-function system_find_base_theme($themes, $key, $used_keys = array()) {
+function system_find_base_themes($themes, $key, $used_keys = array()) {
   $base_key = $themes[$key]->info['base theme'];
   // Does the base theme exist?
   if (!isset($themes[$base_key])) {
-    return NULL;
+    return array($base_key => NULL);
   }
+
+  $current_base_theme = array($base_key => $themes[$base_key]->info['name']);
 
   // Is the base theme itself a child of another theme?
   if (isset($themes[$base_key]->info['base theme'])) {
+    // Do we already know the base themes of this theme?
+    if (isset($themes[$base_key]->base_themes)) {
+      return $themes[$base_key]->base_themes + $current_base_theme;
+    }
     // Prevent loops.
     if (!empty($used_keys[$base_key])) {
-      return NULL;
+      return array($base_key => NULL);
     }
     $used_keys[$base_key] = TRUE;
-    return system_find_base_theme($themes, $base_key, $used_keys);
+    return system_find_base_themes($themes, $base_key, $used_keys) + $current_base_theme;
   }
   // If we get here, then this is our parent theme.
-  return $base_key;
+  return $current_base_theme;
 }
 
 /**
@@ -2015,6 +1982,7 @@ function system_system_info_alter(&$info, $file) {
   // Remove page-top from the blocks UI since it is reserved for modules to
   // populate from outside the blocks system.
   $info['regions_hidden'][] = 'page_top';
+  $info['regions_hidden'][] = 'page_bottom';
 }
 
 /**
@@ -2226,7 +2194,7 @@ function system_get_module_admin_tasks($module) {
   $admin_task_count = 0;
   // Check for permissions.
   if (in_array($module, module_implements('permission')) && $admin_access) {
-    $admin_tasks[-1] = l(t('Configure permissions'), 'admin/user/permissions', array('fragment' => 'module-' . $module));
+    $admin_tasks[-1] = l(t('Configure permissions'), 'admin/settings/permissions', array('fragment' => 'module-' . $module));
   }
 
   // Check for menu items that are admin links.

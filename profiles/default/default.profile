@@ -1,10 +1,27 @@
 <?php
-// $Id: default.profile,v 1.56 2009-07-20 18:51:36 dries Exp $
+// $Id: default.profile,v 1.62 2009-08-03 03:04:34 webchick Exp $
 
 /**
  * Implement hook_profile_tasks().
  */
-function default_profile_tasks(&$task, $url) {
+function default_profile_tasks() {
+  $tasks = array(
+    'default_profile_site_setup' => array(),
+  );
+  return $tasks;
+}
+
+/**
+ * Installation task; perform actions to set up the site for this profile.
+ *
+ * This task does not return any output, meaning that control will be passed
+ * along to the next task without ending the page request.
+ *
+ * @param $install_state
+ *   An array of information about the current installation state.
+ */
+function default_profile_site_setup(&$install_state) {
+
   // Enable some standard blocks.
   $values = array(
     array(
@@ -23,7 +40,7 @@ function default_profile_tasks(&$task, $url) {
       'theme' => 'garland',
       'status' => 1,
       'weight' => 0,
-      'region' => 'left',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
@@ -33,7 +50,7 @@ function default_profile_tasks(&$task, $url) {
       'theme' => 'garland',
       'status' => 1,
       'weight' => 0,
-      'region' => 'left',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
@@ -43,7 +60,7 @@ function default_profile_tasks(&$task, $url) {
       'theme' => 'garland',
       'status' => 1,
       'weight' => 1,
-      'region' => 'left',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
@@ -64,6 +81,36 @@ function default_profile_tasks(&$task, $url) {
       'status' => 1,
       'weight' => 0,
       'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'main',
+      'theme' => 'seven',
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'help',
+      'theme' => 'seven',
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'user',
+      'delta' => 'login',
+      'theme' => 'seven',
+      'status' => 1,
+      'weight' => 10,
+      'region' => 'content',
       'pages' => '',
       'cache' => -1,
     ),
@@ -133,7 +180,7 @@ function default_profile_tasks(&$task, $url) {
 
   // Create a default vocabulary named "Tags", enabled for the 'article' content type.
   $description = st('Use tags to group articles on similar topics into categories.');
-  $help = st('Enter a comma-separated list of words.');
+  $help = st('Enter a comma-separated list of words to describe your content.');
 
   $vid = db_insert('taxonomy_vocabulary')->fields(array(
     'name' => 'Tags',
@@ -171,6 +218,15 @@ function default_profile_tasks(&$task, $url) {
   // Save some default links.
   $link = array('link_path' => 'admin/structure/menu-customize/main-menu/add', 'link_title' => 'Add a main menu link', 'menu_name' => 'main-menu');
   menu_link_save($link);
+
+  // Enable the admin theme.
+  db_update('system')
+    ->fields(array('status' => 1))
+    ->condition('type', 'theme')
+    ->condition('name', 'seven')
+    ->execute();
+  variable_set('admin_theme', 'seven');
+  variable_set('node_admin_theme', '1');
 }
 
 /**

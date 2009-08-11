@@ -1,10 +1,26 @@
 <?php
-// $Id: expert.profile,v 1.10 2009-07-15 02:08:41 webchick Exp $
+// $Id: expert.profile,v 1.12 2009-08-11 12:20:26 dries Exp $
 
 /**
  * Implement hook_profile_tasks().
  */
-function expert_profile_tasks(&$task, $url) {
+function expert_profile_tasks() {
+  $tasks = array(
+    'expert_profile_site_setup' => array(),
+  );
+  return $tasks;
+}
+
+/**
+ * Installation task; perform actions to set up the site for this profile.
+ *
+ * This task does not return any output, meaning that control will be passed
+ * along to the next task without ending the page request.
+ *
+ * @param $install_state
+ *   An array of information about the current installation state.
+ */
+function expert_profile_site_setup(&$install_state) {
 
   // Enable some standard blocks.
   $values = array(
@@ -24,7 +40,7 @@ function expert_profile_tasks(&$task, $url) {
       'theme' => 'garland',
       'status' => 1,
       'weight' => 0,
-      'region' => 'left',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
@@ -34,7 +50,7 @@ function expert_profile_tasks(&$task, $url) {
       'theme' => 'garland',
       'status' => 1,
       'weight' => 0,
-      'region' => 'left',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
@@ -44,7 +60,7 @@ function expert_profile_tasks(&$task, $url) {
       'theme' => 'garland',
       'status' => 1,
       'weight' => 1,
-      'region' => 'left',
+      'region' => 'sidebar_first',
       'pages' => '',
       'cache' => -1,
     ),
