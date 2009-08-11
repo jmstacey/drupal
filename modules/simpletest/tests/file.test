@@ -515,9 +515,9 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
-    $filepath = file_unmanaged_save_data($contents, 'asdf.txt', FILE_EXISTS_REPLACE);
+    $filepath = file_unmanaged_save_data($contents, 'public://asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path('public://'), drupal_dirname($filepath), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public://'), file_directory_path(drupal_dirname($filepath)), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));

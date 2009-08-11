@@ -1518,7 +1518,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
  */
 function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAME) {
   // Write the data to a temporary file.
-  $temp_name = tempnam(file_directory_path('temporary'), 'file');
+  $temp_name = drupal_tempnam('temporary://', 'file');
   if (file_put_contents($temp_name, $data) === FALSE) {
     drupal_set_message(t('The file could not be created.'), 'error');
     return FALSE;
@@ -1917,6 +1917,46 @@ function drupal_mkdir($uri, $mode = NULL, $recursive = FALSE, $context = NULL) {
     return mkdir($uri, $mode, $recursive, $context);
   }
 }
+
+/**
+ * Creates a file with a unique filename in the specified directory.
+ *
+ * PHP's tempnam() does not return a URI like we want. This function
+ * will return a URI if given a URI, or it will return a filepath if
+ * given a filepath.
+ *
+ * Compatibility: normal paths and stream wrappers.
+ * @see http://drupal.org/node/515192
+ *
+ * @param $directory
+ *   The directory where the temporary filename will be created.
+ * @param $prefix
+ *   The prefix of the generated temporary filename.
+ *   Note: Windows uses only the first three characters of prefix.
+ * @return
+ *   Returns the new temporary fillename, or FALSE on failure.
+ *
+ * @see tempnam()
+ */
+function drupal_tempnam($directory, $prefix) {
+ 	$scheme = file_uri_scheme($directory);
+
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
+    $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme);
+    
+    if ($filename = tempnam($wrapper->getDirectoryPath(), $prefix)) {
+      return $scheme . '://' . basename($filename);
+    }
+    else {
+      return FALSE;
+    }
+  }
+  else {
+    // Handle as a normal tempnam() call.
+    return tempnam($directory, $prefix);
+  }
+}
+
 
 /**
  * @} End of "defgroup file".
