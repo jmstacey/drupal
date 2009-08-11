@@ -2098,9 +2098,9 @@ class StreamWrapperRegistryTest extends DrupalWebTestCase {
     $this->assertEqual('DrupalPublicStreamWrapper', get_class($instance), t('Got correct class type for public URI.'));
 
     // Test file_stream_wrapper_uri_normalize.
-    $uri = 'public:///' . $this->originalFileDirectory . '/foo/bar/';
+    $uri = 'public:///' . file_directory_path() . '/foo/bar/';
     $uri = file_stream_wrapper_uri_normalize($uri);
-    $this->assertEqual('public://foo/bar', $uri, t('Got a properly normalized URI'));
+    $this->assertEqual('public://foo/bar', $uri, t('Got a properly normalized URI @uri', array('@uri' => $uri)));
 
     // Test file_uri_taget().
     $this->assertEqual('foo/bar.txt', file_uri_target('public://foo/bar.txt'), t('Got a valid stream target from public://foo/bar.txt'));
