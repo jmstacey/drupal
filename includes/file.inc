@@ -68,6 +68,10 @@ define('FILE_EXISTS_ERROR', 2);
 define('FILE_STATUS_PERMANENT', 1);
 
 /**
+ * Methods to manage a registry of stream wrappers.
+ */
+
+/**
  * Drupal stream wrapper registry.
  *
  * A stream wrapper is an abstraction of a file system that allows Drupal to
