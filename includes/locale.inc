@@ -2447,7 +2447,7 @@ function _locale_rebuild_js($langcode = NULL) {
   // Only create a new file if the content has changed.
   if ($data && $language->javascript != $data_hash) {
     // Ensure that the directory exists and is writable, if possible.
-    file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+    file_prepare_directory($dir, FILE_CREATE_DIRECTORY);
 
     // Save the file.
     $dest = $dir . '/' . $language->language . '_' . $data_hash . '.js';
