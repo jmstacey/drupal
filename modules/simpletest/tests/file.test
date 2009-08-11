@@ -2057,8 +2057,8 @@ class StreamWrapperRegistryTest extends DrupalWebTestCase {
   }
 
   function setUp() {
-    drupal_static_reset('file_get_stream_wrappers');
     parent::setUp('file_test');
+    drupal_static_reset('file_get_stream_wrappers');
   }
 
   function tearDown() {
