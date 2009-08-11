@@ -1560,7 +1560,7 @@ function file_download() {
   $args = func_get_args();
   $scheme = array_shift($args);
   $target = implode('/', $args);
-  $uri = $scheme . '://' . $atget;
+  $uri = $scheme . '://' . $target;
 
   if (file_exists($uri)) {
     // Let other modules provide headers and controls access to the file.
