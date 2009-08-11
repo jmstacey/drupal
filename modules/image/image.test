@@ -262,7 +262,7 @@ class ImageAdminStylesUnitTest extends DrupalWebTestCase {
     // file directory. Copy over an image on the first run.
     if (!isset($file_path)) {
       $file = reset($this->drupalGetTestFiles('image'));
-      $file_path = file_unmanaged_copy($file->filename);
+      $file_path = file_unmanaged_copy($file->uri);
     }
 
     return image_style_url($style['name'], $file_path) ? $file_path : FALSE;
