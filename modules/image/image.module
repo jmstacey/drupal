@@ -429,7 +429,7 @@ function image_style_generate() {
   $scheme = array_shift($args);
   $path = implode('/', $args);
 
-  $source = $scheme . '://' . $path;
+  $path = $scheme . '://' . $path;
   $path_md5 = md5($path);
   $destination = image_style_path($style['name'], $path);
 
@@ -460,7 +460,7 @@ function image_style_generate() {
   cache_set($cid, $destination, 'cache_image');
 
   // Try to generate the image.
-  if (image_style_create_derivative($style, $source, $destination)) {
+  if (image_style_create_derivative($style, $path, $destination)) {
     $image = image_load($destination);
     cache_clear_all($cid, 'cache_image');
     file_transfer($image->source, array('Content-Type' => $image->info['mime_type'], 'Content-Length' => $image->info['file_size']));
