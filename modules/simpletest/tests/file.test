@@ -685,10 +685,6 @@ class FileDirectoryTest extends FileTestCase {
     // Non-existent directory.
     $this->assertFalse(file_prepare_directory($directory, 0), t('Error reported for non-existing directory.'), 'File');
 
-    // Check that an error was set for the form element above.
-    $errors = form_get_errors();
-    $this->assertEqual($errors[$form_element], t('The directory %directory does not exist.', array('%directory' => $directory)), t('Properly generated an error for the passed form element.'), 'File');
-
     // Make a directory.
     $this->assertTrue(file_prepare_directory($directory, FILE_CREATE_DIRECTORY), t('No error reported when creating a new directory.'), 'File');
 
@@ -706,11 +702,11 @@ class FileDirectoryTest extends FileTestCase {
     $this->assertDirectoryPermissions($directory, variable_get('file_chmod_directory', 0775));
 
     // Remove .htaccess file to then test that it gets re-created.
-    @unlink(file_directory_path() . '/.htaccess');
     $directory = file_directory_path();
-    file_prepare_directory($directory);
-    $this->assertTrue(is_file(file_directory_path() . '/.htaccess'), t('Successfully created the .htaccess file in the files directory.'), 'File');
-
+    @unlink($directory . '/.htaccess');
+    $this->assertFalse(is_file($directory . '/.htaccess'), t('Successfully removed the .htaccess file in the files directory.'), 'File');
+    file_insure_htaccess();
+    $this->assertTrue(is_file($directory . '/.htaccess'), t('Successfully re-created the .htaccess file in the files directory.'), 'File');
     // Verify contents of .htaccess file.
     $file = file_get_contents(file_directory_path() . '/.htaccess');
     $this->assertEqual($file, "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks", t('The .htaccess file contains the proper content.'), 'File');
@@ -721,7 +717,7 @@ class FileDirectoryTest extends FileTestCase {
    */
   function testFileDirectoryPath() {
     // Directory path.
-    $path = variable_get('stream_public_path', conf_path() . '/files');
+    $path = variable_get('file_public_path', '');
     $this->assertEqual($path, file_directory_path('public'), t('Properly returns the stored file directory path.'), 'File');
   }
 

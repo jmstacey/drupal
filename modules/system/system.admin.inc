@@ -1420,7 +1420,7 @@ function system_clear_cache_submit($form, &$form_state) {
  */
 function system_file_system_settings() {
 
-  $form['stream_public_path'] = array(
+  $form['file_public_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Public file system path'),
     '#default_value' => file_directory_path(),
@@ -1429,7 +1429,7 @@ function system_file_system_settings() {
     '#after_build' => array('system_check_directory'),
   );
 
-  $form['stream_private_path'] = array(
+  $form['file_private_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Private file system path'),
     '#default_value' => file_directory_path('private'),
@@ -1438,7 +1438,7 @@ function system_file_system_settings() {
     '#after_build' => array('system_check_directory'),
   );
 
-  $form['stream_temp_path'] = array(
+  $form['file_temporary_path'] = array(
     '#type' => 'textfield',
     '#title' => t('Temporary directory'),
     '#default_value' => file_directory_path('temporary'),
@@ -1451,7 +1451,7 @@ function system_file_system_settings() {
     'public' => $wrappers['public']['description'],
     'private' => $wrappers['private']['description']
   );
-  $form['stream_default_scheme'] = array(
+  $form['file_default_scheme'] = array(
     '#type' => 'radios',
     '#title' => t('Default download method'),
     '#default_value' => 'public',

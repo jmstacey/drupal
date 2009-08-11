@@ -369,6 +369,15 @@ function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS)
 }
 
 /**
+ * If missing, create a htaccess file in each Drupal files directory.
+ */
+function file_insure_htaccess() {
+  file_create_htaccess('public://', FALSE);
+  file_create_htaccess('private://', TRUE);
+  file_create_htaccess('temporary://', TRUE);
+}
+
+/**
  * Creates an htaccess file in the given directory.
  *
  * @param $directory
@@ -378,7 +387,13 @@ function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS)
  *   The default is TRUE which indicates a private and protected directory.
  */
 function file_create_htaccess($directory, $private = TRUE) {
-  $htaccess_path = rtrim($directory, '/') . '/.htaccess';
+  if (file_uri_scheme($directory)) {
+    $directory = file_stream_wrapper_uri_normalize($directory);
+  }
+  else {
+    $directory = rtrim($directory, '/\\');
+  }
+  $htaccess_path =  $directory . '/.htaccess';
 
   if (file_exists($htaccess_path)) {
     // Short circuit if the .htaccess file already exists.
