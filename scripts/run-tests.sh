@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 // $Id: run-tests.sh,v 1.33 2009-08-05 15:58:35 webchick Exp $
 /**
@@ -276,7 +277,7 @@ function simpletest_script_init($server_software) {
   $_SERVER['PHP_SELF'] = $path .'/index.php';
   $_SERVER['HTTP_USER_AGENT'] = 'Drupal command line';
 
-  chdir(drupal_realpath(dirname(__FILE__) . '/..'));
+  chdir(realpath(dirname(__FILE__) . '/..'));
   define('DRUPAL_ROOT', getcwd());
   require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 }
