@@ -435,15 +435,15 @@ class FileValidatorTest extends DrupalWebTestCase {
     $file = new stdClass();
 
     // Add a filename with an allowed length and test it.
-    $file->filename = str_repeat('x', 255);
-    $this->assertEqual(strlen($file->filename), 255);
+    $file->filename = str_repeat('x', 240);
+    $this->assertEqual(strlen($file->filename), 240);
     $errors = file_validate_name_length($file);
-    $this->assertEqual(count($errors), 0, t('No errors reported for 255 length filename.'), 'File');
+    $this->assertEqual(count($errors), 0, t('No errors reported for 240 length filename.'), 'File');
 
     // Add a filename with a length too long and test it.
-    $file->filename = str_repeat('x', 256);
+    $file->filename = str_repeat('x', 241);
     $errors = file_validate_name_length($file);
-    $this->assertEqual(count($errors), 1, t('An error reported for 256 length filename.'), 'File');
+    $this->assertEqual(count($errors), 1, t('An error reported for 241 length filename.'), 'File');
 
     // Add a filename with an empty string and test it.
     $file->filename = '';
