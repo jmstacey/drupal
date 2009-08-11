@@ -239,7 +239,6 @@ function file_stream_wrapper_uri_normalize($uri) {
  *   if no registered handler could be found. For example, a URI of
  *   "private://example.txt" would return a new private stream wrapper object
  *   (DrupalPrivateStreamWrapper).
- * @see file_stream_wrapper_get_instance_by_scheme()
  */
 function file_stream_wrapper_get_instance_by_uri($uri) {
   $scheme = file_uri_scheme($uri);
@@ -272,7 +271,6 @@ function file_stream_wrapper_get_instance_by_uri($uri) {
  *   For example, for the public scheme a stream wrapper object
  *   (DrupalPublicStreamWrapper).
  *   FALSE is returned if no registered handler could be found.
- * @see file_stream_wrapper_get_instance_by_uri()
  */
 function file_stream_wrapper_get_instance_by_scheme($scheme) {
   $class = file_stream_wrapper_get_class($scheme);
