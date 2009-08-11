@@ -406,7 +406,12 @@ function user_save($account, $edit = array(), $category = 'account') {
       if (($picture->status & FILE_STATUS_PERMANENT) == 0) {
         $info = image_get_info($picture->uri);
         // TODO: Lookup a private/public setting. Or user_picture_path should include private:// or public://.
-        $destination = file_create_path(variable_get('user_picture_path', 'pictures') . '/picture-' . $account->uid . '.' . $info['extension']);
+        $picture_directory = 'public://' . variable_get('user_picture_path', 'pictures');
+        
+        // Prepare the pictures directory.
+        file_prepare_directory($picture_directory, FILE_CREATE_DIRECTORY);
+        $destination = file_stream_wrapper_uri_normalize($picture_directory . '/picture-' . $account->uid . '.' . $info['extension']);
+
         if ($picture = file_move($picture, $destination, FILE_EXISTS_REPLACE)) {
           $picture->status |= FILE_STATUS_PERMANENT;
           $edit['picture'] = file_save($picture);
