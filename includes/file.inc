@@ -543,8 +543,7 @@ function file_save($file) {
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
  * @return
- *   Returns file object if the copy is successful, or FALSE in the event of an
- *   error.
+ *   File object if the copy is successful, or FALSE in the event of an error.
  *
  * @see file_unmanaged_copy()
  * @see hook_file_copy()
