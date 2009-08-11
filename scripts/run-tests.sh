@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 // $Id: run-tests.sh,v 1.33 2009-08-05 15:58:35 webchick Exp $
 /**
