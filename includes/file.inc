@@ -346,7 +346,7 @@ function file_external_url($uri) {
  *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
  *   is returned.
  */
-function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS) {
+function file_prepare_directory(&$directory, $options = 0) {
   if (!file_stream_wrapper_valid_scheme(file_uri_scheme($directory))) {
     // Only trim if we're not dealing with a stream.
     $directory = rtrim($directory, '/\\');
