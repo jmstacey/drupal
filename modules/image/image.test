@@ -112,21 +112,6 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     $this->assertEqual($this->drupalGetHeader('Content-Type'), $this->image_info['mime_type'], t('Expected Content-Type was reported.'));
     $this->assertEqual($this->drupalGetHeader('Content-Length'), $this->image_info['file_size'], t('Expected Content-Length was reported.'));
   }
-
-  /**
-   * Test image_style_generate_url().
-   */
-  function testImageStyleGenerateUrl() {
-    // Test it with no generated file.
-    $actual = image_style_generate_url($this->style_name, $this->image_without_generated);
-    $expected = url('image/generate/' . $this->style_name . '/' . $this->scheme . '/' . file_uri_target($this->image_without_generated), array('absolute' => TRUE));
-    $this->assertEqual($actual, $expected, t('Got the generate URL for a non-existent file.'));
-
-    // Now test it with a generated file.
-    $actual = image_style_generate_url($this->style_name, $this->image_with_generated);
-    $expected = file_external_url(image_style_path($this->style_name, $this->image_with_generated));
-    $this->assertEqual($actual, $expected, t('Got the download URL for an existing file.'));
-  }
 }
 
 /**
