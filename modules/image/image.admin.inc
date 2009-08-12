@@ -657,7 +657,11 @@ function theme_image_style_effects($form) {
  * @ingroup themeable
  */
 function theme_image_style_preview($style) {
-  $sample_image = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
+  // Make sure the sample file is in the files directory.
+  $sample_source = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
+  $sample_image = variable_get('file_default_scheme', 'public') . '://styles/sample.pngs';
+  file_unmanaged_copy($sample_source, $sample_image, FILE_EXISTS_REPLACE);
+ 
   $sample_width = 160;
   $sample_height = 160;
 
