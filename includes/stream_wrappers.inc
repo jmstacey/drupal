@@ -564,7 +564,7 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('file_public_path', 'sites/default/files');
+    return variable_get('file_public_path', conf_path() . '/files');
   }
 
   /**
@@ -592,7 +592,7 @@ class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('file_private_path', 'sites/default/private/files');
+    return variable_get('file_private_path', conf_path() . '/private/files');
   }
 
   /**
@@ -619,7 +619,7 @@ class DrupalTemporaryStreamWrapper extends DrupalLocalStreamWrapper {
    * Implements abstract public function getDirectoryPath()
    */
   public function getDirectoryPath() {
-    return variable_get('file_temporary_path', 'sites/default/private/temp');
+    return variable_get('file_temporary_path', conf_path() . '/private/temp');
   }
 
   /**
