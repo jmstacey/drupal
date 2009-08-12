@@ -2342,13 +2342,19 @@ function system_update_7033() {
     'primary key' => array('fid'),
   );
   db_create_table($ret, 'file', $schema['file']);
+  return $ret;
+}
 
+/**
+* Migrate upload module files to the new {file} table.
+ */
+function system_update_7034() {
+  $ret = array();
   if (!db_table_exists('upload')) {
     return $ret;
   }
   // The old {files} tables still exists.  We migrate core data from upload
   // module, but any contrib module using it will need to do its own update.
-  $insert_query = db_insert('file')->fields(array('fid', 'uid', 'filename', 'uri', 'filemime', 'filesize', 'status', 'timestamp'));
   $result = db_query('SELECT fid, uid, filename, filepath AS uri, filemime, filesize, status, timestamp FROM {files} f INNER JOIN {upload} u ON u.fid = f.fid', array(), array('fetch' => PDO::FETCH_ASSOC));
 
   // We will convert filepaths to uri using the default schmeme
@@ -2356,14 +2362,12 @@ function system_update_7033() {
   $basename = variable_get('file_directory_path', conf_path() . '/files');
   $scheme = variable_get('file_default_scheme', 'public') . '://';
   $fids = array();
+  // TODO: does this function need to run in batch mode?
   foreach ($result as $file) {
     $file['uri'] = $scheme . str_replace($basename, '', $file['uri']);
     $file['uri'] = file_stream_wrapper_uri_normalize($file['uri']);
-    $insert_query->values($file);
+    db_insert('file')->fields($file)->execute();
     $fids[] = $file['fid'];
-  }
-  if ($fids) {
-    $insert_query->execute();
   }
   // TODO: delete the found fids from {files}?
   return $ret;
