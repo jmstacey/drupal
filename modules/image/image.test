@@ -47,7 +47,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     parent::setUp();
 
     $this->style_name = 'style_foo';
-    $this->scheme     = 'public';
+    $this->scheme = 'public';
     image_style_save(array('name' => $this->style_name));
 
     // Create the directories for the styles.

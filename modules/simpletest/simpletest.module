@@ -468,4 +468,3 @@ function simpletest_clean_results_table($test_id = NULL) {
   }
   return FALSE;
 }
-

@@ -459,6 +459,7 @@ function blogapi_metaweblog_new_media_object($blogid, $username, $password, $fil
     $filename = str_replace('.', '_', $filename);
     $filename .= '.' . $final_extension;
   }
+  
   else {
     $filename = $name;
   }
