@@ -522,7 +522,8 @@ function image_style_create_derivative($style, $source, $destination) {
  *   An image style array.
  */
 function image_style_flush($style) {
-  $style_directory = drupal_realpath(file_directory_path() . '/styles/' . $style['name']);
+  $p = variable_get('file_default_scheme', 'public') . '://styles/' . $style['name'];
+  $style_directory = drupal_realpath(variable_get('file_default_scheme', 'public') . '://styles/' . $style['name']);
   if (is_dir($style_directory)) {
     file_unmanaged_delete_recursive($style_directory);
   }
