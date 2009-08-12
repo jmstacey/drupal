@@ -1303,7 +1303,7 @@ function file_validate_extensions($file, $extensions) {
 }
 
 /**
- * Asserts that the file's size is below certain limits.
+ * Check that the file's size is below certain limits.
  *
  * This check is not enforced for the user #1.
  *
@@ -1316,8 +1316,8 @@ function file_validate_extensions($file, $extensions) {
  *   An integer specifying the maximum number of bytes the user is allowed.
  *   Zero indicates that no limit should be enforced.
  * @return
- *   Returns an array containing an error message if the file size exceeds
- *   limits.
+ *   An array. If the file size exceeds limits, it will contain an error
+ *   message.
  *
  * @see hook_file_validate()
  */
