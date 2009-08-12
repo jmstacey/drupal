@@ -1689,18 +1689,18 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  * @see http://drupal.org/node/515192
  *
  * @param $scheme
- *   A string representing the scheme of a stream. For legacy code, the public
- *   wrapper is assumed if this is not provided.
- *   A stream is referenced as: scheme://target.
+ *   A string representing the scheme of a stream. The default wrapper is
+ *   is assumed if this is not provided. A stream is referenced as
+ *   "scheme://target".
  * @return
  *   A string containing the directory path of a stream. FALSE is returned if
  *   the scheme is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme = NULL) {
-  if ($scheme === NULL) {
+  if (empty($scheme)) {
     $scheme = variable_get('file_default_scheme', 'public');
   }
-  if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
+  if ($wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
     return $wrapper->getDirectoryPath();
   }
   else {
