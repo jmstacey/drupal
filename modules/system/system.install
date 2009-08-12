@@ -178,9 +178,9 @@ function system_requirements($phase) {
 
   // Test files directories.
   $directories = array(
-    variable_get('file_public_path', 'sites/default/files'),
-    variable_get('file_private_path', 'sites/default/private/files'),
-    variable_get('file_temporary_path', 'sites/default/private/temp'),
+    variable_get('file_public_path', conf_path() . '/files'),
+    variable_get('file_private_path', conf_path() . '/private/files'),
+    variable_get('file_temporary_path', conf_path() . '/private/temp'),
   );
   $requirements['file system'] = array(
     'title' => $t('File system'),
@@ -681,9 +681,6 @@ function system_schema() {
   $schema['cache_registry'] = $schema['cache'];
   $schema['cache_registry']['description'] = 'Cache table for the code registry system to remember what code files need to be loaded on any given page.';
 
-  /*
-    TODO: Update the master record when removing the status column.
-  */
   $schema['file'] = array(
     'description' => 'Stores information for uploaded files.',
     'fields' => array(
@@ -2256,15 +2253,25 @@ function system_update_7032() {
   return $ret;
 }
 
-
 /**
- * Create the {file} with the unique key on the filepath.
+* Migrate the file_downloads setting and create the new {file} table.
  */
 function system_update_7033() {
-
-  /*
-    TODO Update the update record when removing the status column
-  */
+  $ret = array();
+  $files_directory = variable_get('file_directory_path', NULL);
+  if (variable_get('file_downloads', 1) == 1) {
+    // Our defualt is public, so we don't need to set anything.
+    if (!empty($files_directory)) {
+      variable_set('file_public_path', $files_directory);
+    }
+  }
+  elseif (variable_get('file_downloads', 1) == 2) {
+    variable_set('file_default_scheme', 'private');
+    if (!empty($files_directory)) {
+      variable_set('file_private_path', $files_directory);
+    }
+  }
+  variable_del('file_downloads');
 
   $schema['file'] = array(
     'description' => 'Stores information for uploaded files.',
@@ -2335,20 +2342,30 @@ function system_update_7033() {
     'primary key' => array('fid'),
   );
   db_create_table($ret, 'file', $schema['file']);
-}
 
-/**
- * Migrate the old file_downloads setting to stream_default_scheme.
- */
-function system_update_7034() {
-  $ret = array();
-  if (variable_get('file_downloads', 1) == 1) {
-    variable_set('file_default_scheme', 'public');
+  if (!db_table_exists('upload')) {
+    return $ret;
   }
-  elseif (variable_get('file_downloads', 1) == 2) {
-    variable_set('file_default_scheme', 'private');
+  // The old {files} tables still exists.  We migrate core data from upload
+  // module, but any contrib module using it will need to do its own update.
+  $insert_query = db_insert('file')->fields(array('fid', 'uid', 'filename', 'uri', 'filemime', 'filesize', 'status', 'timestamp'));
+  $result = db_query('SELECT fid, uid, filename, filepath AS uri, filemime, filesize, status, timestamp FROM {files} f INNER JOIN {upload} u ON u.fid = f.fid', array(), array('fetch' => PDO::FETCH_ASSOC));
+
+  // We will convert filepaths to uri using the default schmeme
+  // and stripping off the existing file directory path.
+  $basename = variable_get('file_directory_path', conf_path() . '/files');
+  $scheme = variable_get('file_default_scheme', 'public') . '://';
+  $fids = array();
+  foreach ($result as $file) {
+    $file['uri'] = $scheme . str_replace($basename, '', $file['uri']);
+    $file['uri'] = file_stream_wrapper_uri_normalize($file['uri']);
+    $insert_query->values($file);
+    $fids[] = $file['fid'];
   }
-  variable_del('file_downloads');
+  if ($fids) {
+    $insert_query->execute();
+  }
+  // TODO: delete the found fids from {files}?
   return $ret;
 }
 
