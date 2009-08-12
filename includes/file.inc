@@ -681,7 +681,7 @@ function file_build_uri($path) {
  * existing files should be handled.
  *
  * @param $destination
- *   A string specifying the desired final URI.
+ *   A string specifying the desired final URI or filepath.
  * @param $replace
  *   Replace behavior when the destination file already exists.
  *   - FILE_EXISTS_REPLACE - Replace the existing file.
@@ -1015,11 +1015,8 @@ function file_unmanaged_delete($path) {
  *
  * Note that this only deletes visible files with write permission.
  *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $path
- *   A string containing a file or directory path.
+ *   A string containing a URI, filepath. or directory path.
  * @return
  *   Returns TRUE for success or path does not exist, or FALSE in the event
  *   of an error.
@@ -1073,20 +1070,14 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * files are periodically cleaned. To make the file a permanent file, assign
  * the status and use file_save() to save the changes.
  *
- * Compatibility: source may be a normal path or stream, but the destination must
- * always be a stream.
- * @see http://drupal.org/node/515192
- *
  * @param $source
  *   A string specifying the filepath or URI of the upload field to save.
  * @param $validators
  *   An optional, associative array of callback functions used to validate the
  *   file. See file_validate() for a full discussion of the array format.
  * @param $destination
- *   A string containing the URI $source should be copied to within the temp directory.
- *   $destination can be a directory or directory and filename within the temp directory.
- *   If not provided, the temporary directory will be used, and the $replace flag will
- *   will be honored.
+ *   A string containing the URI $source should be copied to.  Defaults to
+ *  "temporary://".
  * @param $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE: Replace the existing file.
@@ -1166,6 +1157,13 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
   // If the destination is not provided, use the temporary directory.
   if (empty($destination)) {
     $destination = 'temporary://';
+  }
+
+  // Assert that the destination contains a valid stream.
+  $destination_scheme = file_uri_scheme($destination);
+  if (!$destination_scheme || !file_stream_wrapper_valid_scheme($destination_scheme)) {
+    drupal_set_message(t('The file could not be uploaded, because the destination %destination is invalid.', array('%destination' => $destination)), 'error');
+    return FALSE;
   }
 
   $file->source = $source;
