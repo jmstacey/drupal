@@ -340,6 +340,11 @@ function image_load($file, $toolkit = FALSE) {
   if (!$toolkit) {
     $toolkit = image_get_toolkit();
   }
+  // $file might be a URI
+  $scheme = file_uri_scheme($file);
+  if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
+    $file = file_stream_wrapper_get_instance_by_uri($file)->realpath();
+  }
   if ($toolkit) {
     $image = new stdClass();
     $image->source = $file;

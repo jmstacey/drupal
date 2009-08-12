@@ -58,7 +58,7 @@ class UploadTestCase extends DrupalWebTestCase {
     $this->checkUploadedFile(basename($files[1]));
 
     // Check that files are also accessible when using private files.
-    variable_set('stream_default_scheme', 'private');
+    variable_set('file_default_scheme', 'private');
     $this->checkUploadedFile(basename($files[0]));
     $this->checkUploadedFile(basename($files[1]));
 

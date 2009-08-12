@@ -219,7 +219,7 @@ function system_requirements($phase) {
       }
     }
     else {
-      if (variable_get('stream_default_scheme', 'public') == 'public') {
+      if (variable_get('file_default_scheme', 'public') == 'public') {
         $requirements['file system']['value'] = $t('Writable (<em>public</em> download method)');
       }
       else {
