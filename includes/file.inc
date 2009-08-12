@@ -654,13 +654,13 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     drupal_set_message(t('The file %file could not be copied because a file by that name already exists in the destination directory (%directory)', array('%file' => $source, '%directory' => $destination)), 'error');
     return FALSE;
   }
-  
+
   // Assert that the source and destination filenames are not the same.
   if (drupal_realpath($source) == drupal_realpath($destination)) {
     drupal_set_message(t('The specified file %file was not copied because it would overwrite itself.', array('%file' => $source)), 'error');
     return FALSE;
   }
-  
+
   // Perform the copy operation.
   if (!@copy($source, $destination)) {
     drupal_set_message(t('The specified file %file could not be copied.', array('%file' => $source)), 'error');
@@ -681,7 +681,6 @@ function file_build_uri($path) {
   return file_stream_wrapper_uri_normalize($uri);
 }
 
-
 /**
  * Determines the destination path for a file depending on how replacement of
  * existing files should be handled.
@@ -699,7 +698,7 @@ function file_build_uri($path) {
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
  * @return
  *   Returns the destination file path, or FALSE if the file already exists
- *   and FILE_EXISTS_ERROR is speciefied.
+ *   and FILE_EXISTS_ERROR is specified.
  */
 function file_destination($destination, $replace) {
   if (file_exists($destination)) {
@@ -723,7 +722,7 @@ function file_destination($destination, $replace) {
 }
 
 /**
- * Moves a file to a new location and update the file's database entry.
+ * Move a file to a new location and update the file's database entry.
  *
  * Moving a file is performed by copying the file to the new location and then
  * deleting the original.
@@ -830,9 +829,9 @@ function file_unmanaged_move($source, $destination = NULL, $replace = FILE_EXIST
 }
 
 /**
- * Munges the filename as needed for security purposes.
+ * Munge the filename as needed for security purposes.
  *
- * For example, the file name "exploit.php.pps" would become "exploit.php_.pps".
+ * For instance, the file name "exploit.php.pps" would become "exploit.php_.pps".
  *
  * @param $filename
  *   The name of a file to modify.
@@ -841,7 +840,7 @@ function file_unmanaged_move($source, $destination = NULL, $replace = FILE_EXIST
  * @param $alerts
  *   Whether alerts (watchdog, drupal_set_message()) should be displayed.
  * @return
- *   Returns the potentially modified file name.
+ *   $filename The potentially modified $filename.
  */
 function file_munge_filename($filename, $extensions, $alerts = TRUE) {
   $original = $filename;
@@ -876,12 +875,12 @@ function file_munge_filename($filename, $extensions, $alerts = TRUE) {
 }
 
 /**
- * Reverses the effect of file_munge_filename().
+ * Undo the effect of upload_munge_filename().
  *
  * @param $filename
  *   String with the filename to be unmunged.
  * @return
- *   Returns the unmunged file name.
+ *   An unmunged filename string.
  */
 function file_unmunge_filename($filename) {
   return str_replace('_.', '.', $filename);
@@ -1592,7 +1591,6 @@ function file_download() {
   return drupal_not_found();
 }
 
-
 /**
  * Finds all files that match a given mask in a given directory.
  *
@@ -1938,7 +1936,7 @@ function drupal_tempnam($directory, $prefix) {
 
   if ($scheme && file_stream_wrapper_valid_scheme($scheme)) {
     $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme);
-    
+
     if ($filename = tempnam($wrapper->getDirectoryPath(), $prefix)) {
       return $scheme . '://' . basename($filename);
     }
@@ -1951,7 +1949,6 @@ function drupal_tempnam($directory, $prefix) {
     return tempnam($directory, $prefix);
   }
 }
-
 
 /**
  * @} End of "defgroup file".
