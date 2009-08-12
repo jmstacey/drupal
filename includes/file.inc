@@ -205,7 +205,7 @@ function file_uri_target($uri) {
  * @param $uri
  *   String reference containing the URI to normalize.
  * @return
- *	 Returns a string containing the normalized URI.
+ *   The normalized URI.
  */
 function file_stream_wrapper_uri_normalize($uri) {
   $scheme = file_uri_scheme($uri);
@@ -324,27 +324,21 @@ function file_external_url($uri) {
 }
 
 /**
- * Prepares a directory by making sure that it is writable.
- *
- * This function will make sure that the directory exists and is writable. It
- * will also try to create the directories if allowed.
+ * Check that the directory exists and is writable.
  *
  * Directories need to have execute permissions to be considered a directory by
  * FTP servers, etc.
  *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param &$directory
- *   A string reference containing the name of a directory path. A trailing
- *   slash will be trimmed.
+ *   A string reference containing the name of a directory path or URI. A
+ *   trailing slash will be trimmed from a path.
  * @param $options
  *   A bitmask to indicate if the directory should be created if it does
  *   not exist (FILE_CREATE_DIRECTORY) or made writable if it is read-only
  *   (FILE_MODIFY_PERMISSIONS).
  * @return
- *   Returns TRUE if the directory exists and is writable. Otherwise, FALSE
- *   is returned.
+ *   TRUE if the directory exists (or was created) and is writable. FALSE
+ *   otherwise.
  */
 function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS) {
   if (!file_stream_wrapper_valid_scheme(file_uri_scheme($directory))) {
@@ -413,7 +407,7 @@ function file_create_htaccess($directory, $private = TRUE) {
 
   // Write the .htaccess file.
   if (file_put_contents($htaccess_path, $htaccess_lines)) {
-    drupal_chmod($htaccess_path);
+    drupal_chmod($htaccess_path, 0444);
   }
   else {
     $variables = array('%directory' => $directory, '!htaccess' => '<br />' . nl2br(check_plain($htaccess_lines)));
@@ -660,7 +654,8 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     drupal_set_message(t('The specified file %file was not copied because it would overwrite itself.', array('%file' => $source)), 'error');
     return FALSE;
   }
-
+  // Make sure the .htaccess files are present.
+  file_insure_htaccess();
   // Perform the copy operation.
   if (!@copy($source, $destination)) {
     drupal_set_message(t('The specified file %file could not be copied.', array('%file' => $source)), 'error');
