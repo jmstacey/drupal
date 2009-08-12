@@ -1678,20 +1678,15 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
 }
 
 /**
- * Determines the base path of a given wrapper.
+ * Determines the local directory path of a given wrapper.
  *
- * This function will return the base path of a stream by providing a scheme.
- * A stream is referenced as: scheme://target.
- * For example, a scheme of public might return sites/all/default/files
- * or temp might return /tmp.
- *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
+ * This function will return the directory path of a stream wrapper. A stream
+ * is referenced as: "scheme://target".  For example, a scheme of "public"
+ * might return "sites/default/files" or "temporary" might return "/tmp".
  *
  * @param $scheme
  *   A string representing the scheme of a stream. The default wrapper is
- *   is assumed if this is not provided. A stream is referenced as
- *   "scheme://target".
+ *   is assumed if this is not provided.
  * @return
  *   A string containing the directory path of a stream. FALSE is returned if
  *   the scheme is invalid or a wrapper could not be instantiated.
