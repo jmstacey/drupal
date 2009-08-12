@@ -230,7 +230,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   }
 
   /**
-   * Base implementaiton of realpath().
+   * Base implementation of realpath().
    */
   function realpath() {
     return $this->getLocalPath();
