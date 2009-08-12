@@ -600,6 +600,9 @@ function image_style_url($style_name, $path) {
  * @see image_style_url()
  */
 function image_style_path($style_name, $path) {
+  if ($target = file_uri_target($path)) {
+    $path = $target;
+  }
   return variable_get('file_default_scheme', 'public') . '://styles/' . $style_name . '/' . $path;
 }
 
