@@ -3016,7 +3016,7 @@ function drupal_get_js($scope = 'header', $javascript = NULL) {
   $no_preprocess = '';
   $files = array();
   $preprocess_js = (variable_get('preprocess_js', FALSE) && (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update'));
-  $directory = file_directory_path();
+  $directory = file_directory_path('public');
   $is_writable = is_dir($directory) && is_writable($directory);
 
   // A dummy query-string is added to filenames, to gain control over
