@@ -78,7 +78,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     // it before image_style_url has been called.
     $generated_path = $this->scheme . '://styles/' . $this->style_name . '/' . basename($this->image_filepath);
     $this->assertFalse(file_exists($generated_path), t('Generated file does not exist.'));
-    $expected_generate_url = url('image/generate/' . $this->style_name . '/' . $this->scheme . '/' . file_uri_target($this->image_filepath), array('absolute' => TRUE));
+    $expected_generate_url = url('image/generate/' . $this->style_name . '/' . $this->scheme . '/' . basename($this->image_filepath), array('absolute' => TRUE));
     $this->drupalGet($expected_generate_url);
     $this->assertResponse(403, t('Access to generate URL was denied.'));
 
