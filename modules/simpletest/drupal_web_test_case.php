@@ -1116,7 +1116,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     variable_set('file_private_path', $private_files_directory);
 
     // Create the directories
-    $directory = file_directory_path('public://');
+    $directory = file_directory_path('public');
     file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
     file_prepare_directory($private_files_directory, FILE_CREATE_DIRECTORY);
 

@@ -511,13 +511,13 @@ class FileUnmanagedSaveDataTest extends FileTestCase {
     // No filename.
     $filepath = file_unmanaged_save_data($contents);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($filepath)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(file_stream_wrapper_valid_scheme($filepath)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
 
     // Provide a filename.
     $filepath = file_unmanaged_save_data($contents, 'public://asdf.txt', FILE_EXISTS_REPLACE);
     $this->assertTrue($filepath, t('Unnamed file saved correctly.'));
-    $this->assertEqual(file_directory_path('public://'), file_directory_path(drupal_dirname($filepath)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(drupal_dirname($filepath)), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($filepath), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents(drupal_realpath($filepath)), t('Contents of the file are correct.'));
     $this->assertFilePermissions($filepath, variable_get('file_chmod_file', 0664));
@@ -1738,7 +1738,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents);
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, basename($result->uri), t("Filename was set to the file's basename."));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
@@ -1760,7 +1760,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, 'public://' . 'asdf.txt');
     $this->assertTrue($result, t('Unnamed file saved correctly.'));
 
-    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual('asdf.txt', basename($result->uri), t('File was named correctly.'));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'text/plain', t('A MIME type was set.'));
@@ -1784,7 +1784,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, $existing->uri, FILE_EXISTS_RENAME);
     $this->assertTrue($result, t("File saved sucessfully."));
 
-    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t("Filename was set to the basename of the source, rather than that of the renamed file."));
     $this->assertEqual($contents, file_get_contents($result->uri), t("Contents of the file are correct."));
     $this->assertEqual($result->filemime, 'application/octet-stream', t("A MIME type was set."));
@@ -1812,7 +1812,7 @@ class FileSaveDataTest extends FileHookTestCase {
     $result = file_save_data($contents, $existing->uri, FILE_EXISTS_REPLACE);
     $this->assertTrue($result, t('File saved sucessfully.'));
 
-    $this->assertEqual(file_directory_path('public://'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
+    $this->assertEqual(file_directory_path('public'), file_directory_path(file_stream_wrapper_valid_scheme($result->uri)), t("File was placed in Drupal's files directory."));
     $this->assertEqual($result->filename, $existing->filename, t('Filename was set to the basename of the existing file, rather than preserving the original name.'));
     $this->assertEqual($contents, file_get_contents($result->uri), t('Contents of the file are correct.'));
     $this->assertEqual($result->filemime, 'application/octet-stream', t('A MIME type was set.'));
