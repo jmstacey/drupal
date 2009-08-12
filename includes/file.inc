@@ -416,15 +416,15 @@ function file_create_htaccess($directory, $private = TRUE) {
 }
 
 /**
- * Loads multiple file objects from the database.
+ * Load file objects from the database.
  *
- * @param array $fids
+ * @param $fids
  *   An array of file IDs.
- * @param array $conditions
- *   An array of conditions to match against the {file} table. These
+ * @param $conditions
+ *   An array of conditions to match against the {files} table. These
  *   should be supplied in the form array('field_name' => 'field_value').
  * @return
- *   Returns an array of file objects, indexed by fid.
+ *  An array of file objects, indexed by fid.
  *
  * @see hook_file_load()
  * @see file_load()
