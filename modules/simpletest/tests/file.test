@@ -166,7 +166,7 @@ class FileTestCase extends DrupalWebTestCase {
    *   Optional contents to save into the file. If a NULL value is provided an
    *   arbitrary string will be used.
    * @param $scheme
-   *   Optionaly string indicating the stream scheme to use. Drupal core includes
+   *   Optional string indicating the stream scheme to use. Drupal core includes
    *   public, private, and temporary. The public wrapper is the default.
    * @return
    *   File object.
@@ -1409,8 +1409,8 @@ class FileCopyTest extends FileHookTestCase {
    * Test file copying in the normal, base case.
    */
   function testNormal() {
-    $contents    = $this->randomName(10);
-    $source      = $this->createFile(NULL, $contents);
+    $contents = $this->randomName(10);
+    $source = $this->createFile(NULL, $contents);
     $desired_uri = 'public://' . $this->randomName();
 
     // Clone the object so we don't have to worry about the function changing
@@ -1440,8 +1440,8 @@ class FileCopyTest extends FileHookTestCase {
   function testExistingRename() {
     // Setup a file to overwrite.
     $contents = $this->randomName(10);
-    $source   = $this->createFile(NULL, $contents);
-    $target   = $this->createFile();
+    $source = $this->createFile(NULL, $contents);
+    $target = $this->createFile();
     $this->assertDifferentFile($source, $target);
 
     // Clone the object so we don't have to worry about the function changing
@@ -1636,14 +1636,13 @@ class FileSaveTest extends FileHookTestCase {
     // Create a new file object.
     $file = array(
       'uid' => 1,
-      'filename'  => 'druplicon.txt',
-      'uri'       => 'public://druplicon.txt',
-      'filemime'  => 'text/plain',
+      'filename' => 'druplicon.txt',
+      'uri' => 'public://druplicon.txt',
+      'filemime' => 'text/plain',
       'timestamp' => 1,
-      'status'    => FILE_STATUS_PERMANENT,
+      'status' => FILE_STATUS_PERMANENT,
     );
-    $file = (object)$file;
-
+    $file = (object) $file;
     file_put_contents($file->uri, 'hello world');
 
     // Save it, inserting a new record.

@@ -636,10 +636,7 @@ class UserPictureTestCase extends DrupalWebTestCase {
     // Test if directories specified in settings exist in filesystem.
     $file_dir = 'public://';
     $file_check = file_prepare_directory($file_dir, FILE_CREATE_DIRECTORY);
-
-    /*
-      TODO: Add capability to store photos publicly or privately, but tests will be the same.
-    */
+    // TODO: Test public and private methods?
 
     $picture_dir = variable_get('user_picture_path', 'pictures');
     $picture_path = $file_dir . $picture_dir;
