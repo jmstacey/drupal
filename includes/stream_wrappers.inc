@@ -253,7 +253,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
       $realpath = realpath(dirname($path)) . '/' . basename($path);
     }
     $directory = realpath($this->getDirectoryPath());
-    if (!$directory || strpos($realpath, $directory) !== 0) {
+    if (!$realpath || !$directory || strpos($realpath, $directory) !== 0) {
       return FALSE;
     }
     return $realpath;
@@ -263,7 +263,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for fopen(), file_get_contents(), file_put_contents() etc.
    *
    * @param $uri
-   *   A string containing the path to the file to open.
+   *   A string containing the URI to the file to open.
    * @param $mode
    *   The file mode ("r", "wb" etc.).
    * @param $options
@@ -438,7 +438,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for mkdir().
    *
    * @param $uri
-   *   A string containing the url to the directory to create.
+   *   A string containing the URI to the directory to create.
    * @param $mode
    *   Permission flags - see mkdir().
    * @param $options
@@ -456,7 +456,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
       $localpath = $this->getDirectoryPath() . '/' . file_uri_target($uri);
     }
     else {
-      $localpath = $this->getLocalPath();
+      $localpath = $this->getLocalPath($uri);
     }
     if ($options & STREAM_REPORT_ERRORS) {
       return mkdir($localpath, $mode, $recursive);
@@ -470,7 +470,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for rmdir().
    *
    * @param $uri
-   *   A string containing the url to the directory to delete.
+   *   A string containing the URI to the directory to delete.
    * @param $options
    *   A bit mask of STREAM_REPORT_ERRORS.
    * @return
@@ -491,7 +491,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for stat().
    *
    * @param $uri
-   *   A string containing the url to get information about.
+   *   A string containing the URI to get information about.
    * @param $flags
    *   A bit mask of STREAM_URL_STAT_LINK and STREAM_URL_STAT_QUIET.
    * @return
@@ -513,7 +513,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for opendir().
    *
    * @param $uri
-   *   A string containing the url to the directory to open.
+   *   A string containing the URI to the directory to open.
    * @param $options
    *   Unknown (parameter is not documented in PHP Manual).
    * @return
