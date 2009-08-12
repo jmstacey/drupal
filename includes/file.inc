@@ -1697,7 +1697,7 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
  *   the scheme is invalid or a wrapper could not be instantiated.
  */
 function file_directory_path($scheme = NULL) {
-  if ($scheme === NULL) {
+  if (empty($scheme)) {
     $scheme = variable_get('file_default_scheme', 'public');
   }
   if (isset($scheme) && $wrapper = file_stream_wrapper_get_instance_by_scheme($scheme)) {
