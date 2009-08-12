@@ -450,11 +450,19 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
   public function mkdir($uri, $mode, $options) {
     $this->uri = $uri;
     $recursive = (bool)($options & STREAM_MKDIR_RECURSIVE);
-    if ($options & STREAM_REPORT_ERRORS) {
-      return mkdir($this->getLocalPath(), $mode, $recursive);
+    if ($recursive) {
+      // $this->getLocalPath() fails if $uri has multiple levels of directories
+      // that do not yet exist.
+      $localpath = $this->getDirectoryPath() . '/' . file_uri_target($uri);
     }
     else {
-      return @mkdir($this->getLocalPath(), $mode, $recursive);
+      $localpath = $this->getLocalPath();
+    }
+    if ($options & STREAM_REPORT_ERRORS) {
+      return mkdir($localpath, $mode, $recursive);
+    }
+    else {
+      return @mkdir($localpath, $mode, $recursive);
     }
   }
 
