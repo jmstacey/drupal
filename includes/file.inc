@@ -680,11 +680,8 @@ function file_build_uri($path) {
  * Determines the destination path for a file depending on how replacement of
  * existing files should be handled.
  *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $destination
- *   A string specifying the desired path.
+ *   A string specifying the desired final URI.
  * @param $replace
  *   Replace behavior when the destination file already exists.
  *   - FILE_EXISTS_REPLACE - Replace the existing file.
@@ -727,15 +724,12 @@ function file_destination($destination, $replace) {
  *   replace the file or rename the file based on the $replace parameter.
  * - Adds the new file to the files database.
  *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $source
  *   A file object.
  * @param $destination
  *   A string containing the destination that $source should be moved to. This
- *   can be a complete file path, a directory path or, if this value is omitted,
- *   Drupal's 'files' directory will be used.
+ *   must be a URI matching a Drupal stream wrapper. if this value is omitted,
+ *   Drupal's  directory will be used.
  * @param $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE - Replace the existing file. If a managed file with
@@ -887,20 +881,17 @@ function file_unmunge_filename($filename) {
  * If a file with the specified name already exists, an alternative will be
  * used.
  *
- * Compatibility: normal paths and stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $basename
  *   String containing the filename.
  * @param $directory
- *   String containing the directory.
+ *   String containing the directory or parent URI.
  * @return
  *   Returns the filepath consisting of $directory and a unique filename
  *   based off of $basename.
  */
 function file_create_filename($basename, $directory) {
-  // Are we dealing with a stream?
-  if (file_stream_wrapper_valid_scheme($directory)) {
+  // A URI or path may already have a trailing slash or look like "public://".
+  if (substr($directory, -1) == '/') {
     $separator = '';
   }
   else {
@@ -1087,12 +1078,12 @@ function file_space_used($uid = NULL, $status = FILE_STATUS_PERMANENT) {
  * @see http://drupal.org/node/515192
  *
  * @param $source
- *   A string specifying the name of the upload field to save.
+ *   A string specifying the filepath or URI of the upload field to save.
  * @param $validators
  *   An optional, associative array of callback functions used to validate the
  *   file. See file_validate() for a full discussion of the array format.
  * @param $destination
- *   A string containing the location $source should be copied to within the temp directory.
+ *   A string containing the URI $source should be copied to within the temp directory.
  *   $destination can be a directory or directory and filename within the temp directory.
  *   If not provided, the temporary directory will be used, and the $replace flag will
  *   will be honored.
@@ -1174,7 +1165,7 @@ function file_save_upload($source, $validators = array(), $destination = FALSE, 
 
   // If the destination is not provided, use the temporary directory.
   if (empty($destination)) {
-    $destination = file_directory_path('temporary');
+    $destination = 'temporary://';
   }
 
   $file->source = $source;
@@ -1432,13 +1423,10 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
 /**
  * Saves a string to the specified destination and creates a database file entry.
  *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $data
  *   A string containing the contents of the file.
  * @param $destination
- *   A string containing the destination location. If no value is provided
+ *   A string containing the destination URI. If no value is provided
  *   then a randomly name will be generated and the file saved in Drupal's
  *   files directory.
  * @param $replace
@@ -1593,11 +1581,8 @@ function file_download() {
  * prevents hidden files and directories (such as SVN working directories)
  * from being scanned.
  *
- * Compatibility: only stream wrappers.
- * @see http://drupal.org/node/515192
- *
  * @param $dir
- *   The base directory for the scan, without trailing slash.
+ *   The base directory or URI for the scan, without trailing slash.
  * @param $mask
  *   The preg_match() regular expression of the files to find.
  * @param $options
