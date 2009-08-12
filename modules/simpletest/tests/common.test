@@ -301,7 +301,7 @@ class CascadingStylesheetsTestCase extends DrupalWebTestCase {
     );
 
     $css = drupal_get_css();
-    if (preg_match_all('/href="' . preg_quote(base_path(), '/') . '([^?]+)\?/', $css, $matches)) {
+    if (preg_match_all('/href="' . preg_quote($GLOBALS['base_url'] . '/', '/') . '([^?]+)\?/', $css, $matches)) {
       $result = $matches[1];
     }
     else {
