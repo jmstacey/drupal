@@ -1502,7 +1502,6 @@ function system_file_system_settings() {
     '#options' => $options,
     '#description' => t('This setting is used as the preferred download method. The use of public files is more efficient, but does not provide any access control.'),
   );
-  
 
   return system_settings_form($form, TRUE);
 }

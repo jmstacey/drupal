@@ -405,8 +405,7 @@ function user_save($account, $edit = array(), $category = 'account') {
       // make it permanent.
       if (($picture->status & FILE_STATUS_PERMANENT) == 0) {
         $info = image_get_info($picture->uri);
-        // TODO: Lookup a private/public setting. Or user_picture_path should include private:// or public://.
-        $picture_directory = 'public://' . variable_get('user_picture_path', 'pictures');
+        $picture_directory =  variable_get('file_default_scheme', 'pictures') . '://' . variable_get('user_picture_path', 'pictures');
         
         // Prepare the pictures directory.
         file_prepare_directory($picture_directory, FILE_CREATE_DIRECTORY);
