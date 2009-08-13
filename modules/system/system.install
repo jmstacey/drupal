@@ -2258,7 +2258,7 @@ function system_update_7033() {
   $ret = array();
   $files_directory = variable_get('file_directory_path', NULL);
   if (variable_get('file_downloads', 1) == 1) {
-    // Our defualt is public, so we don't need to set anything.
+    // Our default is public, so we don't need to set anything.
     if (!empty($files_directory)) {
       variable_set('file_public_path', $files_directory);
     }
