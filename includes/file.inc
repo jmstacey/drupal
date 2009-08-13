@@ -301,9 +301,6 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
 function file_external_url($uri) {
   $scheme = file_uri_scheme($uri);
 
-  // TODO: Implement CDN integration hook stuff here
-  // see http://drupal.org/node/499156
-
   if (!$scheme) {
     // If this is not a properly formatted stream return the URI with the base url prepended.
     return $GLOBALS['base_url'] . '/' . $uri;
@@ -321,6 +318,9 @@ function file_external_url($uri) {
       return FALSE;
     }
   }
+  
+  // TODO: Implement CDN integration hook stuff in this function.
+  // see http://drupal.org/node/499156
 }
 
 /**
@@ -786,7 +786,6 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
 /**
  * Move a file to a new location without calling any hooks or making any
  * changes to the database.
- *
  *
  * @param $source
  *   A string specifying the filepath or URI of the original file.
