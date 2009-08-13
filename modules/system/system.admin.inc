@@ -1,5 +1,5 @@
 <?php
-// $Id: system.admin.inc,v 1.171 2009-08-12 11:43:10 dries Exp $
+// $Id: system.admin.inc,v 1.174 2009-08-13 03:03:04 webchick Exp $
 
 /**
  * @file
@@ -662,27 +662,18 @@ function system_modules($form_state = array()) {
       }
       else {
         $requires_name = $files[$requires]->info['name'];
-        if ($v) {
-          $requires_name .= $v['original_version'];
-          $current_version = str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', $files[$requires]->info['version']);
-          foreach ($v['versions'] as $required_version) {
-            if ((isset($required_version['op']) && !version_compare($current_version, $required_version['version'], $required_version['op'])) ||
-                (isset($required_version['preg']) && !preg_match($required_version['preg'], $current_version))) {
-              $extra['requires'][$requires] = t('@module (<span class="admin-missing">incompatible with</span> version @version)', array(
-                '@module' => $requires_name,
-                '@version' => $files[$requires]->info['version'],
-              ));
-              $extra['disabled'] = TRUE;
-            }
-          }
+        if ($incompatible_version = drupal_check_incompatibility($v, str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', $files[$requires]->info['version']))) {
+          $extra['requires'][$requires] = t('@module (<span class="admin-missing">incompatible with</span> version @version)', array(
+            '@module' => $requires_name . $incompatible_version,
+            '@version' => $files[$requires]->info['version'],
+          ));
+          $extra['disabled'] = TRUE;
         }
-        if (!isset($extra['requires'][$requires])) {
-          if ($files[$requires]->status) {
-            $extra['requires'][$requires] = t('@module (<span class="admin-enabled">enabled</span>)', array('@module' => $requires_name));
-          }
-          else {
-            $extra['requires'][$requires] = t('@module (<span class="admin-disabled">disabled</span>)', array('@module' => $requires_name));
-          }
+        elseif ($files[$requires]->status) {
+          $extra['requires'][$requires] = t('@module (<span class="admin-enabled">enabled</span>)', array('@module' => $requires_name));
+        }
+        else {
+          $extra['requires'][$requires] = t('@module (<span class="admin-disabled">disabled</span>)', array('@module' => $requires_name));
         }
       }
     }
@@ -731,7 +722,7 @@ function system_modules($form_state = array()) {
     '#type' => 'submit',
     '#value' => t('Save configuration'),
   );
-  $form['#action'] = url('admin/structure/modules/list/confirm');
+  $form['#action'] = url('admin/config/modules/list/confirm');
 
   return $form;
 }
@@ -853,7 +844,7 @@ function system_modules_confirm_form($modules, $storage) {
     $form = confirm_form(
       $form,
       t('Some required modules must be enabled'),
-      'admin/structure/modules',
+      'admin/config/modules',
       t('Would you like to continue with enabling the above?'),
       t('Continue'),
       t('Cancel'));
@@ -1003,7 +994,7 @@ function system_modules_submit($form, &$form_state) {
   drupal_clear_css_cache();
   drupal_clear_js_cache();
 
-  $form_state['redirect'] = 'admin/structure/modules';
+  $form_state['redirect'] = 'admin/config/modules';
 
   // Notify locale module about module changes, so translations can be
   // imported. This might start a batch, and only return to the redirect
@@ -1069,7 +1060,7 @@ function system_modules_uninstall($form_state = NULL) {
       '#type' => 'submit',
       '#value' => t('Uninstall'),
     );
-    $form['#action'] = url('admin/structure/modules/uninstall/confirm');
+    $form['#action'] = url('admin/config/modules/uninstall/confirm');
   }
   else {
     $form['modules'] = array();
@@ -1110,7 +1101,7 @@ function system_modules_uninstall_confirm_form($storage) {
     $form = confirm_form(
       $form,
       t('Confirm uninstall'),
-      'admin/structure/modules/uninstall',
+      'admin/config/modules/uninstall',
       t('Would you like to continue with uninstalling the above?'),
       t('Uninstall'),
       t('Cancel'));
@@ -1125,7 +1116,7 @@ function system_modules_uninstall_validate($form, &$form_state) {
   // Form submitted, but no modules selected.
   if (!count(array_filter($form_state['values']['uninstall']))) {
     drupal_set_message(t('No modules selected.'), 'error');
-    drupal_goto('admin/structure/modules/uninstall');
+    drupal_goto('admin/config/modules/uninstall');
   }
 }
 
@@ -1143,7 +1134,7 @@ function system_modules_uninstall_submit($form, &$form_state) {
     drupal_set_message(t('The selected modules have been uninstalled.'));
 
     unset($form_state['storage']);
-    $form_state['redirect'] = 'admin/structure/modules/uninstall';
+    $form_state['redirect'] = 'admin/config/modules/uninstall';
   }
   else {
     $form_state['storage'] = $form_state['values'];
@@ -1168,8 +1159,8 @@ function system_ip_blocking() {
   $build['system_ip_blocking_form'] = drupal_get_form('system_ip_blocking_form');
 
   $build['system_ip_blocking_table'] = array(
-    '#theme' => 'table', 
-    '#header' => $header, 
+    '#theme' => 'table',
+    '#header' => $header,
     '#rows' => $rows,
   );
 
