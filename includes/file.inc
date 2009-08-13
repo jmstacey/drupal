@@ -365,7 +365,7 @@ function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS)
 }
 
 /**
- * If missing, create a htaccess file in each Drupal files directory.
+ * If missing, create a .htaccess file in each Drupal files directory.
  */
 function file_insure_htaccess() {
   file_create_htaccess('public://', FALSE);
@@ -374,7 +374,7 @@ function file_insure_htaccess() {
 }
 
 /**
- * Creates an htaccess file in the given directory.
+ * Creates an .htaccess file in the given directory.
  *
  * @param $directory
  *   The directory.
@@ -397,11 +397,11 @@ function file_create_htaccess($directory, $private = TRUE) {
   }
 
   if ($private) {
-    // Private htaccess file.
+    // Private .htaccess file.
     $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nDeny from all\nOptions None\nOptions +FollowSymLinks";
   }
   else {
-    // Public htaccess file.
+    // Public .htaccess file.
     $htaccess_lines = "SetHandler Drupal_Security_Do_Not_Remove_See_SA_2006_006\nOptions None\nOptions +FollowSymLinks";
   }
 
@@ -1599,7 +1599,7 @@ function file_download() {
  *   Current depth of recursion. This parameter is only used internally and
  *   should not be passed.
  * @return
- *   Returns an associative array (keyed on the provided key) of objects with
+ *   An associative array (keyed on the provided key) of objects with
  *   'uri', 'filename', and 'name' members corresponding to the
  *   matching files.
  */
@@ -1788,7 +1788,7 @@ function drupal_chmod($uri, $mode = NULL) {
  *   A string containing the URI to verify. If this value is omitted,
  *   Drupal's public files directory will be used [public://].
  * @return
- *   Returns the absolute pathname, or FALSE on failure.
+ *   The absolute pathname, or FALSE on failure.
  *
  * @see realpath()
  */
@@ -1817,7 +1817,7 @@ function drupal_realpath($uri) {
  * @param $uri
  *   A URI or path.
  * @return
- *   Returns a string containing the directory name.
+ *   A string containing the directory name.
  *
  * @see dirname()
  */
@@ -1857,7 +1857,7 @@ function drupal_dirname($uri) {
  * @param $context
  *   Refer to http://php.net/manual/en/ref.stream.php
  * @return
- *   Returns TRUE on success or FALSE on failure.
+ *   Boolean TRUE on success, or FALSE on failure.
  *
  * @see mkdir()
  */
@@ -1891,7 +1891,7 @@ function drupal_mkdir($uri, $mode = NULL, $recursive = FALSE, $context = NULL) {
  *   The prefix of the generated temporary filename.
  *   Note: Windows uses only the first three characters of prefix.
  * @return
- *   Returns the new temporary fillename, or FALSE on failure.
+ *   The new temporary fillename, or FALSE on failure.
  *
  * @see tempnam()
  */
