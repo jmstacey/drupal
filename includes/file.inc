@@ -293,20 +293,22 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  * @param $uri
  *   The URI to for which we need an external URL.
  * @return
- *   Returns a string containing a URL that may be used to access the file.
+ *   A string containing a URL that may be used to access the file.
  *   If the provided string already contains a preceding 'http', nothing is done
- *   and the same string is returned. If a Valid stream wrapper could not be found
- *   to generate an external URL, then FALSE will be returned.
+ *   and the same string is returned. If a valid stream wrapper could not be
+ *   found to generate an external URL, then FALSE will be returned.
  */
 function file_external_url($uri) {
   $scheme = file_uri_scheme($uri);
 
   if (!$scheme) {
-    // If this is not a properly formatted stream return the URI with the base url prepended.
+    // If this is not a properly formatted stream return the URI with the base
+    // url prepended.
     return $GLOBALS['base_url'] . '/' . $uri;
   }
   elseif ($scheme == 'http' || $scheme == 'https') {
-    // Check for http so that we don't have to implement getExternalUrl() for the http wrapper.
+    // Check for http so that we don't have to implement getExternalUrl() for
+    // the http wrapper.
     return $uri;
   }
   else {
@@ -639,7 +641,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     }
   }
 
-  // Determine whether or not we can perform this operation based on overwrite rules.
+  // Determine whether we can perform this operation based on overwrite rules.
   $destination = file_destination($destination, $replace);
   if ($destination === FALSE) {
     drupal_set_message(t('The file %file could not be copied because a file by that name already exists in the destination directory (%directory)', array('%file' => $source, '%directory' => $destination)), 'error');
@@ -666,7 +668,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
 }
 
 /**
- * Given a relative path, construct a uri into Drupal's default files location.
+ * Given a relative path, construct a URI into Drupal's default files location.
  */
 function file_build_uri($path) {
   $uri = variable_get('file_scheme_default', 'public') . '://' . $path;
@@ -686,7 +688,7 @@ function file_build_uri($path) {
  *       unique.
  *   - FILE_EXISTS_ERROR - Do nothing and return FALSE.
  * @return
- *   Returns the destination file path, or FALSE if the file already exists
+ *   The destination filepath, or FALSE if the file already exists
  *   and FILE_EXISTS_ERROR is specified.
  */
 function file_destination($destination, $replace) {
