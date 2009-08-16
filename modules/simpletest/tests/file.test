@@ -705,7 +705,7 @@ class FileDirectoryTest extends FileTestCase {
     $directory = file_directory_path();
     @unlink($directory . '/.htaccess');
     $this->assertFalse(is_file($directory . '/.htaccess'), t('Successfully removed the .htaccess file in the files directory.'), 'File');
-    file_insure_htaccess();
+    file_ensure_htaccess();
     $this->assertTrue(is_file($directory . '/.htaccess'), t('Successfully re-created the .htaccess file in the files directory.'), 'File');
     // Verify contents of .htaccess file.
     $file = file_get_contents(file_directory_path() . '/.htaccess');

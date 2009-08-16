@@ -319,8 +319,8 @@ function file_external_url($uri) {
     }
   }
   
-  // TODO: Implement CDN integration hook stuff in this function.
-  // see http://drupal.org/node/499156
+  // @todo Implement CDN integration hook stuff in this function.
+  // @see http://drupal.org/node/499156
 }
 
 /**
@@ -367,7 +367,7 @@ function file_prepare_directory(&$directory, $options = FILE_MODIFY_PERMISSIONS)
 /**
  * If missing, create a .htaccess file in each Drupal files directory.
  */
-function file_insure_htaccess() {
+function file_ensure_htaccess() {
   file_create_htaccess('public://', FALSE);
   file_create_htaccess('private://', TRUE);
   file_create_htaccess('temporary://', TRUE);
@@ -523,11 +523,9 @@ function file_save($file) {
  * @param $source
  *   A file object.
  * @param $destination
- *   A string containing the destination that $source should be copied to. This should
- *   be a stream wrapper URI. If this value is omitted, Drupal's public files directory
- *   will be used [public://].
- *   can be a complete file path, a directory path or, if this value is omitted,
- *   Drupal's 'files' directory will be used.
+ *   A string containing the destination that $source should be copied to.
+ *   This should be a stream wrapper URI. If this value is omitted, Drupal's
+ *   public files scheme will be used, "public://".
  * @param $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE - Replace the existing file. If a managed file with
@@ -561,7 +559,7 @@ function file_copy($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
     }
     // If we are renaming around an existing file (rather than a directory),
     // use its basename for the filename.
-    else if ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
+    elseif ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
       $file->filename = basename($destination);
     }
 
@@ -610,7 +608,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
   // Assert that the source file actually exists.
   $source = drupal_realpath($source);
   if (!file_exists($source)) {
-    // TODO: Replace drupal_set_message() calls with exceptions instead.
+    // @todo Replace drupal_set_message() calls with exceptions instead.
     drupal_set_message(t('The specified file %file could not be copied, because no file by that name exists. Please check that you supplied the correct filename.', array('%file' => $original_source)), 'error');
     return FALSE;
   }
@@ -654,7 +652,7 @@ function file_unmanaged_copy($source, $destination = NULL, $replace = FILE_EXIST
     return FALSE;
   }
   // Make sure the .htaccess files are present.
-  file_insure_htaccess();
+  file_ensure_htaccess();
   // Perform the copy operation.
   if (!@copy($source, $destination)) {
     drupal_set_message(t('The specified file %file could not be copied.', array('%file' => $source)), 'error');
@@ -764,7 +762,7 @@ function file_move($source, $destination = NULL, $replace = FILE_EXISTS_RENAME) 
     }
     // If we are renaming around an existing file (rather than a directory),
     // use its basename for the filename.
-    else if ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
+    elseif ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
       $file->filename = basename($destination);
     }
 
@@ -1418,9 +1416,9 @@ function file_validate_image_resolution($file, $maximum_dimensions = 0, $minimum
  * @param $data
  *   A string containing the contents of the file.
  * @param $destination
- *   A string containing the destination URI. If no value is provided
- *   then a randomly name will be generated and the file saved in Drupal's
- *   files directory.
+ *   A string containing the destination URI. If no value is provided then a
+ *   randomly name will be generated and the file saved in Drupal's files
+ *   directory.
  * @param $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE - Replace the existing file. If a managed file with
@@ -1457,7 +1455,7 @@ function file_save_data($data, $destination = NULL, $replace = FILE_EXISTS_RENAM
     }
     // If we are renaming around an existing file (rather than a directory),
     // use its basename for the filename.
-    else if ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
+    elseif ($replace == FILE_EXISTS_RENAME && is_file($destination)) {
       $file->filename = basename($destination);
     }
 
