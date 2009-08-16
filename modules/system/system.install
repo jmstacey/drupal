@@ -1,5 +1,5 @@
 <?php
-// $Id: system.install,v 1.367 2009-08-12 23:51:19 webchick Exp $
+// $Id: system.install,v 1.368 2009-08-16 18:39:45 dries Exp $
 
 /**
  * @file
@@ -2252,9 +2252,20 @@ function system_update_7032() {
 }
 
 /**
-* Migrate the file_downloads setting and create the new {file} table.
+ * Move CACHE_AGGRESSIVE to CACHE_NORMAL.
  */
 function system_update_7033() {
+  if (variable_get('cache') == 2) {
+    variable_set('cache', CACHE_NORMAL);
+    $ret[] = array('success' => TRUE, 'query' => "Aggressive caching was disabled and replaced with normal caching, please read the page caching section in default.settings.php for more information on how to enable similar functionality.");
+  }
+  return array();
+}
+
+/**
+ * Migrate the file_downloads setting and create the new {file} table.
+ */
+function system_update_7034() {
   $ret = array();
   $files_directory = variable_get('file_directory_path', NULL);
   if (variable_get('file_downloads', 1) == 1) {
@@ -2344,9 +2355,9 @@ function system_update_7033() {
 }
 
 /**
-* Migrate upload module files to the new {file} table.
+ * Migrate upload module files to the new {file} table.
  */
-function system_update_7034() {
+function system_update_7035() {
   $ret = array();
   if (!db_table_exists('upload')) {
     return $ret;
