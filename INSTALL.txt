@@ -128,7 +128,7 @@ INSTALLATION
    cases, you may need to create the directory and modify its permissions
    manually. Use the following commands (from the installation directory)
    to create the public and private files directories and grant the web server
-   write privileges to it:
+   write privileges to them:
 
      mkdir sites/default/files
      chmod o+w sites/default/files
