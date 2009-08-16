@@ -1,5 +1,5 @@
 <?php
-// $Id: common.test,v 1.59 2009-08-14 16:15:38 webchick Exp $
+// $Id: common.test,v 1.63 2009-08-16 17:37:06 webchick Exp $
 
 /**
  * Tests for the l() function.
@@ -34,6 +34,40 @@ class CommonLUnitTest extends DrupalUnitTestCase {
      $this->assertEqual(drupal_query_string_encode(array('a' => '1', 'b' => '2', 'c' => '3'), array('b')), 'a=1&c=3', t('Value was properly excluded.'));
      $this->assertEqual(drupal_query_string_encode(array('a' => array('b' => '2', 'c' => '3')), array('b', 'a[c]')), 'a[b]=2', t('Nested array was properly encoded.'));
    }
+   
+  /**
+   * Test url() with/without query, with/without fragment, absolute on/off and
+   * assert all that works when clean URLs are on and off.
+   */
+  function testUrl() {
+    global $base_url;
+    
+    foreach (array(FALSE, TRUE) as $absolute) {
+      // Get the expected start of the path string.
+      $base = $absolute ? $base_url . '/' : base_path();
+      $absolute_string = $absolute ? 'absolute' : NULL;
+      
+      // Run tests with clean urls disabled.
+      $GLOBALS['conf']['clean_url'] = 0;
+      $clean_urls = 'disabled';
+      
+      $this->assertTrue(url('node', array('absolute' => $absolute)) == $base . '?q=node', t('Creation of @absolute internal url with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('node', array('fragment' => 'foo', 'absolute' => $absolute)) == $base . '?q=node#foo', t('Creation of @absolute internal url with fragment option with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('node', array('query' => 'foo', 'absolute' => $absolute)) == $base . '?q=node&foo', t('Creation of @absolute internal url with query option with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('node', array('query' => 'foo', 'fragment' => 'bar', 'absolute' => $absolute)) == $base . '?q=node&foo#bar', t('Creation of @absolute internal url with query and fragment option with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('<front>', array('absolute' => $absolute)) == $base, t('Creation of @absolute internal url using front with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+  
+      // Run tests again with clean urls enabled.
+      $GLOBALS['conf']['clean_url'] = 1;
+      $clean_urls = 'enabled';
+      
+      $this->assertTrue(url('node', array('absolute' => $absolute)) == $base . 'node', t('Creation of @absolute internal url with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('node', array('fragment' => 'foo', 'absolute' => $absolute)) == $base . 'node#foo', t('Creation of @absolute internal url with fragment option with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('node', array('query' => 'foo', 'absolute' => $absolute)) == $base . 'node?foo', t('Creation of @absolute internal url with query option with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('node', array('query' => 'foo', 'fragment' => 'bar', 'absolute' => $absolute)) == $base . 'node?foo#bar', t('Creation of @absolute internal url with query and fragment option with clean urls @clean_urls.', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+      $this->assertTrue(url('<front>', array('absolute' => $absolute)) == $base, t('Creation of @absolute internal url using front with clean urls @clean_urls', array('@absolute' => $absolute_string, '@clean_urls' => $clean_urls)));
+    }
+  }
 }
 
 class CommonSizeTestCase extends DrupalUnitTestCase {
@@ -188,6 +222,54 @@ class DrupalTagsHandlingTestCase extends DrupalWebTestCase {
       $this->fail(t('Leftover tag %leftover was left over.', array('%leftover' => $leftover)));
     }
   }
+}
+
+/**
+ * Tests url().
+ */
+class UrlTestCase extends DrupalWebtestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Tests for the url() function',
+      'description' => 'Performs tests on the url() function.',
+      'group' => 'System',
+    );
+  }
+
+  /**
+   * Test the url() function's $options array.
+   *
+   * Assert that calling url() with an external URL
+   *   1. containing a fragment works with and without a fragment in $options.
+   *   2. containing or not containing a query works with a query in $options.
+   */
+  function testUrlOptions() {
+    // Testing the fragment handling.
+    $fragment = $this->randomName(10);
+    $test_url = 'http://www.drupal.org/#' . $fragment;
+
+    $result_url = url($test_url);
+    $this->assertEqual($test_url, $result_url, t("External URL containing a fragment works without a fragment in options. url('http://drupal.org/#frag1');"));
+
+    $result_url = url($test_url, array('fragment' => $fragment));
+    $this->assertEqual($test_url, $result_url, t("External URL containing a fragment works with a fragment in options. url('http://drupal.org/#frag1', array('fragment' => 'frag1'));"));
+
+    // Testing the query handling.
+    $query = $this->randomName(10);
+    $query2 = $this->randomName(10);
+    $test_url = 'http://www.drupal.org/?' . $query;
+
+    // The external URL contains a query.
+    $result_url = url($test_url, array('query' => $query2));
+    $this->assertEqual($test_url . '&' . $query2, $result_url, t("External URL with a query passed in the path paramater. url('http://drupal.org/?param1', array('query' => 'param2'));"));
+
+    // The external URL does not contain a query.
+    $test_url = 'http://www.drupal.org';
+    $result_url = url($test_url, array('query' => $query2));
+    $this->assertEqual($test_url . '?' . $query2, $result_url, t("External URL without a query passed in the path paramater. url('http://drupal.org', array('query' => 'param2'));"));
+  }
+
 }
 
 /**
@@ -1055,7 +1137,7 @@ class DrupalErrorCollectionUnitTest extends DrupalWebTestCase {
     if (count($this->collectedErrors) == 3) {
       $this->assertError($this->collectedErrors[0], 'Notice', 'error_test_generate_warnings()', 'error_test.module', 'Undefined variable: bananas');
       $this->assertError($this->collectedErrors[1], 'Warning', 'error_test_generate_warnings()', 'error_test.module', 'Division by zero');
-      $this->assertError($this->collectedErrors[2], 'User notice', 'error_test_generate_warnings()', 'error_test.module', 'Drupal is awesome');
+      $this->assertError($this->collectedErrors[2], 'User warning', 'error_test_generate_warnings()', 'error_test.module', 'Drupal is awesome');
     }
     else {
       // Give back the errors to the log report.

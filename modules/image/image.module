@@ -548,9 +548,10 @@ function image_style_flush($style) {
  *
  * This function is the default image generation method. It returns a URL for
  * an image that can be used in an <img> tag. When the browser requests the
- * image at image/generate/[style_name]/[scheme]/[path] the image is generated if it does
- * not already exist and then served to the browser. This allows each image to
- * have its own PHP instance (and memory limit) for generation of the new image.
+ * image at image/generate/[style_name]/[scheme]/[path] the image is generated
+ * if it does not already exist and then served to the browser. This allows
+ * each image to have its own PHP instance (and memory limit) for generation of
+ * the new image.
  *
  * @param $style_name
  *   The name of the style to be used with this image.
