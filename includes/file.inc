@@ -298,7 +298,7 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  *   and the same string is returned. If a valid stream wrapper could not be
  *   found to generate an external URL, then FALSE will be returned.
  */
-function file_external_url($uri) {
+function file_create_url($uri) {
   $scheme = file_uri_scheme($uri);
 
   if (!$scheme) {

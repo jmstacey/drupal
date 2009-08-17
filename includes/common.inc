@@ -2601,7 +2601,7 @@ function drupal_get_css($css = NULL) {
       case 'file':
         // Depending on whether aggregation is desired, include the file.
         if (!$item['preprocess'] || !($is_writable && $preprocess_css)) {
-          $rendered_css[] = '<link type="text/css" rel="stylesheet" media="' . $item['media'] . '" href="' . file_external_url($item['data']) . $query_string . '" />';
+          $rendered_css[] = '<link type="text/css" rel="stylesheet" media="' . $item['media'] . '" href="' . file_create_url($item['data']) . $query_string . '" />';
         }
         else {
           $preprocess_items[$item['media']][] = $item;
@@ -2626,7 +2626,7 @@ function drupal_get_css($css = NULL) {
       // Prefix filename to prevent blocking by firewalls which reject files
       // starting with "ad*".
       $filename = 'css_' . md5(serialize($items) . $query_string) . '.css';
-      $preprocess_file = file_external_url(drupal_build_css_cache($items, $filename));
+      $preprocess_file = file_create_url(drupal_build_css_cache($items, $filename));
       $rendered_css['preprocess'] .= '<link type="text/css" rel="stylesheet" media="' . $media . '" href="' . $preprocess_file . '" />' . "\n";
     }
   }
@@ -3071,7 +3071,7 @@ function drupal_get_js($scope = 'header', $javascript = NULL) {
 
       case 'file':
         if (!$item['preprocess'] || !$is_writable || !$preprocess_js) {
-          $no_preprocess .= '<script type="text/javascript"' . ($item['defer'] ? ' defer="defer"' : '') . ' src="' . file_external_url($item['data']) . ($item['cache'] ? $query_string : '?' . REQUEST_TIME) . "\"></script>\n";
+          $no_preprocess .= '<script type="text/javascript"' . ($item['defer'] ? ' defer="defer"' : '') . ' src="' . file_create_url($item['data']) . ($item['cache'] ? $query_string : '?' . REQUEST_TIME) . "\"></script>\n";
         }
         else {
           $files[$item['data']] = $item;
@@ -3090,7 +3090,7 @@ function drupal_get_js($scope = 'header', $javascript = NULL) {
     // Prefix filename to prevent blocking by firewalls which reject files
     // starting with "ad*".
     $filename = 'js_' . md5(serialize($files) . $query_string) . '.js';
-    $preprocess_file = file_external_url(drupal_build_js_cache($files, $filename));
+    $preprocess_file = file_create_url(drupal_build_js_cache($files, $filename));
     $preprocessed .= '<script type="text/javascript" src="' . $preprocess_file . '"></script>' . "\n";
   }
 

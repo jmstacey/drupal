@@ -104,7 +104,7 @@ class ImageStylesPathAndUrlUnitTest extends DrupalWebTestCase {
     $this->assertEqual($this->drupalGetHeader('Content-Length'), $generated_image_info['file_size'], t('Expected Content-Length was reported.'));
 
     // Check that the URL points directly to the generated file.
-    $expected_generated_url = file_external_url($generated_path);
+    $expected_generated_url = file_create_url($generated_path);
     $actual_generated_url = image_style_url($this->style_name, $this->image_filepath);
     $this->drupalGet($expected_generated_url);
     $this->assertEqual($actual_generated_url, $expected_generated_url, t('Got the download URL for an existing file.'));
