@@ -1,5 +1,5 @@
 <?php
-// $Id: file.inc,v 1.180 2009-08-11 04:50:36 webchick Exp $
+// $Id: file.inc,v 1.181 2009-08-17 06:33:31 dries Exp $
 
 /**
  * @file
@@ -298,7 +298,7 @@ function file_stream_wrapper_get_instance_by_scheme($scheme) {
  *   and the same string is returned. If a valid stream wrapper could not be
  *   found to generate an external URL, then FALSE will be returned.
  */
-function file_external_url($uri) {
+function file_create_url($uri) {
   $scheme = file_uri_scheme($uri);
 
   if (!$scheme) {
@@ -432,6 +432,10 @@ function file_create_htaccess($directory, $private = TRUE) {
  * @see file_load()
  */
 function file_load_multiple($fids = array(), $conditions = array()) {
+  // If they don't provide any criteria return nothing rather than all files.
+  if (!$fids && !$conditions) {
+    return array();
+  }
   $query = db_select('file', 'f')->fields('f');
 
   // If the $fids array is populated, add those to the query.

@@ -1,5 +1,5 @@
 <?php
-// $Id: file.test,v 1.37 2009-07-27 19:53:18 dries Exp $
+// $Id: file.test,v 1.38 2009-08-17 06:33:31 dries Exp $
 
 /**
  *  @file
@@ -602,6 +602,9 @@ class FileSaveUploadTest extends FileHookTestCase {
     $files = file_load_multiple(array($file1->fid, $file2->fid));
     $this->assertTrue(isset($files[$file1->fid]), t('File was loaded successfully'));
     $this->assertTrue(isset($files[$file2->fid]), t('File was loaded successfully'));
+
+    // Check that file_load_multiple() with no arguments returns FALSE.
+    $this->assertFalse(file_load_multiple(), t('No files were loaded.'));
   }
 
 
@@ -1871,7 +1874,7 @@ class FileDownloadTest extends FileTestCase {
 
     // Create a file.
     $file = $this->createFile(NULL, NULL, 'private');
-    $url  = file_external_url($file->uri);
+    $url  = file_create_url($file->uri);
 
     // Set file_test access header to allow the download.
     file_test_set_return('download', array('x-foo' => 'Bar'));
@@ -1886,7 +1889,7 @@ class FileDownloadTest extends FileTestCase {
     $this->assertResponse(403, t('Correctly denied access to a file when file_test sets the header to -1.'));
 
     // Try non-existent file.
-    $url = file_external_url('private://' . $this->randomName());
+    $url = file_create_url('private://' . $this->randomName());
     $this->drupalHead($url);
     $this->assertResponse(404, t('Correctly returned 404 response for a non-existent file.'));
   }
