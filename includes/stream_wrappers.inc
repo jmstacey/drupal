@@ -1,5 +1,5 @@
 <?php
-// $Id: stream_wrappers.inc,v 1.1 2009-07-27 19:53:17 dries Exp $
+// $Id: stream_wrappers.inc,v 1.2 2009-08-17 19:14:39 webchick Exp $
 
 /**
  * @file

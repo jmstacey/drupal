@@ -1,5 +1,5 @@
 <?php
-// $Id: update.compare.inc,v 1.26 2009-08-12 23:51:19 webchick Exp $
+// $Id: update.compare.inc,v 1.27 2009-08-17 19:14:41 webchick Exp $
 
 /**
  * @file

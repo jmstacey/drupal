@@ -1,5 +1,5 @@
 <?php
-// $Id: error.test,v 1.5 2009-08-15 06:20:20 webchick Exp $
+// $Id: error.test,v 1.6 2009-08-17 19:14:41 webchick Exp $
 
 /**
  * Tests Drupal error and exception handlers.

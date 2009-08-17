@@ -1,5 +1,5 @@
 <?php
-// $Id: image.admin.inc,v 1.2 2009-08-13 02:03:29 webchick Exp $
+// $Id: image.admin.inc,v 1.3 2009-08-17 19:14:40 webchick Exp $
 
 /**
  * @file

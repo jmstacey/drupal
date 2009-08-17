@@ -1,5 +1,5 @@
 <?php
-// $Id: locale.inc,v 1.223 2009-08-11 11:52:45 dries Exp $
+// $Id: locale.inc,v 1.224 2009-08-17 19:14:39 webchick Exp $
 
 /**
  * @file

@@ -1,5 +1,5 @@
 <?php
-// $Id: common.inc,v 1.962 2009-08-17 07:12:15 webchick Exp $
+// $Id: common.inc,v 1.963 2009-08-17 19:14:39 webchick Exp $
 
 /**
  * @file

@@ -1,5 +1,5 @@
 <?php
-// $Id: template.php,v 1.23 2009-07-28 10:09:25 dries Exp $
+// $Id: template.php,v 1.24 2009-08-17 19:14:42 webchick Exp $
 
 /**
  * Return a themed breadcrumb trail.

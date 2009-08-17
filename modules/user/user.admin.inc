@@ -1,5 +1,5 @@
 <?php
-// $Id: user.admin.inc,v 1.67 2009-08-11 11:47:58 dries Exp $
+// $Id: user.admin.inc,v 1.68 2009-08-17 19:14:41 webchick Exp $
 
 /**
  * @file
