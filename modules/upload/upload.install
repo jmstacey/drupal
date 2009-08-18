@@ -1,5 +1,5 @@
 <?php
-// $Id: upload.install,v 1.12 2009-06-01 22:07:10 dries Exp $
+// $Id: upload.install,v 1.13 2009-08-17 19:14:41 webchick Exp $
 
 /**
  * @file

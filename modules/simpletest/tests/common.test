@@ -1,5 +1,5 @@
 <?php
-// $Id: common.test,v 1.63 2009-08-16 17:37:06 webchick Exp $
+// $Id: common.test,v 1.64 2009-08-17 19:14:41 webchick Exp $
 
 /**
  * Tests for the l() function.

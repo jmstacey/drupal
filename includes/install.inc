@@ -1,5 +1,5 @@
 <?php
-// $Id: install.inc,v 1.104 2009-08-12 23:51:19 webchick Exp $
+// $Id: install.inc,v 1.105 2009-08-17 19:14:39 webchick Exp $
 
 /**
  * Indicates that a module has not been installed yet.

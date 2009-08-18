@@ -1,5 +1,5 @@
 <?php
-// $Id: simpletest.test,v 1.29 2009-08-15 06:20:20 webchick Exp $
+// $Id: simpletest.test,v 1.30 2009-08-17 19:14:41 webchick Exp $
 
 class SimpleTestFunctionalTest extends DrupalWebTestCase {
   /**
