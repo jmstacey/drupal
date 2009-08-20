@@ -1,5 +1,5 @@
 <?php
-// $Id: text.module,v 1.17 2009-08-04 06:38:56 webchick Exp $
+// $Id: text.module,v 1.19 2009-08-20 10:56:33 dries Exp $
 
 /**
  * @file
@@ -129,6 +129,51 @@ function text_field_schema($field) {
 }
 
 /**
+ * Implement hook_field_settings_form().
+ */
+function text_field_settings_form($field, $instance) {
+  $settings = $field['settings'];
+
+  $form['max_length'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Maximum length'),
+    '#default_value' => $settings['max_length'],
+    '#required' => FALSE,
+    '#description' => t('The maximum length of the field in characters. Leave blank for an unlimited size.'),
+    '#element_validate' => array('_element_validate_integer_positive'),
+  );
+
+  return $form;
+}
+
+/**
+ * Implement hook_field_instance_settings_form().
+ */
+function text_field_instance_settings_form($field, $instance) {
+  $settings = $instance['settings'];
+
+  $form['text_processing'] = array(
+    '#type' => 'radios',
+    '#title' => t('Text processing'),
+    '#default_value' => $settings['text_processing'],
+    '#options' => array(
+      t('Plain text'),
+      t('Filtered text (user selects input format)'),
+    ),
+  );
+  if ($field['type'] == 'text_with_summary') {
+    $form['display_summary'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Summary input'),
+      '#default_value' => $settings['display_summary'],
+      '#description' => t('This allows authors to input an explicit summary, to be displayed instead of the automatically trimmed text when using the "Summary or trimmed" display format.'),
+    );
+  }
+
+  return $form;
+}
+
+/**
  * Implement hook_field_validate().
  *
  * Possible error codes:
@@ -177,9 +222,9 @@ function text_field_load($obj_type, $objects, $field, $instances, &$items) {
         $format = $item['format'];
         if (filter_format_allowcache($format)) {
           $lang = isset($object->language) ? $object->language : $language->language;
-          $items[$id][$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang, FALSE, FALSE) : '';
+          $items[$id][$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang, FALSE) : '';
           if ($field['type'] == 'text_with_summary') {
-            $items[$id][$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang, FALSE, FALSE) : '';
+            $items[$id][$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang, FALSE) : '';
           }
         }
       }
@@ -208,9 +253,9 @@ function text_field_sanitize($obj_type, $object, $field, $instance, &$items) {
       if (!empty($instance['settings']['text_processing'])) {
         $format = $item['format'];
         $lang = isset($object->language) ? $object->language : $language->language;
-        $items[$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang, FALSE) : '';
+        $items[$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang) : '';
         if ($field['type'] == 'text_with_summary') {
-          $items[$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang, FALSE) : '';
+          $items[$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang) : '';
         }
       }
       else {
@@ -464,6 +509,35 @@ function text_field_widget_info() {
       'settings' => array('rows' => 20, 'summary_rows' => 5),
     ),
   );
+}
+
+/**
+ * Implement hook_field_widget_settings_form().
+ */
+function text_field_widget_settings_form($field, $instance) {
+  $widget = $instance['widget'];
+  $settings = $widget['settings'];
+
+  if ($widget['type'] == 'text_textfield') {
+    $form['size'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Size of textfield'),
+      '#default_value' => $settings['size'],
+      '#required' => TRUE,
+      '#element_validate' => array('_element_validate_integer_positive'),
+    );
+  }
+  else {
+    $form['rows'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Rows'),
+      '#default_value' => $settings['rows'],
+      '#required' => TRUE,
+      '#element_validate' => array('_element_validate_integer_positive'),
+    );
+  }
+
+  return $form;
 }
 
 /**

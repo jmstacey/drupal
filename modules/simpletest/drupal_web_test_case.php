@@ -1,5 +1,5 @@
 <?php
-// $Id: drupal_web_test_case.php,v 1.137 2009-08-17 19:14:41 webchick Exp $
+// $Id: drupal_web_test_case.php,v 1.139 2009-08-20 03:16:06 webchick Exp $
 
 /**
  * Base class for Drupal tests.

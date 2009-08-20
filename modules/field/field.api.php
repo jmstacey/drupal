@@ -1,5 +1,5 @@
 <?php
-// $Id: field.api.php,v 1.26 2009-08-14 05:16:26 webchick Exp $
+// $Id: field.api.php,v 1.28 2009-08-20 10:56:33 dries Exp $
 
 /**
  * @ingroup field_fieldable_type
@@ -98,6 +98,63 @@ function hook_fieldable_info_alter(&$info) {
   // A contributed module handling node-level caching would want to disable
   // field cache for nodes.
   $info['node']['cacheable'] = FALSE;
+}
+
+/**
+ * Expose "pseudo-field" components on fieldable objects.
+ *
+ * Field UI's 'Manage fields' page lets users re-order fields, but also
+ * non-field components. For nodes, that would be title, menu settings, or
+ * other elements exposed by contributed modules through hook_form() or
+ * hook_form_alter().
+ *
+ * Fieldable entities or contributed modules that want to have their components
+ * supported should expose them using this hook, and use
+ * field_attach_extra_weight() to retrieve the user-defined weight when
+ * inserting the component.
+ *
+ * @param $bundle
+ *   The name of the bundle being considered.
+ * @return
+ *   An array of 'pseudo-field' components. The keys are the name of the element
+ *   as it appears in the form structure. The values are arrays with the
+ *   following key/value pairs:
+ *   - label: The human readable name of the component.
+ *   - description: A short description of the component contents.
+ *   - weight: The default weight of the element.
+ *   - view: (optional) The name of the element as it appears in the rendered
+ *     structure, if different from the name in the form.
+ */
+function hook_field_extra_fields($bundle) {
+  $extra = array();
+
+  if ($type = node_type_get_type($bundle)) {
+    if ($type->has_title) {
+      $extra['title'] = array(
+        'label' => $type->title_label,
+        'description' => t('Node module element.'),
+        'weight' => -5,
+      );
+    }
+    if ($bundle == 'poll' && module_exists('poll')) {
+      $extra['title'] = array(
+        'label' => t('Poll title'),
+        'description' => t('Poll module title.'),
+        'weight' => -5,
+      );
+      $extra['choice_wrapper'] = array(
+        'label' => t('Poll choices'),
+        'description' => t('Poll module choices.'),
+        'weight' => -4,
+      );
+      $extra['settings'] = array(
+        'label' => t('Poll settings'),
+        'description' => t('Poll module settings.'),
+        'weight' => -3,
+      );
+    }
+  }
+  return $extra;
 }
 
 /**
@@ -313,9 +370,9 @@ function hook_field_load($obj_type, $objects, $field, $instances, &$items, $age)
         $format = $item['format'];
         if (filter_format_allowcache($format)) {
           $lang = isset($object->language) ? $object->language : $language->language;
-          $items[$id][$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang, FALSE, FALSE) : '';
+          $items[$id][$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang, FALSE) : '';
           if ($field['type'] == 'text_with_summary') {
-            $items[$id][$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang, FALSE, FALSE) : '';
+            $items[$id][$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang, FALSE) : '';
           }
         }
       }
@@ -357,9 +414,9 @@ function hook_field_sanitize($obj_type, $object, $field, $instance, $items) {
       if (!empty($instance['settings']['text_processing'])) {
         $format = $item['format'];
         $lang = isset($object->language) ? $object->language : $language->language;
-        $items[$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang, FALSE) : '';
+        $items[$delta]['safe'] = isset($item['value']) ? check_markup($item['value'], $format, $lang) : '';
         if ($field['type'] == 'text_with_summary') {
-          $items[$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang, FALSE) : '';
+          $items[$delta]['safe_summary'] = isset($item['summary']) ? check_markup($item['summary'], $format, $lang) : '';
         }
       }
       else {
